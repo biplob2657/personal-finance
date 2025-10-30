@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Money Tracker</title>
+    <title>Personal Finance</title>
     <style>
         /* --- Basic Reset & Mobile-First Styling --- */
         :root {
@@ -16,12 +16,15 @@
             --dark-color: #343a40;
             --border-color: #dee2e6;
             --nav-height: 60px;
+            --shadow-light: 0 2px 5px rgba(0,0,0,0.08);
+            --shadow-medium: 0 5px 15px rgba(0,0,0,0.12);
+            --shadow-heavy: 0 10px 30px rgba(0,0,0,0.15);
         }
 
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #e9ecef;
+            background: linear-gradient(135deg, #e9ecef, #c8d6e5);
             margin: 0;
             padding: 0;
             color: var(--dark-color);
@@ -58,12 +61,13 @@
             left: 0;
             width: 100%;
             height: var(--nav-height);
-            background-color: #fff;
+            background: linear-gradient(to top, #ffffff, #f8f9fa);
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
         .nav-item {
             display: flex;
@@ -74,7 +78,7 @@
             text-decoration: none;
             color: #6c757d;
             font-size: 0.8em;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s;
             padding: 5px;
         }
         .nav-item.active {
@@ -82,6 +86,9 @@
         }
         .nav-item span {
             font-size: 1.5em;
+        }
+        .nav-item:hover {
+            transform: translateY(-2px);
         }
 
         /* --- Desktop Sidebar (for wider screens) --- */
@@ -93,8 +100,8 @@
                 margin: 0 auto;
                 height: calc(100vh - 30px);
                 margin-top: 15px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                border-radius: 12px;
+                box-shadow: var(--shadow-heavy);
                 overflow: hidden;
             }
             .main-content {
@@ -107,6 +114,7 @@
                 position: relative;
                 border-top: none;
                 border-right: 1px solid var(--border-color);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             }
             .nav-item {
                 flex-direction: row;
@@ -119,23 +127,54 @@
             }
         }
 
-
-        /* --- Component Styles (reused from previous version) --- */
-        h1 { text-align: center; color: var(--dark-color); }
-        .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
-        .wallet-card { background-color: #fff; padding: 15px; border-radius: 5px; text-align: center; border-left: 5px solid var(--primary-color); transition: transform 0.2s, box-shadow 0.2s; }
-        .wallet-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        /* --- Component Styles --- */
+        h1 { text-align: center; color: var(--dark-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+        .wallet-card { 
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 20px;
+            border-radius: 12px; 
+            text-align: center; 
+            border-left: 5px solid var(--primary-color); 
+            box-shadow: var(--shadow-medium);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .wallet-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--shadow-heavy); }
         .wallet-card h4 { margin: 0 0 5px 0; font-size: 1em; }
         .wallet-card p { margin: 0; font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
-        .add-wallet-btn { background: transparent; border: 2px dashed var(--border-color); color: #6c757d; cursor: pointer; }
-        .add-wallet-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(23, 162, 184, 0.05); }
+        .add-wallet-btn { 
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            border: 2px dashed var(--border-color); 
+            color: #6c757d; 
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .add-wallet-btn:hover { 
+            border-color: var(--primary-color); 
+            color: var(--primary-color); 
+            background: linear-gradient(145deg, #ffffff, #e0f7fa);
+            transform: translateY(-5px) scale(1.02);
+        }
 
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .summary-card { background-color: #fff; padding: 15px; border-radius: 5px; text-align: center; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .summary-card { 
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .summary-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-medium); }
         .summary-card.income { border-left: 5px solid var(--success-color); }
         .summary-card.expense { border-left: 5px solid var(--danger-color); }
         .summary-card.lent { border-left: 5px solid var(--warning-color); }
         .summary-card.borrowed { border-left: 5px solid var(--info-color); }
+        .summary-card.net-worth { border-left: 5px solid #6f42c1; }
+        .summary-card.total-savings { border-left: 5px solid #20c997; }
         .summary-card h3 { margin: 0 0 5px 0; font-size: 0.9em; color: #6c757d; }
         .summary-card p { margin: 0; font-size: 1.3em; font-weight: bold; }
 
@@ -144,29 +183,78 @@
             flex-direction: column;
             gap: 15px;
             margin-bottom: 25px;
-            padding: 20px;
-            background-color: #fff;
+            padding: 25px;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
         }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; }
-        button { padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 1.1em; cursor: pointer; transition: background-color 0.2s; }
-        button:hover { background-color: #138496; }
-        button.danger-btn { background-color: var(--danger-color); }
-        button.danger-btn:hover { background-color: #c82333; }
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            font-size: 1em;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        button { 
+            padding: 12px; 
+            background: linear-gradient(145deg, var(--primary-color), #138496);
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 1.1em; 
+            cursor: pointer; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: var(--shadow-light);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
+        button:active { transform: translateY(1px); box-shadow: var(--shadow-light); }
+        button.danger-btn { background: linear-gradient(145deg, var(--danger-color), #c82333); }
         button.small-btn { padding: 5px 10px; font-size: 0.8em; }
 
         .category-list { list-style: none; padding: 0; }
-        .category-item { border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; background-color: #fff; }
-        .category-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: var(--light-color); font-weight: bold; }
+        .category-item { 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            box-shadow: var(--shadow-light);
+        }
+        .category-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px; 
+            background: linear-gradient(to right, var(--light-color), #ffffff);
+            font-weight: bold; 
+            border-radius: 12px 12px 0 0;
+        }
         .subcategories { padding: 10px; }
-        .subcategory-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; border-bottom: 1px solid #f1f1f1; }
+        .subcategory-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 15px; 
+            border-bottom: 1px solid #f1f1f1; 
+        }
         .subcategory-item:last-child { border-bottom: none; }
         .no-subcategories { padding: 10px 15px; color: #6c757d; font-style: italic; }
 
         .transaction-list { list-style-type: none; padding: 0; margin: 0; }
-        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); background-color: #fff; margin-bottom: 10px; border-radius: 5px; padding: 15px;}
+        .transaction-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            margin-bottom: 12px; 
+            border-radius: 12px; 
+            padding: 15px;
+            box-shadow: var(--shadow-light);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .transaction-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
         .transaction-details { flex-grow: 1; }
         .transaction-description { font-weight: 500; }
         .transaction-meta { font-size: 0.8em; color: #6c757d; }
@@ -180,10 +268,34 @@
         .amount-liability { color: var(--primary-color); }
 
         /* --- Modal --- */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(5px);
+        }
         .modal.show { display: flex; }
-        .modal-content { background-color: #fefefe; margin: auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-content { 
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            margin: auto; 
+            padding: 30px; 
+            border: 1px solid var(--border-color); 
+            width: 90%; 
+            max-width: 500px; 
+            border-radius: 12px; 
+            box-shadow: var(--shadow-heavy);
+        }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-body { margin-bottom: 20px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; }
         .close-btn:hover, .close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
     </style>
@@ -193,9 +305,10 @@
     <div class="app-container">
         <main class="main-content">
             
-            <!-- View 1: My Wallets -->
+            <!-- View 1: Wallets -->
             <section id="view-wallets" class="view-section active">
-                <h1>My Wallets</h1>
+                <h1>Personal Finance</h1>
+                <h2>Wallets</h2>
                 <div id="walletsGrid" class="wallets-grid"></div>
                 <h2 style="margin-top:30px;">Summary</h2>
                 <div class="summary-grid">
@@ -203,6 +316,8 @@
                     <div class="summary-card expense"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
                     <div class="summary-card lent"><h3>Total Lent</h3><p id="totalLent">৳0.00</p></div>
                     <div class="summary-card borrowed"><h3>Total Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
+                    <div class="summary-card net-worth"><h3>Net Worth</h3><p id="netWorth">৳0.00</p></div>
+                    <div class="summary-card total-savings"><h3>Total Savings</h3><p id="totalSavings">৳0.00</p></div>
                 </div>
             </section>
 
@@ -225,6 +340,12 @@
             <!-- View 3: Transaction History -->
             <section id="view-history" class="view-section">
                 <h1>Transaction History</h1>
+                <div class="form-group">
+                    <label for="categorySearch">Filter by Category</label>
+                    <select id="categorySearch">
+                        <option value="all">All Categories</option>
+                    </select>
+                </div>
                 <ul id="transactionList" class="transaction-list"></ul>
             </section>
 
@@ -269,7 +390,7 @@
     <!-- Edit Transaction Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2>Edit Transaction</h2><span class="close-btn">&times;</span></div>
+            <div class="modal-header"><h2>Edit Transaction</h2><span class="close-btn" data-target="editModal">&times;</span></div>
             <form id="editForm" class="tracker-form">
                 <input type="hidden" id="editId">
                 <div class="form-group"><label for="editDescription">Description</label><input type="text" id="editDescription" required></div>
@@ -285,11 +406,46 @@
         </div>
     </div>
 
+    <!-- Add Subcategory Modal -->
+    <div id="addSubcategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Add New Subcategory</h2><span class="close-btn" data-target="addSubcategoryModal">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newSubcategoryName">Subcategory Name</label>
+                    <input type="text" id="newSubcategoryName" placeholder="e.g., Office Supplies">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="addSubcategoryModal">Close</button>
+                <button type="button" id="saveSubcategoryBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Confirm Deletion</h2><span class="close-btn" data-target="deleteConfirmModal">&times;</span></div>
+            <div class="modal-body">
+                <p id="deleteConfirmMessage">Are you sure you want to delete this?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="deleteConfirmModal">Cancel</button>
+                <button type="button" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- CONFIGURATION ---
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec';
+
             // --- DOM Elements ---
             const navItems = document.querySelectorAll('.nav-item');
             const viewSections = document.querySelectorAll('.view-section');
+            const categorySearchSelect = document.getElementById('categorySearch');
             
             const form = document.getElementById('trackerForm');
             const editForm = document.getElementById('editForm');
@@ -301,8 +457,16 @@
             const walletSelect = document.getElementById('wallet');
             const toWalletSelect = document.getElementById('toWallet');
             const transferFields = document.getElementById('transferFields');
-            const modal = document.getElementById('editModal');
-            const closeModalBtn = document.querySelector('.close-btn');
+            
+            // Modal Elements
+            const modals = document.querySelectorAll('.modal');
+            const closeModalBtns = document.querySelectorAll('.close-btn[data-target], button[data-target]');
+            const addSubcategoryModal = document.getElementById('addSubcategoryModal');
+            const newSubcategoryNameInput = document.getElementById('newSubcategoryName');
+            const saveSubcategoryBtn = document.getElementById('saveSubcategoryBtn');
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            const deleteConfirmMessage = document.getElementById('deleteConfirmMessage');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             
             // Edit Modal Elements
             const editCategorySelect = document.getElementById('editCategory');
@@ -327,21 +491,65 @@
                 { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Received', categoryId: 5 }, { id: 28, name: 'Loan Paid', categoryId: 5 }
             ];
             
-            let wallets = JSON.parse(localStorage.getItem('advTrackerWallets')) || [
-                { id: 1, name: 'Cash', balance: 0 }, { id: 2, name: 'Bank', balance: 0 }, { id: 3, name: 'bKash', balance: 0 }, { id: 4, name: 'Nagad', balance: 0 }
-            ];
-            let categories = JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories;
-            let subcategories = JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories;
-            let transactions = JSON.parse(localStorage.getItem('advTrackerTransactions')) || [];
+            let wallets = [];
+            let categories = [];
+            let subcategories = [];
+            let transactions = [];
+            let currentCategoryIdForSubcategory = null;
+            let deleteCallback = null;
 
-            // --- Functions ---
-            const saveData = () => {
-                localStorage.setItem('advTrackerWallets', JSON.stringify(wallets));
-                localStorage.setItem('advTrackerCategories', JSON.stringify(categories));
-                localStorage.setItem('advTrackerSubcategories', JSON.stringify(subcategories));
-                localStorage.setItem('advTrackerTransactions', JSON.stringify(transactions));
+            // --- API / Data Handling ---
+            const api = {
+                async load() {
+                    if (GOOGLE_SCRIPT_URL) {
+                        try {
+                            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
+                            if (!response.ok) throw new Error("Network response was not ok");
+                            const data = await response.json();
+                            return data;
+                        } catch (error) {
+                            console.error("Failed to load from Google Sheet. Falling back to local storage.", error);
+                            return this.loadLocal();
+                        }
+                    } else {
+                        return this.loadLocal();
+                    }
+                },
+                loadLocal() {
+                    return {
+                        wallets: JSON.parse(localStorage.getItem('advTrackerWallets')) || [{ id: 1, name: 'Cash', balance: 0 }, { id: 2, name: 'Bank', balance: 0 }, { id: 3, name: 'bKash', balance: 0 }, { id: 4, name: 'Nagad', balance: 0 }],
+                        categories: JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories,
+                        subcategories: JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories,
+                        transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || []
+                    };
+                },
+                async save(data) {
+                    if (GOOGLE_SCRIPT_URL) {
+                        try {
+                            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'saveAll', data: data })
+                            });
+                            if (!response.ok) throw new Error("Network response was not ok");
+                            return await response.json();
+                        } catch (error) {
+                            console.error("Failed to save to Google Sheet. Saving to local storage.", error);
+                            this.saveLocal(data);
+                        }
+                    } else {
+                        this.saveLocal(data);
+                    }
+                },
+                saveLocal(data) {
+                    localStorage.setItem('advTrackerWallets', JSON.stringify(data.wallets));
+                    localStorage.setItem('advTrackerCategories', JSON.stringify(data.categories));
+                    localStorage.setItem('advTrackerSubcategories', JSON.stringify(data.subcategories));
+                    localStorage.setItem('advTrackerTransactions', JSON.stringify(data.transactions));
+                }
             };
 
+            // --- Functions ---
             const updateWalletBalance = (walletId, amount, categoryType, isSource = true) => {
                 const wallet = wallets.find(w => w.id === walletId);
                 if (!wallet) return;
@@ -380,7 +588,7 @@
                     toWalletSelect.add(option.cloneNode(true)); editToWalletSelect.add(option.cloneNode(true));
                 });
                 const addWalletCard = document.createElement('div'); addWalletCard.classList.add('wallet-card', 'add-wallet-btn');
-                addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; addWalletCard.onclick = addWallet; walletsGrid.appendChild(addWalletCard);
+                addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; addWalletCard.onclick = () => showAddWalletModal(); walletsGrid.appendChild(addWalletCard);
             };
             
             const renderCategories = () => {
@@ -389,16 +597,20 @@
                     const li = document.createElement('li'); li.classList.add('category-item');
                     const subcats = subcategories.filter(sub => sub.categoryId === cat.id);
                     li.innerHTML = `
-                        <div class="category-header"><span>${cat.name} (${cat.type})</span><button class="small-btn danger-btn" onclick="deleteCategory(${cat.id})">Delete</button></div>
-                        <div class="subcategories">${subcats.length > 0 ? subcats.map(sub => `<div class="subcategory-item"><span>${sub.name}</span><button class="small-btn danger-btn" onclick="deleteSubcategory(${sub.id})">Delete</button></div>`).join('') : '<p class="no-subcategories">No subcategories yet.</p>'}<button class="small-btn" onclick="addSubcategory(${cat.id})">+ Add Subcategory</button></div>
+                        <div class="category-header"><span>${cat.name} (${cat.type})</span><button class="small-btn danger-btn delete-category-btn" data-id="${cat.id}">Delete</button></div>
+                        <div class="subcategories">${subcats.length > 0 ? subcats.map(sub => `<div class="subcategory-item"><span>${sub.name}</span><button class="small-btn danger-btn delete-subcategory-btn" data-id="${sub.id}">Delete</button></div>`).join('') : '<p class="no-subcategories">No subcategories yet.</p>'}<button class="small-btn add-subcategory-btn" data-id="${cat.id}">+ Add Subcategory</button></div>
                     `;
                     categoryList.appendChild(li);
                 });
             };
 
             const populateCategoryDropdowns = () => {
-                categorySelect.innerHTML = ''; editCategorySelect.innerHTML = '';
-                categories.forEach(cat => { categorySelect.add(new Option(cat.name, cat.id)); editCategorySelect.add(new Option(cat.name, cat.id)); });
+                categorySelect.innerHTML = ''; editCategorySelect.innerHTML = ''; categorySearchSelect.innerHTML = '<option value="all">All Categories</option>';
+                categories.forEach(cat => { 
+                    categorySelect.add(new Option(cat.name, cat.id)); 
+                    editCategorySelect.add(new Option(cat.name, cat.id));
+                    categorySearchSelect.add(new Option(cat.name, cat.id));
+                });
             };
             
             const updateSubcategoryDropdown = (categoryId, targetSelect) => {
@@ -408,28 +620,36 @@
             };
 
             const renderSummary = () => {
-                let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0;
+                let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0, totalSavings = 0;
                 transactions.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
                     if (!category) return;
                     const amount = t.amount;
                     switch(category.type) {
                         case 'income': totalIncome += amount; break;
-                        case 'expense': totalExpense += amount; break;
+                        case 'expense': 
+                            totalExpense += amount;
+                            if(category.name === 'Savings / Investments') totalSavings += amount;
+                            break;
                         case 'asset': totalLent += amount; break;
                         case 'liability': totalBorrowed += amount; break;
                     }
                 });
+                const totalWalletBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
+                const netWorth = totalWalletBalance - totalBorrowed;
+
                 document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
                 document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
                 document.getElementById('totalLent').textContent = `৳${totalLent.toFixed(2)}`;
                 document.getElementById('totalBorrowed').textContent = `৳${totalBorrowed.toFixed(2)}`;
+                document.getElementById('netWorth').textContent = `৳${netWorth.toFixed(2)}`;
+                document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
             };
 
-            const renderTransactions = () => {
+            const renderTransactions = (transactionsToRender = transactions) => {
                 transactionList.innerHTML = '';
-                const sortedTransactions = [...transactions].sort((a, b) => b.id - a.id);
-                if (sortedTransactions.length === 0) { transactionList.innerHTML = '<li class="transaction-item">No transactions yet.</li>'; return; }
+                const sortedTransactions = [...transactionsToRender].sort((a, b) => b.id - a.id);
+                if (sortedTransactions.length === 0) { transactionList.innerHTML = '<li class="transaction-item">No transactions found.</li>'; return; }
                 sortedTransactions.forEach(t => {
                     const wallet = wallets.find(w => w.id == t.walletId);
                     const category = categories.find(c => c.id == t.categoryId);
@@ -456,7 +676,7 @@
             const getTransactionSign = (type) => { if (type === 'transfer') return '↔️'; return ['expense', 'asset', 'liability'].includes(type) ? '-' : '+'; };
             const getAmountClass = (type) => { if (type === 'transfer') return 'amount-transfer'; if (type === 'income') return 'amount-income'; if (type === 'expense') return 'amount-expense'; if (type === 'asset') return 'amount-asset'; if (type === 'liability') return 'amount-liability'; return ''; };
 
-            const addTransaction = (e) => {
+            const addTransaction = async (e) => {
                 e.preventDefault();
                 const description = document.getElementById('description').value;
                 const amount = parseFloat(document.getElementById('amount').value);
@@ -480,23 +700,54 @@
                 }
 
                 transactions.push(newTransaction);
-                saveData();
+                await api.save({ wallets, categories, subcategories, transactions });
                 renderAll();
                 form.reset();
                 transferFields.style.display = 'none';
-                // Switch to history view after adding
                 switchView('view-history');
             };
             
-            const addWallet = () => { const name = prompt("Enter new wallet name:"); if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) { wallets.push({ id: Date.now(), name, balance: 0 }); saveData(); renderWallets(); } else if (name) { alert("A wallet with this name already exists."); } };
-            const addCategory = () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); saveData(); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
-            const addSubcategory = (categoryId) => { const name = prompt("Enter new subcategory name:"); if (name) { subcategories.push({ id: Date.now(), name, categoryId }); saveData(); renderCategories(); } };
-            const deleteCategory = (id) => { if (!confirm("Are you sure? This will also delete all its subcategories.")) return; subcategories = subcategories.filter(s => s.categoryId !== id); categories = categories.filter(c => c.id !== id); saveData(); renderCategories(); populateCategoryDropdowns(); };
-            const deleteSubcategory = (id) => { if (!confirm("Are you sure?")) return; subcategories = subcategories.filter(s => s.id !== id); saveData(); renderCategories(); };
+            const addWallet = async (name) => {
+                if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) {
+                    wallets.push({ id: Date.now(), name, balance: 0 });
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderWallets();
+                } else if (name) {
+                    alert("A wallet with this name already exists.");
+                }
+            };
+            const addCategory = async () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); await api.save({ wallets, categories, subcategories, transactions }); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
+            const addSubcategory = async (categoryId, name) => {
+                if (name) {
+                    subcategories.push({ id: Date.now(), name, categoryId });
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderCategories();
+                }
+            };
+            const deleteCategory = async (id) => {
+                subcategories = subcategories.filter(s => s.categoryId !== id);
+                categories = categories.filter(c => c.id !== id);
+                await api.save({ wallets, categories, subcategories, transactions });
+                renderCategories();
+                populateCategoryDropdowns();
+            };
+            const deleteSubcategory = async (id) => {
+                subcategories = subcategories.filter(s => s.id !== id);
+                await api.save({ wallets, categories, subcategories, transactions });
+                renderCategories();
+            };
 
-            const deleteTransaction = (id) => { if (!confirm("Are you sure you want to delete this transaction?")) return; const transaction = transactions.find(t => t.id === id); if (transaction) { reverseWalletBalance(transaction); transactions = transactions.filter(t => t.id !== id); saveData(); renderAll(); } };
-            const showEditModal = (id) => { const transaction = transactions.find(t => t.id === id); if (transaction) { document.getElementById('editId').value = transaction.id; document.getElementById('editDescription').value = transaction.description; document.getElementById('editAmount').value = transaction.amount; document.getElementById('editWallet').value = transaction.walletId; document.getElementById('editCategory').value = transaction.categoryId; updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect); document.getElementById('editSubcategory').value = transaction.subcategoryId; const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { editTransferFields.style.display = 'block'; document.getElementById('editToWallet').value = transaction.toWalletId; } else { editTransferFields.style.display = 'none'; } modal.classList.add('show'); } };
-            const updateTransaction = (e) => { e.preventDefault(); const id = parseInt(document.getElementById('editId').value); const transaction = transactions.find(t => t.id === id); if (transaction) { reverseWalletBalance(transaction); transaction.description = document.getElementById('editDescription').value; transaction.amount = parseFloat(document.getElementById('editAmount').value); transaction.walletId = parseInt(document.getElementById('editWallet').value); transaction.categoryId = parseInt(document.getElementById('editCategory').value); transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); const fromWallet = wallets.find(w => w.id === transaction.walletId); const toWallet = wallets.find(w => w.id === transaction.toWalletId); fromWallet.balance -= transaction.amount; toWallet.balance += transaction.amount; } else { updateWalletBalance(transaction.walletId, transaction.amount, category.type); } saveData(); renderAll(); modal.classList.remove('show'); } };
+            const deleteTransaction = async (id) => {
+                const transaction = transactions.find(t => t.id === id);
+                if (transaction) {
+                    reverseWalletBalance(transaction);
+                    transactions = transactions.filter(t => t.id !== id);
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderAll();
+                }
+            };
+            const showEditModal = (id) => { const transaction = transactions.find(t => t.id === id); if (transaction) { document.getElementById('editId').value = transaction.id; document.getElementById('editDescription').value = transaction.description; document.getElementById('editAmount').value = transaction.amount; document.getElementById('editWallet').value = transaction.walletId; document.getElementById('editCategory').value = transaction.categoryId; updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect); document.getElementById('editSubcategory').value = transaction.subcategoryId; const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { editTransferFields.style.display = 'block'; document.getElementById('editToWallet').value = transaction.toWalletId; } else { editTransferFields.style.display = 'none'; } showModal('editModal'); } };
+            const updateTransaction = async (e) => { e.preventDefault(); const id = parseInt(document.getElementById('editId').value); const transaction = transactions.find(t => t.id === id); if (transaction) { reverseWalletBalance(transaction); transaction.description = document.getElementById('editDescription').value; transaction.amount = parseFloat(document.getElementById('editAmount').value); transaction.walletId = parseInt(document.getElementById('editWallet').value); transaction.categoryId = parseInt(document.getElementById('editCategory').value); transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); const fromWallet = wallets.find(w => w.id === transaction.walletId); const toWallet = wallets.find(w => w.id === transaction.toWalletId); fromWallet.balance -= transaction.amount; toWallet.balance += transaction.amount; } else { updateWalletBalance(transaction.walletId, transaction.amount, category.type); } await api.save({ wallets, categories, subcategories, transactions }); renderAll(); hideModal('editModal'); } };
             
             const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); };
             const switchView = (targetId) => {
@@ -505,6 +756,52 @@
                 document.getElementById(targetId).classList.add('active');
                 document.querySelector(`[data-target="${targetId}"]`).classList.add('active');
             }
+            
+            // --- Modal Management ---
+            const showModal = (modalId) => document.getElementById(modalId).classList.add('show');
+            const hideModal = (modalId) => document.getElementById(modalId).classList.remove('show');
+            
+            const showAddWalletModal = () => {
+                const name = prompt("Enter new wallet name:");
+                if(name) addWallet(name);
+            };
+            
+            const showAddSubcategoryModal = (categoryId) => {
+                currentCategoryIdForSubcategory = categoryId;
+                newSubcategoryNameInput.value = '';
+                showModal('addSubcategoryModal');
+            };
+            const handleAddSubcategory = () => {
+                const name = newSubcategoryNameInput.value.trim();
+                if (name) {
+                    addSubcategory(currentCategoryIdForSubcategory, name);
+                    hideModal('addSubcategoryModal');
+                }
+            };
+
+            const showDeleteConfirmation = (message, callback) => {
+                deleteConfirmMessage.textContent = message;
+                deleteCallback = callback;
+                showModal('deleteConfirmModal');
+            };
+            const handleConfirmDelete = () => {
+                if (deleteCallback) {
+                    deleteCallback();
+                }
+                hideModal('deleteConfirmModal');
+            };
+
+            // --- Initial Load ---
+            const data = await api.load();
+            wallets = data.wallets;
+            categories = data.categories;
+            subcategories = data.subcategories;
+            transactions = data.transactions;
+
+            renderAll();
+            renderCategories();
+            populateCategoryDropdowns();
+            updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
 
             // --- Event Listeners ---
             navItems.forEach(item => {
@@ -518,9 +815,42 @@
             form.addEventListener('submit', addTransaction);
             editForm.addEventListener('submit', updateTransaction);
             document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
-            closeModalBtn.onclick = () => modal.classList.remove('show');
-            window.onclick = (event) => { if (event.target == modal) modal.classList.remove('show'); };
-            transactionList.addEventListener('click', (e) => { const target = e.target; if (target.classList.contains('delete-btn')) deleteTransaction(parseInt(target.dataset.id)); else if (target.classList.contains('edit-btn')) showEditModal(parseInt(target.dataset.id)); });
+            saveSubcategoryBtn.addEventListener('click', handleAddSubcategory);
+            confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
+            
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetModal = btn.getAttribute('data-target');
+                    hideModal(targetModal);
+                });
+            });
+
+            window.onclick = (event) => { if (event.target.classList.contains('modal')) { event.target.classList.remove('show'); } };
+            
+            // Event Delegation for dynamic buttons
+            transactionList.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('delete-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    showDeleteConfirmation("Are you sure you want to delete this transaction?", () => deleteTransaction(id));
+                } else if (target.classList.contains('edit-btn')) {
+                    showEditModal(parseInt(target.dataset.id));
+                }
+            });
+
+            categoryList.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('delete-category-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    showDeleteConfirmation("Are you sure? This will also delete all its subcategories.", () => deleteCategory(id));
+                } else if (target.classList.contains('delete-subcategory-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    showDeleteConfirmation("Are you sure you want to delete this subcategory?", () => deleteSubcategory(id));
+                } else if (target.classList.contains('add-subcategory-btn')) {
+                    showAddSubcategoryModal(parseInt(target.dataset.id));
+                }
+            });
+
             categorySelect.addEventListener('change', () => {
                 const selectedCategory = categories.find(c => c.id == categorySelect.value);
                 if (selectedCategory && selectedCategory.type === 'transfer') { transferFields.style.display = 'block'; } else { transferFields.style.display = 'none'; }
@@ -532,11 +862,16 @@
                 updateSubcategoryDropdown(editCategorySelect.value, editSubcategorySelect);
             });
 
-            // --- Initial Load ---
-            renderAll();
-            renderCategories();
-            populateCategoryDropdowns();
-            updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+            // Category Search functionality
+            categorySearchSelect.addEventListener('change', (e) => {
+                const selectedCategoryId = e.target.value;
+                if (selectedCategoryId === 'all') {
+                    renderTransactions();
+                } else {
+                    const filteredTransactions = transactions.filter(t => t.categoryId == selectedCategoryId);
+                    renderTransactions(filteredTransactions);
+                }
+            });
         });
     </script>
 </body>
