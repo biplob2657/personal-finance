@@ -245,8 +245,7 @@
         .transaction-list { list-style-type: none; padding: 0; margin: 0; }
         .transaction-item { 
             display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            flex-direction: column;
             background: linear-gradient(145deg, #ffffff, #f8f9fa);
             margin-bottom: 12px; 
             border-radius: 12px; 
@@ -255,9 +254,10 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .transaction-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
+        .transaction-top-row { display: flex; justify-content: space-between; align-items: center; }
         .transaction-details { flex-grow: 1; }
         .transaction-description { font-weight: 500; }
-        .transaction-meta { font-size: 0.8em; color: #6c757d; }
+        .transaction-meta { font-size: 0.8em; color: #6c757d; margin-top: 5px; }
         .transaction-amount { font-size: 1.1em; font-weight: bold; margin-right: 10px; }
         .transaction-actions { display: flex; gap: 8px; }
         .action-btn { background: none; border: none; cursor: pointer; font-size: 1.2em; padding: 5px; }
@@ -327,6 +327,7 @@
                 <form id="trackerForm" class="tracker-form">
                     <div class="form-group"><label for="description">Description</label><input type="text" id="description" placeholder="e.g., Weekly Groceries" required></div>
                     <div class="form-group"><label for="amount">Amount (৳)</label><input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required></div>
+                    <div class="form-group"><label for="transactionDate">Date</label><input type="date" id="transactionDate" required></div>
                     <div class="form-group"><label for="wallet">Wallet</label><select id="wallet" required></select></div>
                     <div class="form-group"><label for="category">Category</label><select id="category" required></select></div>
                     <div class="form-group"><label for="subcategory">Subcategory</label><select id="subcategory" required></select></div>
@@ -354,8 +355,8 @@
                 <h1>Manage Categories</h1>
                 <div class="category-form">
                     <h3>Add New Category</h3>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="newCategoryName" placeholder="e.g., Business">
+                    <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                        <input type="text" id="newCategoryName" placeholder="e.g., Business" style="flex-grow: 1;">
                         <select id="newCategoryType">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
@@ -363,8 +364,8 @@
                             <option value="liability">Borrowed Money (Liability)</option>
                             <option value="transfer">Transfer</option>
                         </select>
-                        <button type="button" id="addCategoryBtn">Add Category</button>
                     </div>
+                    <button type="button" id="addCategoryBtn">Add Category</button>
                 </div>
                 <ul id="categoryList" class="category-list"></ul>
             </section>
@@ -395,6 +396,7 @@
                 <input type="hidden" id="editId">
                 <div class="form-group"><label for="editDescription">Description</label><input type="text" id="editDescription" required></div>
                 <div class="form-group"><label for="editAmount">Amount (৳)</label><input type="number" id="editAmount" step="0.01" min="0.01" required></div>
+                <div class="form-group"><label for="editTransactionDate">Date</label><input type="date" id="editTransactionDate" required></div>
                 <div class="form-group"><label for="editWallet">Wallet</label><select id="editWallet" required></select></div>
                 <div class="form-group"><label for="editCategory">Category</label><select id="editCategory" required></select></div>
                 <div class="form-group"><label for="editSubcategory">Subcategory</label><select id="editSubcategory" required></select></div>
@@ -502,11 +504,11 @@
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             
             // Edit Modal Elements
-            const editCategorySelect = document.getElementById('editCategory');
-            const editSubcategorySelect = document.getElementById('editSubcategory');
-            const editWalletSelect = document.getElementById('editWallet');
-            const editToWalletSelect = document.getElementById('editToWallet');
-            const editTransferFields = document.getElementById('editTransferFields');
+            const editCategorySelect_inForm = document.getElementById('editCategory');
+            const editSubcategorySelect_inForm = document.getElementById('editSubcategory');
+            const editWalletSelect_inForm = document.getElementById('editWallet');
+            const editToWalletSelect_inForm = document.getElementById('editToWallet');
+            const editTransferFields_inForm = document.getElementById('editTransferFields');
 
             // --- Data Initialization ---
             const defaultCategories = [
@@ -612,13 +614,13 @@
             };
 
             const renderWallets = () => {
-                walletsGrid.innerHTML = ''; walletSelect.innerHTML = ''; editWalletSelect.innerHTML = ''; toWalletSelect.innerHTML = ''; editToWalletSelect.innerHTML = '';
+                walletsGrid.innerHTML = ''; walletSelect.innerHTML = ''; editWalletSelect_inForm.innerHTML = ''; toWalletSelect.innerHTML = ''; editToWalletSelect_inForm.innerHTML = '';
                 wallets.forEach(wallet => {
                     const card = document.createElement('div'); card.classList.add('wallet-card');
                     card.innerHTML = `<h4>${wallet.name}</h4><p>৳${wallet.balance.toFixed(2)}</p>`; walletsGrid.appendChild(card);
                     const option = new Option(wallet.name, wallet.id);
-                    walletSelect.add(option.cloneNode(true)); editWalletSelect.add(option.cloneNode(true));
-                    toWalletSelect.add(option.cloneNode(true)); editToWalletSelect.add(option.cloneNode(true));
+                    walletSelect.add(option.cloneNode(true)); editWalletSelect_inForm.add(option.cloneNode(true));
+                    toWalletSelect.add(option.cloneNode(true)); editToWalletSelect_inForm.add(option.cloneNode(true));
                 });
                 const addWalletCard = document.createElement('div'); addWalletCard.classList.add('wallet-card', 'add-wallet-btn');
                 addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; addWalletCard.onclick = () => showAddWalletModal(); walletsGrid.appendChild(addWalletCard);
@@ -644,10 +646,10 @@
             };
 
             const populateCategoryDropdowns = () => {
-                categorySelect.innerHTML = ''; editCategorySelect.innerHTML = ''; categorySearchSelect.innerHTML = '<option value="all">All Categories</option>';
+                categorySelect.innerHTML = ''; editCategorySelect_inForm.innerHTML = ''; categorySearchSelect.innerHTML = '<option value="all">All Categories</option>';
                 categories.forEach(cat => { 
                     categorySelect.add(new Option(cat.name, cat.id)); 
-                    editCategorySelect.add(new Option(cat.name, cat.id));
+                    editCategorySelect_inForm.add(new Option(cat.name, cat.id));
                     categorySearchSelect.add(new Option(cat.name, cat.id));
                 });
             };
@@ -687,7 +689,7 @@
 
             const renderTransactions = (transactionsToRender = transactions) => {
                 transactionList.innerHTML = '';
-                const sortedTransactions = [...transactionsToRender].sort((a, b) => b.id - a.id);
+                const sortedTransactions = [...transactionsToRender].sort((a, b) => new Date(b.date) - new Date(a.date));
                 if (sortedTransactions.length === 0) { transactionList.innerHTML = '<li class="transaction-item">No transactions found.</li>'; return; }
                 sortedTransactions.forEach(t => {
                     const wallet = wallets.find(w => w.id == t.walletId);
@@ -695,14 +697,17 @@
                     const subcategory = subcategories.find(s => s.id == t.subcategoryId);
                     const amountClass = getAmountClass(category ? category.type : 'expense');
                     const sign = getTransactionSign(category ? category.type : 'expense');
+                    const formattedDate = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                     
                     const li = document.createElement('li'); li.classList.add('transaction-item');
                     li.innerHTML = `
-                        <div class="transaction-details">
-                            <span class="transaction-description">${t.description}</span>
-                            <span class="transaction-meta">${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}</span>
+                        <div class="transaction-top-row">
+                            <div class="transaction-details">
+                                <span class="transaction-description">${t.description}</span>
+                                <span class="transaction-meta">${formattedDate} &bull; ${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}</span>
+                            </div>
+                            <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
                         </div>
-                        <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
                         <div class="transaction-actions">
                             <button class="action-btn edit-btn" data-id="${t.id}">✏️</button>
                             <button class="action-btn delete-btn danger-btn" data-id="${t.id}">🗑️</button>
@@ -719,12 +724,13 @@
                 e.preventDefault();
                 const description = document.getElementById('description').value;
                 const amount = parseFloat(document.getElementById('amount').value);
+                const date = document.getElementById('transactionDate').value;
                 const walletId = parseInt(document.getElementById('wallet').value);
                 const categoryId = parseInt(document.getElementById('category').value);
                 const subcategoryId = parseInt(document.getElementById('subcategory').value);
                 const category = categories.find(c => c.id === categoryId);
                 
-                let newTransaction = { id: Date.now(), description, amount, walletId, categoryId, subcategoryId };
+                let newTransaction = { id: Date.now(), description, amount, date, walletId, categoryId, subcategoryId };
 
                 if (category.type === 'transfer') {
                     const toWalletId = parseInt(document.getElementById('toWallet').value);
@@ -742,6 +748,7 @@
                 await api.save({ wallets, categories, subcategories, transactions });
                 renderAll();
                 form.reset();
+                document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
                 transferFields.style.display = 'none';
                 switchView('view-history');
             };
@@ -795,8 +802,54 @@
                     renderAll();
                 }
             };
-            const showEditModal = (id) => { const transaction = transactions.find(t => t.id === id); if (transaction) { document.getElementById('editId').value = transaction.id; document.getElementById('editDescription').value = transaction.description; document.getElementById('editAmount').value = transaction.amount; document.getElementById('editWallet').value = transaction.walletId; document.getElementById('editCategory').value = transaction.categoryId; updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect); document.getElementById('editSubcategory').value = transaction.subcategoryId; const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { editTransferFields.style.display = 'block'; document.getElementById('editToWallet').value = transaction.toWalletId; } else { editTransferFields.style.display = 'none'; } showModal('editModal'); } };
-            const updateTransaction = async (e) => { e.preventDefault(); const id = parseInt(document.getElementById('editId').value); const transaction = transactions.find(t => t.id === id); if (transaction) { reverseWalletBalance(transaction); transaction.description = document.getElementById('editDescription').value; transaction.amount = parseFloat(document.getElementById('editAmount').value); transaction.walletId = parseInt(document.getElementById('editWallet').value); transaction.categoryId = parseInt(document.getElementById('editCategory').value); transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); const fromWallet = wallets.find(w => w.id === transaction.walletId); const toWallet = wallets.find(w => w.id === transaction.toWalletId); fromWallet.balance -= transaction.amount; toWallet.balance += transaction.amount; } else { updateWalletBalance(transaction.walletId, transaction.amount, category.type); } await api.save({ wallets, categories, subcategories, transactions }); renderAll(); hideModal('editModal'); } };
+            const showEditModal = (id) => { 
+                const transaction = transactions.find(t => t.id === id); 
+                if (transaction) { 
+                    document.getElementById('editId').value = transaction.id; 
+                    document.getElementById('editDescription').value = transaction.description; 
+                    document.getElementById('editAmount').value = transaction.amount;
+                    document.getElementById('editTransactionDate').value = transaction.date;
+                    document.getElementById('editWallet').value = transaction.walletId; 
+                    document.getElementById('editCategory').value = transaction.categoryId; 
+                    updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect_inForm); 
+                    document.getElementById('editSubcategory').value = transaction.subcategoryId; 
+                    const category = categories.find(c => c.id === transaction.categoryId); 
+                    if(category.type === 'transfer') { 
+                        editTransferFields_inForm.style.display = 'block'; 
+                        document.getElementById('editToWallet').value = transaction.toWalletId; 
+                    } else { 
+                        editTransferFields_inForm.style.display = 'none'; 
+                    } 
+                    showModal('editModal'); 
+                } 
+            };
+            const updateTransaction = async (e) => { 
+                e.preventDefault(); 
+                const id = parseInt(document.getElementById('editId').value); 
+                const transaction = transactions.find(t => t.id === id); 
+                if (transaction) { 
+                    reverseWalletBalance(transaction); 
+                    transaction.description = document.getElementById('editDescription').value; 
+                    transaction.amount = parseFloat(document.getElementById('editAmount').value);
+                    transaction.date = document.getElementById('editTransactionDate').value;
+                    transaction.walletId = parseInt(document.getElementById('editWallet').value); 
+                    transaction.categoryId = parseInt(document.getElementById('editCategory').value); 
+                    transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); 
+                    const category = categories.find(c => c.id === transaction.categoryId); 
+                    if(category.type === 'transfer') { 
+                        transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); 
+                        const fromWallet = wallets.find(w => w.id === transaction.walletId); 
+                        const toWallet = wallets.find(w => w.id === transaction.toWalletId); 
+                        fromWallet.balance -= transaction.amount; 
+                        toWallet.balance += transaction.amount; 
+                    } else { 
+                        updateWalletBalance(transaction.walletId, transaction.amount, category.type); 
+                    } 
+                    await api.save({ wallets, categories, subcategories, transactions }); 
+                    renderAll(); 
+                    hideModal('editModal'); 
+                } 
+            };
             
             const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); };
             const switchView = (targetId) => {
@@ -866,6 +919,9 @@
             subcategories = data.subcategories;
             transactions = data.transactions;
 
+            // Set default date for new transaction
+            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+
             renderAll();
             renderCategories();
             populateCategoryDropdowns();
@@ -927,10 +983,10 @@
                 if (selectedCategory && selectedCategory.type === 'transfer') { transferFields.style.display = 'block'; } else { transferFields.style.display = 'none'; }
                 updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
             });
-            editCategorySelect.addEventListener('change', () => {
-                const selectedCategory = categories.find(c => c.id == editCategorySelect.value);
-                if (selectedCategory && selectedCategory.type === 'transfer') { editTransferFields.style.display = 'block'; } else { editTransferFields.style.display = 'none'; }
-                updateSubcategoryDropdown(editCategorySelect.value, editSubcategorySelect);
+            editCategorySelect_inForm.addEventListener('change', () => {
+                const selectedCategory = categories.find(c => c.id == editCategorySelect_inForm.value);
+                if (selectedCategory && selectedCategory.type === 'transfer') { editTransferFields_inForm.style.display = 'block'; } else { editTransferFields_inForm.style.display = 'none'; }
+                updateSubcategoryDropdown(editCategorySelect_inForm.value, editSubcategorySelect_inForm);
             });
 
             // Category Search functionality
