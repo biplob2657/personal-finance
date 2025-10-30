@@ -1,808 +1,543 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <title>Personal Finance</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class'}</script>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
-    @media print { .no-print{display:none!important} .print\:block{display:block!important} }
-    input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
-    input[type=number]{ -moz-appearance:textfield }
-    .nav-btn[aria-current="true"]{ border-color: rgb(24 24 27); color: rgb(24 24 27) }
-    .dark .nav-btn[aria-current="true"]{ border-color: white; color: white }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Money Tracker</title>
+    <style>
+        /* --- Basic Reset & Mobile-First Styling --- */
+        :root {
+            --primary-color: #17a2b8; /* Teal */
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            --nav-height: 60px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 0;
+            color: var(--dark-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: calc(var(--nav-height) + 15px);
+        }
+
+        .view-section {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        /* --- Bottom Navigation Bar --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background-color: #fff;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 0.8em;
+            transition: color 0.2s;
+            padding: 5px;
+        }
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        .nav-item span {
+            font-size: 1.5em;
+        }
+
+        /* --- Desktop Sidebar (for wider screens) --- */
+        @media (min-width: 768px) {
+            body { overflow: auto; }
+            .app-container {
+                flex-direction: row;
+                max-width: 1200px;
+                margin: 0 auto;
+                height: calc(100vh - 30px);
+                margin-top: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            .main-content {
+                padding-bottom: 15px;
+            }
+            .bottom-nav {
+                flex-direction: column;
+                width: 150px;
+                height: 100%;
+                position: relative;
+                border-top: none;
+                border-right: 1px solid var(--border-color);
+            }
+            .nav-item {
+                flex-direction: row;
+                height: 60px;
+                font-size: 1em;
+            }
+            .nav-item span {
+                margin-right: 10px;
+                font-size: 1.2em;
+            }
+        }
+
+
+        /* --- Component Styles (reused from previous version) --- */
+        h1 { text-align: center; color: var(--dark-color); }
+        .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+        .wallet-card { background-color: #fff; padding: 15px; border-radius: 5px; text-align: center; border-left: 5px solid var(--primary-color); transition: transform 0.2s, box-shadow 0.2s; }
+        .wallet-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .wallet-card h4 { margin: 0 0 5px 0; font-size: 1em; }
+        .wallet-card p { margin: 0; font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
+        .add-wallet-btn { background: transparent; border: 2px dashed var(--border-color); color: #6c757d; cursor: pointer; }
+        .add-wallet-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(23, 162, 184, 0.05); }
+
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .summary-card { background-color: #fff; padding: 15px; border-radius: 5px; text-align: center; }
+        .summary-card.income { border-left: 5px solid var(--success-color); }
+        .summary-card.expense { border-left: 5px solid var(--danger-color); }
+        .summary-card.lent { border-left: 5px solid var(--warning-color); }
+        .summary-card.borrowed { border-left: 5px solid var(--info-color); }
+        .summary-card h3 { margin: 0 0 5px 0; font-size: 0.9em; color: #6c757d; }
+        .summary-card p { margin: 0; font-size: 1.3em; font-weight: bold; }
+
+        .tracker-form, .category-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; }
+        button { padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 1.1em; cursor: pointer; transition: background-color 0.2s; }
+        button:hover { background-color: #138496; }
+        button.danger-btn { background-color: var(--danger-color); }
+        button.danger-btn:hover { background-color: #c82333; }
+        button.small-btn { padding: 5px 10px; font-size: 0.8em; }
+
+        .category-list { list-style: none; padding: 0; }
+        .category-item { border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; background-color: #fff; }
+        .category-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: var(--light-color); font-weight: bold; }
+        .subcategories { padding: 10px; }
+        .subcategory-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; border-bottom: 1px solid #f1f1f1; }
+        .subcategory-item:last-child { border-bottom: none; }
+        .no-subcategories { padding: 10px 15px; color: #6c757d; font-style: italic; }
+
+        .transaction-list { list-style-type: none; padding: 0; margin: 0; }
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); background-color: #fff; margin-bottom: 10px; border-radius: 5px; padding: 15px;}
+        .transaction-details { flex-grow: 1; }
+        .transaction-description { font-weight: 500; }
+        .transaction-meta { font-size: 0.8em; color: #6c757d; }
+        .transaction-amount { font-size: 1.1em; font-weight: bold; margin-right: 10px; }
+        .transaction-actions { display: flex; gap: 8px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 1.2em; padding: 5px; }
+        .amount-income { color: var(--success-color); }
+        .amount-expense { color: var(--danger-color); }
+        .amount-transfer { color: var(--info-color); }
+        .amount-asset { color: var(--warning-color); }
+        .amount-liability { color: var(--primary-color); }
+
+        /* --- Modal --- */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .modal-content { background-color: #fefefe; margin: auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; }
+        .close-btn:hover, .close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
+    </style>
 </head>
-<body class="h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-  <div id="app" class="mx-auto max-w-6xl px-3 sm:px-4 pb-28">
+<body>
 
-    <!-- Header -->
-    <header class="sticky top-0 z-40 -mx-3 sm:-mx-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800">
-      <div class="max-w-6xl mx-auto px-3 sm:px-4 py-3 flex items-center gap-3">
-        <div class="flex-1 flex items-center gap-2">
-          <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-bold select-none">BK</span>
-          <h1 class="text-lg sm:text-xl font-semibold tracking-tight">Personal Finance</h1>
-        </div>
-        <div class="flex items-center gap-2">
-          <select id="currency" class="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm">
-            <option value="BDT">BDT</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="INR">INR</option>
-          </select>
-          <input id="month" type="month" class="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm" />
-          <button id="darkToggle" class="rounded-xl border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm">🌙</button>
-        </div>
-      </div>
-    </header>
+    <div class="app-container">
+        <main class="main-content">
+            
+            <!-- View 1: My Wallets -->
+            <section id="view-wallets" class="view-section active">
+                <h1>My Wallets</h1>
+                <div id="walletsGrid" class="wallets-grid"></div>
+                <h2 style="margin-top:30px;">Summary</h2>
+                <div class="summary-grid">
+                    <div class="summary-card income"><h3>Total Income</h3><p id="totalIncome">৳0.00</p></div>
+                    <div class="summary-card expense"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
+                    <div class="summary-card lent"><h3>Total Lent</h3><p id="totalLent">৳0.00</p></div>
+                    <div class="summary-card borrowed"><h3>Total Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
+                </div>
+            </section>
 
-    <div class="mt-3 grid lg:grid-cols-[220px,1fr] gap-3">
-      <!-- Sidebar (static on lg) -->
-      <aside class="hidden lg:block">
-        <nav class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 space-y-2">
-          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="home">🏠 Wallets / Home</button>
-          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="txn">🔁 Transaction</button>
-          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="history">📜 Transaction History</button>
-          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="cats">🏷️ Category Add</button>
+            <!-- View 2: Add Transaction -->
+            <section id="view-add-transaction" class="view-section">
+                <h1>Add Transaction</h1>
+                <form id="trackerForm" class="tracker-form">
+                    <div class="form-group"><label for="description">Description</label><input type="text" id="description" placeholder="e.g., Weekly Groceries" required></div>
+                    <div class="form-group"><label for="amount">Amount (৳)</label><input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required></div>
+                    <div class="form-group"><label for="wallet">Wallet</label><select id="wallet" required></select></div>
+                    <div class="form-group"><label for="category">Category</label><select id="category" required></select></div>
+                    <div class="form-group"><label for="subcategory">Subcategory</label><select id="subcategory" required></select></div>
+                    <div id="transferFields" style="display:none;">
+                        <div class="form-group"><label for="toWallet">To Wallet</label><select id="toWallet"></select></div>
+                    </div>
+                    <button type="submit">Add Transaction</button>
+                </form>
+            </section>
+
+            <!-- View 3: Transaction History -->
+            <section id="view-history" class="view-section">
+                <h1>Transaction History</h1>
+                <ul id="transactionList" class="transaction-list"></ul>
+            </section>
+
+            <!-- View 4: Manage Categories -->
+            <section id="view-manage-categories" class="view-section">
+                <h1>Manage Categories</h1>
+                <div class="category-form">
+                    <h3>Add New Category</h3>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="newCategoryName" placeholder="e.g., Business">
+                        <select id="newCategoryType">
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                            <option value="asset">Lent Money (Asset)</option>
+                            <option value="liability">Borrowed Money (Liability)</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                        <button type="button" id="addCategoryBtn">Add Category</button>
+                    </div>
+                </div>
+                <ul id="categoryList" class="category-list"></ul>
+            </section>
+
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-target="view-wallets">
+                <span>💳</span> Wallets
+            </a>
+            <a href="#" class="nav-item" data-target="view-add-transaction">
+                <span>➕</span> Add
+            </a>
+            <a href="#" class="nav-item" data-target="view-history">
+                <span>📜</span> History
+            </a>
+            <a href="#" class="nav-item" data-target="view-manage-categories">
+                <span>⚙️</span> Categories
+            </a>
         </nav>
-      </aside>
-
-      <!-- Main -->
-      <main class="min-w-0 space-y-3">
-        <!-- Home / Wallets -->
-        <section data-view="home" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Total Income</div><div id="totalIncome" class="text-2xl font-bold">৳0.00</div></div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Total Expenses</div><div id="totalExpenses" class="text-2xl font-bold">৳0.00</div></div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Savings</div><div id="totalSavings" class="text-2xl font-bold">৳0.00</div></div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Net (Income − Expenses − Savings)</div><div id="net" class="text-2xl font-bold">৳0.00</div></div>
-          </div>
-
-          <div class="grid gap-4 xl:grid-cols-3 mt-4">
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 xl:col-span-2">
-              <h2 class="text-lg font-semibold">Wallets & Accounts</h2>
-              <p class="text-xs text-zinc-500 mt-1">Cash • bKash • Nagad • Bank • Custom Wallets (opening & live balances)</p>
-              <div class="overflow-x-auto mt-3">
-                <table class="w-full text-sm">
-                  <thead class="text-left text-zinc-500">
-                    <tr>
-                      <th class="py-2 pr-2">Wallet</th>
-                      <th class="py-2 pr-2 w-32">Opening</th>
-                      <th class="py-2 pr-2 w-32">Current</th>
-                      <th class="py-2 w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="walletsBody"></tbody>
-                </table>
-              </div>
-              <div class="mt-3 flex gap-2">
-                <button id="addWallet" class="rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Wallet</button>
-                <button id="resetWallets" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Reset Defaults</button>
-              </div>
-            </div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <h2 class="text-lg font-semibold">Category Breakdown (Expenses)</h2>
-              <canvas id="catChart" class="mt-3"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <!-- Transaction -->
-        <section data-view="txn" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hidden">
-          <h2 class="text-lg font-semibold">Transaction</h2>
-          <p class="text-xs text-zinc-500">Add Income • Expense • Savings/Investments • Lending/Borrowing • Transfer</p>
-
-          <!-- Quick entry bar (mobile friendly) -->
-          <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
-            <input id="qeDate" type="date" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" />
-            <select id="qeType" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm">
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
-              <option value="savings">Savings/Investments</option>
-              <option value="loan">Lending/Borrowing</option>
-              <option value="transfer">Transfer</option>
-            </select>
-            <select id="qeWallet" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
-            <select id="qeCategory" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
-            <select id="qeSubcategory" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
-            <input id="qeAmount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" />
-            <input id="qeNote" placeholder="Note" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm xl:col-span-2" />
-            <div class="flex gap-2">
-              <button id="qeAdd" class="w-full rounded-lg px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add</button>
-              <button id="qeSwap" class="w-full rounded-lg px-4 py-2 border border-zinc-300 dark:border-zinc-700 hidden">Swap</button>
-            </div>
-          </div>
-
-          <!-- Detailed tables -->
-          <div class="mt-4 grid gap-4 xl:grid-cols-2">
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <h3 class="font-semibold">Expenses</h3>
-              <div class="overflow-x-auto mt-3">
-                <table class="w-full text-sm">
-                  <thead class="text-left text-zinc-500">
-                    <tr>
-                      <th class="py-2 pr-2">Item</th>
-                      <th class="py-2 pr-2">Category</th>
-                      <th class="py-2 pr-2">Subcategory</th>
-                      <th class="py-2 pr-2">Wallet</th>
-                      <th class="py-2 pr-2 w-28">Amount</th>
-                      <th class="py-2 w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="expensesBody"></tbody>
-                </table>
-              </div>
-              <div class="mt-3 flex gap-2">
-                <button data-add="expenses" class="addRow rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Expense</button>
-                <button id="clearExpenses" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
-              </div>
-            </div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <h3 class="font-semibold">Income</h3>
-              <div class="overflow-x-auto mt-3">
-                <table class="w-full text-sm">
-                  <thead class="text-left text-zinc-500">
-                    <tr>
-                      <th class="py-2 pr-2">Source</th>
-                      <th class="py-2 pr-2">Category</th>
-                      <th class="py-2 pr-2">Subcategory</th>
-                      <th class="py-2 pr-2">Wallet</th>
-                      <th class="py-2 pr-2 w-28">Amount</th>
-                      <th class="py-2 w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="incomeBody"></tbody>
-                </table>
-              </div>
-              <div class="mt-3 flex gap-2">
-                <button data-add="income" class="addRow rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Income</button>
-                <button id="clearIncome" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 grid gap-4 xl:grid-cols-2">
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <h3 class="font-semibold">Savings & Investments</h3>
-              <div class="overflow-x-auto mt-3">
-                <table class="w-full text-sm">
-                  <thead class="text-left text-zinc-500">
-                    <tr>
-                      <th class="py-2 pr-2">Goal</th>
-                      <th class="py-2 pr-2">Category</th>
-                      <th class="py-2 pr-2">Subcategory</th>
-                      <th class="py-2 pr-2">From Wallet</th>
-                      <th class="py-2 pr-2 w-28">Amount</th>
-                      <th class="py-2 w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="savingsBody"></tbody>
-                </table>
-              </div>
-              <div class="mt-3 flex gap-2">
-                <button data-add="savings" class="addRow rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Saving</button>
-                <button id="clearSavings" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
-              </div>
-            </div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <h3 class="font-semibold">Transfers</h3>
-              <div class="overflow-x-auto mt-3">
-                <table class="w-full text-sm">
-                  <thead class="text-left text-zinc-500">
-                    <tr>
-                      <th class="py-2 pr-2">From</th>
-                      <th class="py-2 pr-2">To</th>
-                      <th class="py-2 pr-2">Purpose</th>
-                      <th class="py-2 pr-2 w-28">Amount</th>
-                      <th class="py-2 w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="transfersBody"></tbody>
-                </table>
-              </div>
-              <div class="mt-3 flex gap-2">
-                <button id="addTransfer" class="rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Transfer</button>
-                <button id="clearTransfers" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-            <h3 class="font-semibold">Lending / Borrowing</h3>
-            <p class="text-xs text-zinc-500">Affects wallet balances but not Net (it’s balance-sheet).</p>
-            <div class="overflow-x-auto mt-3">
-              <table class="w-full text-sm">
-                <thead class="text-left text-zinc-500">
-                  <tr>
-                    <th class="py-2 pr-2">Type</th>
-                    <th class="py-2 pr-2">Wallet</th>
-                    <th class="py-2 pr-2">Category</th>
-                    <th class="py-2 pr-2">Subcategory</th>
-                    <th class="py-2 pr-2 w-28">Amount</th>
-                    <th class="py-2 pr-2">Note</th>
-                    <th class="py-2 w-10"></th>
-                  </tr>
-                </thead>
-                <tbody id="loansBody"></tbody>
-              </table>
-            </div>
-            <div class="mt-3 flex gap-2">
-              <button id="addLoan" class="rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Loan Row</button>
-              <button id="clearLoans" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- History -->
-        <section data-view="history" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hidden">
-          <h2 class="text-lg font-semibold">Transaction History</h2>
-          <div class="mt-3 grid gap-2 sm:grid-cols-4">
-            <select id="hfType" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm">
-              <option value="all">All</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-              <option value="savings">Savings</option>
-              <option value="transfer">Transfer</option>
-              <option value="loan">Lending/Borrowing</option>
-            </select>
-            <input id="hfSearch" placeholder="Search note/name" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
-            <input id="hfFrom" type="date" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
-            <input id="hfTo" type="date" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
-          </div>
-          <div class="overflow-x-auto mt-3">
-            <table class="w-full text-sm">
-              <thead class="text-left text-zinc-500">
-                <tr>
-                  <th class="py-2 pr-2">Date</th>
-                  <th class="py-2 pr-2">Type</th>
-                  <th class="py-2 pr-2">Name</th>
-                  <th class="py-2 pr-2">Category</th>
-                  <th class="py-2 pr-2">Subcategory</th>
-                  <th class="py-2 pr-2">Wallet/From→To</th>
-                  <th class="py-2 pr-2 w-28">Amount</th>
-                  <th class="py-2 pr-2">Note</th>
-                </tr>
-              </thead>
-              <tbody id="historyBody"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- Categories -->
-        <section data-view="cats" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hidden">
-          <h2 class="text-lg font-semibold">Category Add / Manager</h2>
-          <p class="text-xs text-zinc-500">Add manual Category & Subcategory under these groups: Accounts/Wallets, Savings/Investments, Expense, Income, Lending/Borrowing, Transfer.</p>
-          <div class="grid gap-3 sm:grid-cols-2 mt-3">
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3 space-y-2">
-              <h3 class="font-semibold">Add / Edit</h3>
-              <label class="text-xs">Group</label>
-              <select id="cgGroup" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
-              <label class="text-xs mt-2">Category (pick existing or type new)</label>
-              <input id="cgCategory" list="cgCategoryList" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" placeholder="e.g., Food & Groceries" />
-              <datalist id="cgCategoryList"></datalist>
-              <label class="text-xs mt-2">Subcategory (optional)</label>
-              <input id="cgSubcategory" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" placeholder="e.g., Supermarket" />
-              <div class="flex gap-2 mt-2">
-                <button id="cgAddCategory" class="rounded-lg px-3 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-sm">Add Category</button>
-                <button id="cgAddSubcategory" class="rounded-lg px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">Add Subcategory</button>
-                <button id="cgReset" class="ml-auto rounded-lg px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">Reset Defaults</button>
-              </div>
-            </div>
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3">
-              <h3 class="font-semibold">Current Structure</h3>
-              <div id="catsTree" class="text-sm mt-2 space-y-2"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Tools -->
-        <section class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <h2 class="text-lg font-semibold">Tools</h2>
-          <div class="mt-3 flex flex-wrap gap-2 no-print">
-            <button id="exportJSON" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Export JSON</button>
-            <label class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700 cursor-pointer">Import JSON<input id="importJSON" type="file" accept="application/json" class="hidden"></label>
-            <button id="exportCSV" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Export CSV</button>
-            <button id="resetAll" class="rounded-xl px-4 py-2 border border-rose-300 text-rose-600 dark:border-rose-700">Reset Month</button>
-            <button id="printBtn" class="ml-auto rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Print</button>
-          </div>
-          <div class="print:block hidden text-xs text-zinc-500 mt-2">Printed from Personal Finance — BK</div>
-        </section>
-      </main>
     </div>
 
-    <!-- Footer quick nav -->
-    <footer class="fixed inset-x-0 bottom-0 z-50 no-print">
-      <div class="mx-auto max-w-6xl m-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 flex items-center gap-3 shadow-lg">
-        <div class="text-sm text-zinc-500">Net</div>
-        <div id="netFooter" class="text-lg font-semibold"></div>
-        <div class="ml-auto flex items-center gap-2 overflow-x-auto">
-          <button id="quickToHome" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">🏠 Home</button>
-          <button id="quickToTxn" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">🔁 Txn</button>
-          <button id="quickToHistory" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">📜 History</button>
-          <button id="quickToCats" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">🏷️ Cats</button>
+    <!-- Edit Transaction Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Transaction</h2><span class="close-btn">&times;</span></div>
+            <form id="editForm" class="tracker-form">
+                <input type="hidden" id="editId">
+                <div class="form-group"><label for="editDescription">Description</label><input type="text" id="editDescription" required></div>
+                <div class="form-group"><label for="editAmount">Amount (৳)</label><input type="number" id="editAmount" step="0.01" min="0.01" required></div>
+                <div class="form-group"><label for="editWallet">Wallet</label><select id="editWallet" required></select></div>
+                <div class="form-group"><label for="editCategory">Category</label><select id="editCategory" required></select></div>
+                <div class="form-group"><label for="editSubcategory">Subcategory</label><select id="editSubcategory" required></select></div>
+                <div id="editTransferFields" style="display:none;">
+                    <div class="form-group"><label for="editToWallet">To Wallet</label><select id="editToWallet"></select></div>
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
         </div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- Password Lock Screen -->
-  <div id="lock" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
-    <div class="w-full max-w-sm rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-sm font-bold select-none">BK</span>
-        <div>
-          <div class="text-base font-semibold">Personal Finance</div>
-          <div class="text-xs text-zinc-500">Protected — enter password</div>
-        </div>
-      </div>
-      <div id="unlockBox" class="space-y-2">
-        <label class="text-xs">Password</label>
-        <div class="flex gap-2">
-          <input id="unlockPw" type="password" inputmode="numeric" pattern="[0-9]*" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="••••" />
-          <button id="unlockToggle" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3">👁️</button>
-        </div>
-        <!-- Mobile keypad -->
-        <div id="keypad" class="grid grid-cols-3 gap-2 mt-2 select-none">
-          <button data-key="1" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">1</button>
-          <button data-key="2" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">2</button>
-          <button data-key="3" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">3</button>
-          <button data-key="4" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">4</button>
-          <button data-key="5" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">5</button>
-          <button data-key="6" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">6</button>
-          <button data-key="7" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">7</button>
-          <button data-key="8" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">8</button>
-          <button data-key="9" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">9</button>
-          <button data-key="clear" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">C</button>
-          <button data-key="0" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">0</button>
-          <button data-key="back" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">⌫</button>
-        </div>
-        <button id="unlockBtn" class="w-full rounded-lg px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 mt-2">Unlock</button>
-        <button id="resetAllSecure" class="w-full rounded-lg px-4 py-2 border border-rose-300 text-rose-600 dark:border-rose-700">Forgot? Reset (clears data)</button>
-        <div id="unlockError" class="text-xs text-rose-600 hidden">Wrong password. Try again.</div>
-      </div>
-      <div id="setBox" class="space-y-2 hidden">
-        <div class="text-sm font-medium">Set a password</div>
-        <label class="text-xs">New password</label>
-        <input id="setPw" type="password" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" />
-        <label class="text-xs">Confirm password</label>
-        <input id="setPw2" type="password" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" />
-        <button id="setBtn" class="w-full rounded-lg px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Save & Enter</button>
-        <div id="setError" class="text-xs text-rose-600 hidden">Passwords do not match.</div>
-      </div>
     </div>
-  </div>
 
-  <!-- Templates -->
-  <template id="row-wallet">
-    <tr>
-      <td class="py-2 pr-2"><input type="text" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 name" placeholder="Cash"></td>
-      <td class="py-2 pr-2 w-32"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 opening" placeholder="0.00"></td>
-      <td class="py-2 pr-2 w-32"><span class="current font-medium">৳0.00</span></td>
-      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
-    </tr>
-  </template>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const navItems = document.querySelectorAll('.nav-item');
+            const viewSections = document.querySelectorAll('.view-section');
+            
+            const form = document.getElementById('trackerForm');
+            const editForm = document.getElementById('editForm');
+            const transactionList = document.getElementById('transactionList');
+            const walletsGrid = document.getElementById('walletsGrid');
+            const categoryList = document.getElementById('categoryList');
+            const categorySelect = document.getElementById('category');
+            const subcategorySelect = document.getElementById('subcategory');
+            const walletSelect = document.getElementById('wallet');
+            const toWalletSelect = document.getElementById('toWallet');
+            const transferFields = document.getElementById('transferFields');
+            const modal = document.getElementById('editModal');
+            const closeModalBtn = document.querySelector('.close-btn');
+            
+            // Edit Modal Elements
+            const editCategorySelect = document.getElementById('editCategory');
+            const editSubcategorySelect = document.getElementById('editSubcategory');
+            const editWalletSelect = document.getElementById('editWallet');
+            const editToWalletSelect = document.getElementById('editToWallet');
+            const editTransferFields = document.getElementById('editTransferFields');
 
-  <template id="row-expenses">
-    <tr>
-      <td class="py-2 pr-2"><input type="text" placeholder="Rent" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></td>
-      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
-      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
-    </tr>
-  </template>
+            // --- Data Initialization ---
+            const defaultCategories = [
+                { id: 1, name: 'Accounts / Wallets', type: 'transfer' },
+                { id: 2, name: 'Savings / Investments', type: 'expense' },
+                { id: 3, name: 'Expense', type: 'expense' },
+                { id: 4, name: 'Income', type: 'income' },
+                { id: 5, name: 'Lending / Borrowing', type: 'asset' }
+            ];
+            const defaultSubcategories = [
+                { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
+                { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 }, { id: 9, name: 'Emergency Fund', categoryId: 2 }, { id: 10, name: 'Retirement Fund', categoryId: 2 },
+                { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
+                { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
+                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Received', categoryId: 5 }, { id: 28, name: 'Loan Paid', categoryId: 5 }
+            ];
+            
+            let wallets = JSON.parse(localStorage.getItem('advTrackerWallets')) || [
+                { id: 1, name: 'Cash', balance: 0 }, { id: 2, name: 'Bank', balance: 0 }, { id: 3, name: 'bKash', balance: 0 }, { id: 4, name: 'Nagad', balance: 0 }
+            ];
+            let categories = JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories;
+            let subcategories = JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories;
+            let transactions = JSON.parse(localStorage.getItem('advTrackerTransactions')) || [];
 
-  <template id="row-income">
-    <tr>
-      <td class="py-2 pr-2"><input type="text" placeholder="Salary" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></td>
-      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
-      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
-    </tr>
-  </template>
+            // --- Functions ---
+            const saveData = () => {
+                localStorage.setItem('advTrackerWallets', JSON.stringify(wallets));
+                localStorage.setItem('advTrackerCategories', JSON.stringify(categories));
+                localStorage.setItem('advTrackerSubcategories', JSON.stringify(subcategories));
+                localStorage.setItem('advTrackerTransactions', JSON.stringify(transactions));
+            };
 
-  <template id="row-savings">
-    <tr>
-      <td class="py-2 pr-2"><input type="text" placeholder="Emergency Fund" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></td>
-      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
-      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
-    </tr>
-  </template>
+            const updateWalletBalance = (walletId, amount, categoryType, isSource = true) => {
+                const wallet = wallets.find(w => w.id === walletId);
+                if (!wallet) return;
+                if (categoryType === 'transfer') return;
+                if (isSource) {
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
+                    if (['income'].includes(categoryType)) wallet.balance += amount;
+                } else {
+                    if (categoryType === 'asset') wallet.balance += amount;
+                    if (categoryType === 'liability') wallet.balance -= amount;
+                }
+            };
+            
+            const reverseWalletBalance = (transaction) => {
+                const wallet = wallets.find(w => w.id === transaction.walletId);
+                if (!wallet) return;
+                const category = categories.find(c => c.id === transaction.categoryId);
+                const categoryType = category ? category.type : 'expense';
+                if (categoryType === 'transfer') {
+                    const toWallet = wallets.find(w => w.id === transaction.toWalletId);
+                    if (wallet) wallet.balance += transaction.amount;
+                    if (toWallet) toWallet.balance -= transaction.amount;
+                } else {
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance += transaction.amount;
+                    if (['income'].includes(categoryType)) wallet.balance -= transaction.amount;
+                }
+            };
 
-  <template id="row-transfer">
-    <tr>
-      <td class="py-2 pr-2"><select class="from w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="to w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="purpose w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount" placeholder="0.00"></td>
-      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
-    </tr>
-  </template>
+            const renderWallets = () => {
+                walletsGrid.innerHTML = ''; walletSelect.innerHTML = ''; editWalletSelect.innerHTML = ''; toWalletSelect.innerHTML = ''; editToWalletSelect.innerHTML = '';
+                wallets.forEach(wallet => {
+                    const card = document.createElement('div'); card.classList.add('wallet-card');
+                    card.innerHTML = `<h4>${wallet.name}</h4><p>৳${wallet.balance.toFixed(2)}</p>`; walletsGrid.appendChild(card);
+                    const option = new Option(wallet.name, wallet.id);
+                    walletSelect.add(option.cloneNode(true)); editWalletSelect.add(option.cloneNode(true));
+                    toWalletSelect.add(option.cloneNode(true)); editToWalletSelect.add(option.cloneNode(true));
+                });
+                const addWalletCard = document.createElement('div'); addWalletCard.classList.add('wallet-card', 'add-wallet-btn');
+                addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; addWalletCard.onclick = addWallet; walletsGrid.appendChild(addWalletCard);
+            };
+            
+            const renderCategories = () => {
+                categoryList.innerHTML = '';
+                categories.forEach(cat => {
+                    const li = document.createElement('li'); li.classList.add('category-item');
+                    const subcats = subcategories.filter(sub => sub.categoryId === cat.id);
+                    li.innerHTML = `
+                        <div class="category-header"><span>${cat.name} (${cat.type})</span><button class="small-btn danger-btn" onclick="deleteCategory(${cat.id})">Delete</button></div>
+                        <div class="subcategories">${subcats.length > 0 ? subcats.map(sub => `<div class="subcategory-item"><span>${sub.name}</span><button class="small-btn danger-btn" onclick="deleteSubcategory(${sub.id})">Delete</button></div>`).join('') : '<p class="no-subcategories">No subcategories yet.</p>'}<button class="small-btn" onclick="addSubcategory(${cat.id})">+ Add Subcategory</button></div>
+                    `;
+                    categoryList.appendChild(li);
+                });
+            };
 
-  <template id="row-loan">
-    <tr>
-      <td class="py-2 pr-2"><select class="kind w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2">
-        <option>Lent Money</option>
-        <option>Borrowed Money</option>
-        <option>Loan Received</option>
-        <option>Loan Paid</option>
-        <option>Custom Loan</option>
-      </select></td>
-      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
-      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
-      <td class="py-2 pr-2"><input class="note w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="Note"/></td>
-      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
-    </tr>
-  </template>
+            const populateCategoryDropdowns = () => {
+                categorySelect.innerHTML = ''; editCategorySelect.innerHTML = '';
+                categories.forEach(cat => { categorySelect.add(new Option(cat.name, cat.id)); editCategorySelect.add(new Option(cat.name, cat.id)); });
+            };
+            
+            const updateSubcategoryDropdown = (categoryId, targetSelect) => {
+                const subcats = subcategories.filter(sub => sub.categoryId == categoryId);
+                targetSelect.innerHTML = '';
+                subcats.forEach(sub => targetSelect.add(new Option(sub.name, sub.id)));
+            };
 
-  <script>
-    const el = s => document.querySelector(s)
-    const els = s => Array.from(document.querySelectorAll(s))
+            const renderSummary = () => {
+                let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0;
+                transactions.forEach(t => {
+                    const category = categories.find(c => c.id === t.categoryId);
+                    if (!category) return;
+                    const amount = t.amount;
+                    switch(category.type) {
+                        case 'income': totalIncome += amount; break;
+                        case 'expense': totalExpense += amount; break;
+                        case 'asset': totalLent += amount; break;
+                        case 'liability': totalBorrowed += amount; break;
+                    }
+                });
+                document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
+                document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
+                document.getElementById('totalLent').textContent = `৳${totalLent.toFixed(2)}`;
+                document.getElementById('totalBorrowed').textContent = `৳${totalBorrowed.toFixed(2)}`;
+            };
 
-    const DEFAULT_WALLETS = [
-      { name:'Cash', opening:0 },
-      { name:'bKash', opening:0 },
-      { name:'Nagad', opening:0 },
-      { name:'Bank', opening:0 }
-    ]
+            const renderTransactions = () => {
+                transactionList.innerHTML = '';
+                const sortedTransactions = [...transactions].sort((a, b) => b.id - a.id);
+                if (sortedTransactions.length === 0) { transactionList.innerHTML = '<li class="transaction-item">No transactions yet.</li>'; return; }
+                sortedTransactions.forEach(t => {
+                    const wallet = wallets.find(w => w.id == t.walletId);
+                    const category = categories.find(c => c.id == t.categoryId);
+                    const subcategory = subcategories.find(s => s.id == t.subcategoryId);
+                    const amountClass = getAmountClass(category ? category.type : 'expense');
+                    const sign = getTransactionSign(category ? category.type : 'expense');
+                    
+                    const li = document.createElement('li'); li.classList.add('transaction-item');
+                    li.innerHTML = `
+                        <div class="transaction-details">
+                            <span class="transaction-description">${t.description}</span>
+                            <span class="transaction-meta">${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}</span>
+                        </div>
+                        <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
+                        <div class="transaction-actions">
+                            <button class="action-btn edit-btn" data-id="${t.id}">✏️</button>
+                            <button class="action-btn delete-btn danger-btn" data-id="${t.id}">🗑️</button>
+                        </div>
+                    `;
+                    transactionList.appendChild(li);
+                });
+            };
+            
+            const getTransactionSign = (type) => { if (type === 'transfer') return '↔️'; return ['expense', 'asset', 'liability'].includes(type) ? '-' : '+'; };
+            const getAmountClass = (type) => { if (type === 'transfer') return 'amount-transfer'; if (type === 'income') return 'amount-income'; if (type === 'expense') return 'amount-expense'; if (type === 'asset') return 'amount-asset'; if (type === 'liability') return 'amount-liability'; return ''; };
 
-    const DEFAULT_CATS = {
-      accounts: { 'Bank':[], 'bKash':[], 'Nagad':[], 'Cash / Wallet':[], 'Custom Wallet':[] },
-      savings: {
-        'Bank Savings':['Fixed deposits','Normal savings'],
-        'Cash Savings':[], 'DPS / FD':['Deposits with maturity'],
-        'Investments':['Shares','Gold','Mutual funds','Crypto'],
-        'Emergency Fund':[], 'Retirement Fund':[], 'Custom Savings':[]
-      },
-      expense: {
-        'Food & Groceries':['Supermarket','Restaurants','Snacks'],
-        'Rent / House':['Rent','Maintenance'],
-        'Utilities':['Electricity','Gas','Water','Internet'],
-        'Transport':['Fuel','Bus/Train','Taxi'],
-        'Education':['Tuition','Books','Courses'],
-        'Medical & Health':['Medicines','Hospital','Checkups'],
-        'Shopping':['Clothes','Gadgets','Online'],
-        'Entertainment':['Movies','Streaming','Travel'],
-        'Loan Payment':['EMI','Installment'],
-        'Custom Expense':[]
-      },
-      income: {
-        'Salary / Wages':[],
-        'Freelance / Projects':[],
-        'Gifts / Bonus':[],
-        'Investment Income':['Dividend','Interest','Profit'],
-        'Other Income':[],
-        'Custom Income':[]
-      },
-      loan: {
-        'Lent Money':[], 'Borrowed Money':[], 'Loan Received':[], 'Loan Paid':[], 'Custom Loan':[]
-      },
-      transfer: {
-        'Bank → bKash':[], 'Bank → Cash':[], 'bKash → Nagad':[], 'Cash → Bank':[], 'Custom Transfer':[]
-      }
-    }
+            const addTransaction = (e) => {
+                e.preventDefault();
+                const description = document.getElementById('description').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const walletId = parseInt(document.getElementById('wallet').value);
+                const categoryId = parseInt(document.getElementById('category').value);
+                const subcategoryId = parseInt(document.getElementById('subcategory').value);
+                const category = categories.find(c => c.id === categoryId);
+                
+                let newTransaction = { id: Date.now(), description, amount, walletId, categoryId, subcategoryId };
 
-    const currencySymbols = { BDT:'৳', USD:'$', EUR:'€', INR:'₹' }
+                if (category.type === 'transfer') {
+                    const toWalletId = parseInt(document.getElementById('toWallet').value);
+                    if (walletId === toWalletId) { alert("Cannot transfer to the same wallet."); return; }
+                    newTransaction.toWalletId = toWalletId;
+                    const fromWallet = wallets.find(w => w.id === walletId);
+                    const toWallet = wallets.find(w => w.id === toWalletId);
+                    fromWallet.balance -= amount;
+                    toWallet.balance += amount;
+                } else {
+                    updateWalletBalance(walletId, amount, category.type);
+                }
 
-    let chart
-    let categories = {}
-    let currentView = 'home'
+                transactions.push(newTransaction);
+                saveData();
+                renderAll();
+                form.reset();
+                transferFields.style.display = 'none';
+                // Switch to history view after adding
+                switchView('view-history');
+            };
+            
+            const addWallet = () => { const name = prompt("Enter new wallet name:"); if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) { wallets.push({ id: Date.now(), name, balance: 0 }); saveData(); renderWallets(); } else if (name) { alert("A wallet with this name already exists."); } };
+            const addCategory = () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); saveData(); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
+            const addSubcategory = (categoryId) => { const name = prompt("Enter new subcategory name:"); if (name) { subcategories.push({ id: Date.now(), name, categoryId }); saveData(); renderCategories(); } };
+            const deleteCategory = (id) => { if (!confirm("Are you sure? This will also delete all its subcategories.")) return; subcategories = subcategories.filter(s => s.categoryId !== id); categories = categories.filter(c => c.id !== id); saveData(); renderCategories(); populateCategoryDropdowns(); };
+            const deleteSubcategory = (id) => { if (!confirm("Are you sure?")) return; subcategories = subcategories.filter(s => s.id !== id); saveData(); renderCategories(); };
 
-    // ---- Password helpers ----
-    async function sha256(str){
-      const enc = new TextEncoder().encode(str)
-      const buf = await crypto.subtle.digest('SHA-256', enc)
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')
-    }
-    async function checkPw(pw){ const h=await sha256(pw); return h===localStorage.getItem('pf:passhash') }
+            const deleteTransaction = (id) => { if (!confirm("Are you sure you want to delete this transaction?")) return; const transaction = transactions.find(t => t.id === id); if (transaction) { reverseWalletBalance(transaction); transactions = transactions.filter(t => t.id !== id); saveData(); renderAll(); } };
+            const showEditModal = (id) => { const transaction = transactions.find(t => t.id === id); if (transaction) { document.getElementById('editId').value = transaction.id; document.getElementById('editDescription').value = transaction.description; document.getElementById('editAmount').value = transaction.amount; document.getElementById('editWallet').value = transaction.walletId; document.getElementById('editCategory').value = transaction.categoryId; updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect); document.getElementById('editSubcategory').value = transaction.subcategoryId; const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { editTransferFields.style.display = 'block'; document.getElementById('editToWallet').value = transaction.toWalletId; } else { editTransferFields.style.display = 'none'; } modal.classList.add('show'); } };
+            const updateTransaction = (e) => { e.preventDefault(); const id = parseInt(document.getElementById('editId').value); const transaction = transactions.find(t => t.id === id); if (transaction) { reverseWalletBalance(transaction); transaction.description = document.getElementById('editDescription').value; transaction.amount = parseFloat(document.getElementById('editAmount').value); transaction.walletId = parseInt(document.getElementById('editWallet').value); transaction.categoryId = parseInt(document.getElementById('editCategory').value); transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); const category = categories.find(c => c.id === transaction.categoryId); if(category.type === 'transfer') { transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); const fromWallet = wallets.find(w => w.id === transaction.walletId); const toWallet = wallets.find(w => w.id === transaction.toWalletId); fromWallet.balance -= transaction.amount; toWallet.balance += transaction.amount; } else { updateWalletBalance(transaction.walletId, transaction.amount, category.type); } saveData(); renderAll(); modal.classList.remove('show'); } };
+            
+            const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); };
+            const switchView = (targetId) => {
+                viewSections.forEach(section => section.classList.remove('active'));
+                navItems.forEach(item => item.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+                document.querySelector(`[data-target="${targetId}"]`).classList.add('active');
+            }
 
-    function showLock(){
-      const has = !!localStorage.getItem('pf:passhash')
-      el('#unlockBox').classList.toggle('hidden', !has)
-      el('#setBox').classList.toggle('hidden', has)
-      el('#lock').classList.remove('hidden')
-    }
-    function hideLock(){ el('#lock').classList.add('hidden') }
+            // --- Event Listeners ---
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = item.getAttribute('data-target');
+                    switchView(targetId);
+                });
+            });
 
-    // ---- App helpers ----
-    function monthKey(){ return el('#month').value || new Date().toISOString().slice(0,7) }
-    function fmt(n){ const cur=el('#currency').value; const sym=currencySymbols[cur]||cur+' '; const v=isFinite(n)?Number(n).toFixed(2):'0.00'; return sym+v }
-    function parse(n){ if(typeof n==='number') return n; if(!n) return 0; const v=String(n).replace(/[^0-9.,-]/g,'').replace(/,/g,''); return parseFloat(v)||0 }
+            form.addEventListener('submit', addTransaction);
+            editForm.addEventListener('submit', updateTransaction);
+            document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+            closeModalBtn.onclick = () => modal.classList.remove('show');
+            window.onclick = (event) => { if (event.target == modal) modal.classList.remove('show'); };
+            transactionList.addEventListener('click', (e) => { const target = e.target; if (target.classList.contains('delete-btn')) deleteTransaction(parseInt(target.dataset.id)); else if (target.classList.contains('edit-btn')) showEditModal(parseInt(target.dataset.id)); });
+            categorySelect.addEventListener('change', () => {
+                const selectedCategory = categories.find(c => c.id == categorySelect.value);
+                if (selectedCategory && selectedCategory.type === 'transfer') { transferFields.style.display = 'block'; } else { transferFields.style.display = 'none'; }
+                updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+            });
+            editCategorySelect.addEventListener('change', () => {
+                const selectedCategory = categories.find(c => c.id == editCategorySelect.value);
+                if (selectedCategory && selectedCategory.type === 'transfer') { editTransferFields.style.display = 'block'; } else { editTransferFields.style.display = 'none'; }
+                updateSubcategoryDropdown(editCategorySelect.value, editSubcategorySelect);
+            });
 
-    function saveCats(){ localStorage.setItem('budgetpro:cats', JSON.stringify(categories)) }
-    function loadCats(){ const raw=localStorage.getItem('budgetpro:cats'); categories = raw? JSON.parse(raw) : DEFAULT_CATS; saveCats(); buildCatsUI() }
-    function catsOf(group){ return Object.keys(categories[group]||{}) }
-    function subcatsOf(group,cat){ return (categories[group] && categories[group][cat])? categories[group][cat] : [] }
-
-    function buildCatsUI(){
-      const groups = Object.keys(categories)
-      el('#cgGroup').innerHTML = groups.map(g=>`<option value="${g}">${labelGroup(g)}</option>`).join('')
-      syncCgCategoryList()
-      const tree = groups.map(g=>{
-        const cats = Object.entries(categories[g]).map(([c,subs])=>{
-          const subsHtml = subs.length? `<div class="ml-4 text-zinc-500">– ${subs.join(', ')}</div>` : ''
-          return `<div class="ml-2"><div class="font-medium">${c}</div>${subsHtml}</div>`
-        }).join('')
-        return `<div><div class="text-sm uppercase tracking-wide text-zinc-500">${labelGroup(g)}</div>${cats}</div>`
-      }).join('')
-      el('#catsTree').innerHTML = tree
-      refreshQEOptions()
-    }
-
-    function labelGroup(g){
-      return ({accounts:'Accounts / Wallets', savings:'Savings / Investments', expense:'Expense', income:'Income', loan:'Lending / Borrowing', transfer:'Transfer / Internal'}[g])||g
-    }
-
-    function syncCgCategoryList(){ const g = el('#cgGroup').value || 'expense'; el('#cgCategoryList').innerHTML = catsOf(g).map(c=>`<option value="${c}">`).join('') }
-    function addCategory(group, category){ if(!category) return; if(!categories[group]) categories[group] = {}; if(!categories[group][category]) categories[group][category] = []; saveCats(); buildCatsUI() }
-    function addSubcategory(group, category, sub){ if(!sub) return; addCategory(group, category); const arr = categories[group][category]; if(!arr.includes(sub)) arr.push(sub); saveCats(); buildCatsUI() }
-
-    // --- Data ---
-    function collect(){
-      const data = { currency: el('#currency').value, month: monthKey(), wallets: [], income: [], expenses: [], savings: [], transfers: [], loans: [], history: [] }
-      els('#walletsBody tr').forEach(tr=>{ const name=tr.querySelector('.name').value.trim(); const opening=parse(tr.querySelector('.opening').value); if(name) data.wallets.push({ name, opening }) })
-      els('#incomeBody tr').forEach(tr=>{ const name=tr.querySelector('td:nth-child(1) input').value.trim(); const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const amount=parse(tr.querySelector('.amount').value); if(name||amount) data.income.push({ date:today(), name, category, sub, wallet, amount, note:'' }) })
-      els('#expensesBody tr').forEach(tr=>{ const name=tr.querySelector('td:nth-child(1) input').value.trim(); const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const amount=parse(tr.querySelector('.amount').value); if(name||amount) data.expenses.push({ date:today(), name, category, sub, wallet, amount, note:'' }) })
-      els('#savingsBody tr').forEach(tr=>{ const name=tr.querySelector('td:nth-child(1) input').value.trim(); const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const amount=parse(tr.querySelector('.amount').value); if(name||amount) data.savings.push({ date:today(), name, category, sub, wallet, amount, note:'' }) })
-      els('#transfersBody tr').forEach(tr=>{ const from=tr.querySelector('select.from')?.value||''; const to=tr.querySelector('select.to')?.value||''; const purpose=tr.querySelector('select.purpose')?.value||''; const amount=parse(tr.querySelector('.amount').value); if((from&&to)||amount) data.transfers.push({ date:today(), from, to, purpose, amount, note:'' }) })
-      els('#loansBody tr').forEach(tr=>{ const kind=tr.querySelector('select.kind')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const amount=parse(tr.querySelector('.amount').value); const note=tr.querySelector('.note')?.value||''; if(kind&&wallet&&amount) data.loans.push({ date:today(), kind, wallet, category, sub, amount, note }) })
-      return data
-    }
-
-    function save(){ const d=collect(); localStorage.setItem('budgetpro:'+d.month, JSON.stringify(d)) }
-    function load(){ const key='budgetpro:'+monthKey(); const raw=localStorage.getItem(key); if(raw){ render(JSON.parse(raw)) } else { render({ currency: el('#currency').value, month: monthKey(), wallets: DEFAULT_WALLETS }) } }
-
-    function render(data){
-      const wBody = el('#walletsBody'); wBody.innerHTML=''; (data.wallets && data.wallets.length? data.wallets : DEFAULT_WALLETS).forEach(w=> wBody.appendChild(row('wallet', w)))
-      const map = [['income','incomeBody'],['expenses','expensesBody'],['savings','savingsBody']]
-      map.forEach(([key,bodyId])=>{ const body=el('#'+bodyId); body.innerHTML=''; (data[key]||[]).forEach(r=> body.appendChild(row(key.slice(0,-1), r))) })
-      const tBody = el('#transfersBody'); tBody.innerHTML=''; (data.transfers||[]).forEach(r=> tBody.appendChild(row('transfer', r)))
-      const lBody = el('#loansBody'); lBody.innerHTML=''; (data.loans||[]).forEach(r=> lBody.appendChild(row('loan', r)))
-      el('#currency').value = data.currency || 'BDT'
-      update()
-    }
-
-    function row(type, data={}){
-      const tpl = el(`#row-${type}`).content.cloneNode(true)
-      const tr = tpl.querySelector('tr')
-      if(type==='wallet'){
-        tr.querySelector('.name').value = data.name || ''
-        tr.querySelector('.opening').value = data.opening!=null? data.opening: ''
-      }
-      if(['income','expenses','savings'].includes(type)){
-        tr.querySelector('td:nth-child(1) input').value = data.name || ''
-        fillCatSelect(tr.querySelector('select.category'), type)
-        const group = type==='expenses'?'expense': (type==='income'?'income': 'savings')
-        const cat = data.category || (catsOf(group)[0]||'')
-        tr.querySelector('select.category').value = cat
-        fillSubcatSelect(tr.querySelector('select.subcategory'), type, cat)
-        tr.querySelector('select.subcategory').value = data.sub || ''
-        fillWalletSelect(tr.querySelector('select.wallet'), data.wallet)
-        tr.querySelector('.amount').value = (data.amount!=null? data.amount: '')
-      }
-      if(type==='transfer'){
-        fillWalletSelect(tr.querySelector('select.from'), data.from)
-        fillWalletSelect(tr.querySelector('select.to'), data.to)
-        fillPurposeSelect(tr.querySelector('select.purpose'))
-        tr.querySelector('select.purpose').value = data.purpose || 'Custom Transfer'
-        tr.querySelector('.amount').value = (data.amount!=null? data.amount: '')
-      }
-      if(type==='loan'){
-        fillWalletSelect(tr.querySelector('select.wallet'), data.wallet)
-        fillCatSelect(tr.querySelector('select.category'), 'loan')
-        const cat = data.category || (catsOf('loan')[0]||'')
-        tr.querySelector('select.category').value = cat
-        fillSubcatSelect(tr.querySelector('select.subcategory'), 'loan', cat)
-        tr.querySelector('select.subcategory').value = data.sub || ''
-        tr.querySelector('.amount').value = (data.amount!=null? data.amount: '')
-        tr.querySelector('.note').value = data.note || ''
-      }
-      return tr
-    }
-
-    function fillWalletSelect(sel, value){ const wallets=collectWalletsRaw(); sel.innerHTML = wallets.map(w=>`<option>${w.name}</option>`).join(''); if(value) sel.value=value }
-    function fillPurposeSelect(sel){ sel.innerHTML = catsOf('transfer').map(c=>`<option>${c}</option>`).join('') }
-    function fillCatSelect(sel, type){ const group = type==='expenses'?'expense': (type==='income'?'income': (type==='savings'?'savings': type)); sel.innerHTML = catsOf(group).map(c=>`<option>${c}</option>`).join('') }
-    function fillSubcatSelect(sel, type, cat){ const group = type==='expenses'?'expense': (type==='income'?'income': (type==='savings'?'savings': type)); const subs=subcatsOf(group,cat); sel.innerHTML = [''].concat(subs).map(s=>`<option value="${s}">${s}</option>`).join('') }
-    function collectWalletsRaw(){ const rows=els('#walletsBody tr'); if(!rows.length) return DEFAULT_WALLETS; return rows.map(tr=>({ name: tr.querySelector('.name').value.trim()||'Wallet', opening: parse(tr.querySelector('.opening').value) })) }
-
-    function walletBalances(d){
-      const balances = {}
-      ;(d.wallets||[]).forEach(w=> balances[w.name]=parse(w.opening))
-      ;(d.income||[]).forEach(r=>{ if(r.wallet) balances[r.wallet]=(balances[r.wallet]||0)+parse(r.amount) })
-      ;(d.expenses||[]).forEach(r=>{ if(r.wallet) balances[r.wallet]=(balances[r.wallet]||0)-parse(r.amount) })
-      ;(d.savings||[]).forEach(r=>{ if(r.wallet) balances[r.wallet]=(balances[r.wallet]||0)-parse(r.amount) })
-      ;(d.transfers||[]).forEach(t=>{ const a=parse(t.amount); if(t.from) balances[t.from]=(balances[t.from]||0)-a; if(t.to) balances[t.to]=(balances[t.to]||0)+a })
-      ;(d.loans||[]).forEach(l=>{ const a=parse(l.amount); if(['Lent Money','Loan Paid'].includes(l.kind)){ if(l.wallet) balances[l.wallet]=(balances[l.wallet]||0)-a } else { if(l.wallet) balances[l.wallet]=(balances[l.wallet]||0)+a } })
-      return balances
-    }
-
-    function update(){
-      const d = collect()
-      const tInc = d.income.reduce((a,b)=>a+parse(b.amount),0)
-      const tExp = d.expenses.reduce((a,b)=>a+parse(b.amount),0)
-      const tSav = d.savings.reduce((a,b)=>a+parse(b.amount),0)
-      el('#totalIncome').textContent = fmt(tInc)
-      el('#totalExpenses').textContent = fmt(tExp)
-      el('#totalSavings').textContent = fmt(tSav)
-      const net = tInc - tExp - tSav
-      el('#net').textContent = fmt(net)
-      el('#netFooter').textContent = fmt(net)
-
-      els('select.wallet, select.from, select.to').forEach(sel=>{ const cur = sel.value; fillWalletSelect(sel, cur) })
-      const balances = walletBalances(d)
-      els('#walletsBody tr').forEach(tr=>{ const name=tr.querySelector('.name').value.trim(); tr.querySelector('.current').textContent = fmt(balances[name]||0) })
-
-      drawChart(d)
-      save()
-      buildHistory(d)
-      refreshQEOptions()
-    }
-
-    function drawChart(d){
-      const totals = {}
-      d.expenses.forEach(e=>{ const k=e.category||'Misc'; totals[k]=(totals[k]||0)+parse(e.amount) })
-      const labels = Object.keys(totals)
-      const values = Object.values(totals)
-      const ctx = el('#catChart')
-      if(chart){ chart.destroy() }
-      chart = new Chart(ctx, { type:'doughnut', data:{ labels, datasets:[{ data: values }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } })
-    }
-
-    // --- History ---
-    function buildHistory(d){
-      const H=[]
-      d.income.forEach(x=>H.push({date:x.date,type:'income',name:x.name,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
-      d.expenses.forEach(x=>H.push({date:x.date,type:'expense',name:x.name,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
-      d.savings.forEach(x=>H.push({date:x.date,type:'savings',name:x.name,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
-      d.transfers.forEach(x=>H.push({date:x.date,type:'transfer',name:'Transfer',cat:x.purpose,sub:'',wallet:`${x.from}→${x.to}`,amount:x.amount,note:x.note||''}))
-      d.loans.forEach(x=>H.push({date:x.date,type:'loan',name:x.kind,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
-
-      const fType = el('#hfType').value||'all'
-      const q = (el('#hfSearch').value||'').toLowerCase()
-      const from = el('#hfFrom').value||''
-      const to = el('#hfTo').value||''
-
-      const rows = H.filter(r=> (fType==='all'||r.type===fType) && (!q || (r.name+r.cat+r.sub+r.note).toLowerCase().includes(q)) && (!from || r.date>=from) && (!to || r.date<=to) )
-        .sort((a,b)=> (a.date>b.date?-1:1))
-        .map(r=>`<tr><td class="py-2 pr-2">${r.date}</td><td class="py-2 pr-2 capitalize">${r.type}</td><td class="py-2 pr-2">${r.name||''}</td><td class="py-2 pr-2">${r.cat||''}</td><td class="py-2 pr-2">${r.sub||''}</td><td class="py-2 pr-2">${r.wallet||''}</td><td class="py-2 pr-2 w-28">${fmt(r.amount)}</td><td class="py-2 pr-2">${r.note||''}</td></tr>`).join('')
-      el('#historyBody').innerHTML = rows
-    }
-
-    // --- Quick Entry ---
-    function refreshQEOptions(){
-      const t = el('#qeType').value
-      fillWalletSelect(el('#qeWallet'))
-      const group = (t==='expense')?'expense': (t==='income')?'income': (t==='savings')?'savings': (t==='loan')?'loan':'transfer'
-      el('#qeCategory').innerHTML = catsOf(group).map(c=>`<option>${c}</option>`).join('')
-      const cat = el('#qeCategory').value || catsOf(group)[0] || ''
-      el('#qeSubcategory').innerHTML = [''].concat(subcatsOf(group, cat)).map(s=>`<option value="${s}">${s}</option>`).join('')
-      el('#qeSwap').classList.toggle('hidden', t!=='transfer')
-    }
-
-    function today(){ return new Date().toISOString().slice(0,10) }
-
-    function addQuickEntry(){
-      const t = el('#qeType').value
-      const date = el('#qeDate').value || today()
-      const amount = parse(el('#qeAmount').value)
-      if(!amount) return
-      const note = el('#qeNote').value||''
-      if(t==='expense'){
-        const name = note || 'Expense'
-        const r = { date, name, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, wallet:el('#qeWallet').value, amount, note }
-        el('#expensesBody').appendChild(row('expenses', r))
-      } else if(t==='income'){
-        const name = note || 'Income'
-        const r = { date, name, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, wallet:el('#qeWallet').value, amount, note }
-        el('#incomeBody').appendChild(row('income', r))
-      } else if(t==='savings'){
-        const name = note || 'Saving'
-        const r = { date, name, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, wallet:el('#qeWallet').value, amount, note }
-        el('#savingsBody').appendChild(row('savings', r))
-      } else if(t==='loan'){
-        const r = { date, kind:el('#qeCategory').value||'Custom Loan', wallet:el('#qeWallet').value, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, amount, note }
-        el('#loansBody').appendChild(row('loan', r))
-      } else if(t==='transfer'){
-        el('#transfersBody').appendChild(row('transfer', { purpose:el('#qeCategory').value, amount }))
-      }
-      bindRowEvents(); update(); el('#qeAmount').value=''; el('#qeNote').value=''
-    }
-
-    function bindRowEvents(){ els('tbody input, tbody select').forEach(x=> x.oninput=update ); els('button.del').forEach(b=> b.onclick=(e)=>{ e.currentTarget.closest('tr').remove(); update() }) }
-
-    function switchView(v){ currentView=v; els('[data-view]').forEach(sec=> sec.classList.toggle('hidden', sec.dataset.view!==v)); els('.nav-btn').forEach(b=> b.setAttribute('aria-current', b.dataset.section===v? 'true':'false')) }
-
-    function exportJSON(){ const d=collect(); const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`PersonalFinance-${d.month}.json`; a.click() }
-    function exportCSV(){
-      const d = collect(); const rows = []
-      rows.push(['Type','Date','Name','Category','Subcategory','Wallet/From','To','Amount','Currency','Month','Note'])
-      d.income.forEach(r=>rows.push(['Income', r.date, r.name, r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
-      d.expenses.forEach(r=>rows.push(['Expense', r.date, r.name, r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
-      d.savings.forEach(r=>rows.push(['Savings', r.date, r.name, r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
-      d.transfers.forEach(r=>rows.push(['Transfer', r.date, 'Transfer', r.purpose||'', '', r.from||'', r.to||'', r.amount, d.currency, d.month, r.note||'']))
-      d.loans.forEach(r=>rows.push(['Loan', r.date, r.kind||'', r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
-      const csv = rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\n')
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`PersonalFinance-${d.month}.csv`; a.click()
-    }
-
-    function resetAll(){ if(!confirm('Clear current month data?')) return; localStorage.removeItem('budgetpro:'+monthKey()); render({ currency: el('#currency').value, month: monthKey(), wallets: DEFAULT_WALLETS }) }
-
-    // ---- Bootstrapping with lock ----
-    async function startApp(){
-      if(window.__pf_started) return; window.__pf_started = true
-      loadCats(); loadTheme(); initMonth(); load(); bindRowEvents();
-      els('.nav-btn').forEach(b=> b.onclick=()=> switchView(b.dataset.section)); switchView('home')
-      el('#quickToHome').onclick=()=>switchView('home')
-      el('#quickToTxn').onclick=()=>switchView('txn')
-      el('#quickToHistory').onclick=()=>switchView('history')
-      el('#quickToCats').onclick=()=>switchView('cats')
-      el('#qeDate').value = today(); el('#qeType').onchange=refreshQEOptions; el('#qeCategory').onchange=()=>refreshQEOptions(); el('#qeAdd').onclick=addQuickEntry
-      els('.addRow').forEach(b=> b.onclick=()=>{ const t=b.dataset.add; const body=el('#'+t+'Body'); body.appendChild(row(t.slice(0,-1),{})); bindRowEvents(); update() })
-      el('#clearIncome').onclick=()=>{ el('#incomeBody').innerHTML=''; update() }
-      el('#clearExpenses').onclick=()=>{ el('#expensesBody').innerHTML=''; update() }
-      el('#clearSavings').onclick=()=>{ el('#savingsBody').innerHTML=''; update() }
-      el('#addTransfer').onclick=()=>{ el('#transfersBody').appendChild(row('transfer',{})); bindRowEvents(); update() }
-      el('#clearTransfers').onclick=()=>{ el('#transfersBody').innerHTML=''; update() }
-      el('#addLoan').onclick=()=>{ el('#loansBody').appendChild(row('loan',{})); bindRowEvents(); update() }
-      el('#clearLoans').onclick=()=>{ el('#loansBody').innerHTML=''; update() }
-      el('#addWallet').onclick=()=>{ el('#walletsBody').appendChild(row('wallet',{})); bindRowEvents(); update() }
-      el('#resetWallets').onclick=()=>{ el('#walletsBody').innerHTML=''; DEFAULT_WALLETS.forEach(w=> el('#walletsBody').appendChild(row('wallet',w))); bindRowEvents(); update() }
-      el('#cgGroup').onchange=syncCgCategoryList
-      el('#cgAddCategory').onclick=()=>{ addCategory(el('#cgGroup').value, el('#cgCategory').value.trim()) }
-      el('#cgAddSubcategory').onclick=()=>{ addSubcategory(el('#cgGroup').value, el('#cgCategory').value.trim(), el('#cgSubcategory').value.trim()) }
-      el('#cgReset').onclick=()=>{ if(confirm('Reset categories to defaults?')){ categories=DEFAULT_CATS; saveCats(); buildCatsUI() } }
-      el('#currency').onchange=update
-      el('#month').onchange=load
-      el('#exportJSON').onclick=exportJSON
-      el('#exportCSV').onclick=exportCSV
-      el('#resetAll').onclick=resetAll
-      el('#importJSON').addEventListener('change', e=>{ const f=e.target.files?.[0]; if(f){ const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d&&d.month){ render(d); save() } }catch(e){ alert('Invalid JSON') } }; r.readAsText(f) } })
-      el('#printBtn').onclick=()=>window.print()
-      el('#darkToggle').onclick=toggleDark
-      ;['#hfType','#hfSearch','#hfFrom','#hfTo'].forEach(id=> el(id).oninput=update)
-    }
-
-    function initMonth(){ el('#month').value = new Date().toISOString().slice(0,7) }
-    function toggleDark(){ const html=document.documentElement; const on=html.classList.toggle('dark'); localStorage.setItem('budgetpro:theme', on?'dark':'light'); el('#darkToggle').textContent = on?'☀️':'🌙' }
-    function loadTheme(){ const t=localStorage.getItem('budgetpro:theme'); if(t==='dark'){ document.documentElement.classList.add('dark'); el('#darkToggle').textContent='☀️' } }
-
-    // Lock screen wiring
-    document.addEventListener('DOMContentLoaded', ()=>{
-      // Set default password hash to '2025' if none exists
-      if(!localStorage.getItem('pf:passhash')){
-        localStorage.setItem('pf:passhash','b2b2f104d32c638903e151a9b20d6e27b41d8c0c84cf8458738f83ca2f1dd744')
-      }
-      // Prepare lock UI
-      const has = !!localStorage.getItem('pf:passhash')
-      if(has){ el('#unlockBox').classList.remove('hidden'); el('#setBox').classList.add('hidden') } else { el('#unlockBox').classList.add('hidden'); el('#setBox').classList.remove('hidden') }
-
-      // keypad wiring
-      function keypadPress(val){ const i=el('#unlockPw'); if(val==='back'){ i.value = i.value.slice(0,-1) } else if(val==='clear'){ i.value=''} else { i.value = (i.value||'')+val } el('#unlockError').classList.add('hidden'); i.focus() }
-      els('#keypad button').forEach(b=> b.onclick = ()=> keypadPress(b.dataset.key) )
-
-      // input helpers
-      el('#unlockPw').addEventListener('keydown', e=>{ if(e.key==='Enter'){ el('#unlockBtn').click() } })
-      el('#unlockToggle').onclick = ()=>{ const i=el('#unlockPw'); i.type = i.type==='password'?'text':'password' }
-
-      // actions
-      el('#unlockBtn').onclick = async ()=>{ const pw=el('#unlockPw').value; if(await checkPw(pw)){ hideLock(); startApp() } else { el('#unlockError').classList.remove('hidden') } }
-      el('#setBtn').onclick = async ()=>{ const p1=el('#setPw').value, p2=el('#setPw2').value; if(!p1 || p1!==p2){ el('#setError').classList.remove('hidden'); return } const h=await sha256(p1); localStorage.setItem('pf:passhash', h); hideLock(); startApp() }
-      el('#resetAllSecure').onclick = ()=>{ if(confirm('This will clear ALL data and password. Continue?')){ const keys=[]; for(let i=0;i<localStorage.length;i++){ keys.push(localStorage.key(i)) } keys.forEach(k=>{ if(k.startsWith('budgetpro:')||k.startsWith('pf:')) localStorage.removeItem(k) }); el('#unlockPw').value=''; el('#setPw').value=''; el('#setPw2').value=''; el('#unlockBox').classList.add('hidden'); el('#setBox').classList.remove('hidden') } }
-
-      showLock()
-    })
-  </script>
+            // --- Initial Load ---
+            renderAll();
+            renderCategories();
+            populateCategoryDropdowns();
+            updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+        });
+    </script>
 </body>
 </html>
