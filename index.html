@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>Personal Finance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    @media print { .no-print{display:none!important} .print\:block{display:block!important} }
+    input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+    input[type=number]{ -moz-appearance:textfield }
+    .nav-btn[aria-current="true"]{ border-color: rgb(24 24 27); color: rgb(24 24 27) }
+    .dark .nav-btn[aria-current="true"]{ border-color: white; color: white }
+  </style>
+</head>
+<body class="h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+  <div id="app" class="mx-auto max-w-6xl px-3 sm:px-4 pb-28">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 -mx-3 sm:-mx-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800">
+      <div class="max-w-6xl mx-auto px-3 sm:px-4 py-3 flex items-center gap-3">
+        <div class="flex-1 flex items-center gap-2">
+          <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-bold select-none">BK</span>
+          <h1 class="text-lg sm:text-xl font-semibold tracking-tight">Personal Finance</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="currency" class="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm">
+            <option value="BDT">BDT</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="INR">INR</option>
+          </select>
+          <input id="month" type="month" class="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm" />
+          <button id="darkToggle" class="rounded-xl border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="mt-3 grid lg:grid-cols-[220px,1fr] gap-3">
+      <!-- Sidebar (static on lg) -->
+      <aside class="hidden lg:block">
+        <nav class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 space-y-2">
+          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="home">🏠 Wallets / Home</button>
+          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="txn">🔁 Transaction</button>
+          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="history">📜 Transaction History</button>
+          <button class="nav-btn w-full text-left rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2" data-section="cats">🏷️ Category Add</button>
+        </nav>
+      </aside>
+
+      <!-- Main -->
+      <main class="min-w-0 space-y-3">
+        <!-- Home / Wallets -->
+        <section data-view="home" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Total Income</div><div id="totalIncome" class="text-2xl font-bold">৳0.00</div></div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Total Expenses</div><div id="totalExpenses" class="text-2xl font-bold">৳0.00</div></div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Savings</div><div id="totalSavings" class="text-2xl font-bold">৳0.00</div></div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"><div class="text-sm text-zinc-500">Net (Income − Expenses − Savings)</div><div id="net" class="text-2xl font-bold">৳0.00</div></div>
+          </div>
+
+          <div class="grid gap-4 xl:grid-cols-3 mt-4">
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 xl:col-span-2">
+              <h2 class="text-lg font-semibold">Wallets & Accounts</h2>
+              <p class="text-xs text-zinc-500 mt-1">Cash • bKash • Nagad • Bank • Custom Wallets (opening & live balances)</p>
+              <div class="overflow-x-auto mt-3">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-zinc-500">
+                    <tr>
+                      <th class="py-2 pr-2">Wallet</th>
+                      <th class="py-2 pr-2 w-32">Opening</th>
+                      <th class="py-2 pr-2 w-32">Current</th>
+                      <th class="py-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="walletsBody"></tbody>
+                </table>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <button id="addWallet" class="rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Wallet</button>
+                <button id="resetWallets" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Reset Defaults</button>
+              </div>
+            </div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <h2 class="text-lg font-semibold">Category Breakdown (Expenses)</h2>
+              <canvas id="catChart" class="mt-3"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Transaction -->
+        <section data-view="txn" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hidden">
+          <h2 class="text-lg font-semibold">Transaction</h2>
+          <p class="text-xs text-zinc-500">Add Income • Expense • Savings/Investments • Lending/Borrowing • Transfer</p>
+
+          <!-- Quick entry bar (mobile friendly) -->
+          <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+            <input id="qeDate" type="date" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" />
+            <select id="qeType" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm">
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+              <option value="savings">Savings/Investments</option>
+              <option value="loan">Lending/Borrowing</option>
+              <option value="transfer">Transfer</option>
+            </select>
+            <select id="qeWallet" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
+            <select id="qeCategory" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
+            <select id="qeSubcategory" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
+            <input id="qeAmount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" />
+            <input id="qeNote" placeholder="Note" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm xl:col-span-2" />
+            <div class="flex gap-2">
+              <button id="qeAdd" class="w-full rounded-lg px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add</button>
+              <button id="qeSwap" class="w-full rounded-lg px-4 py-2 border border-zinc-300 dark:border-zinc-700 hidden">Swap</button>
+            </div>
+          </div>
+
+          <!-- Detailed tables -->
+          <div class="mt-4 grid gap-4 xl:grid-cols-2">
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <h3 class="font-semibold">Expenses</h3>
+              <div class="overflow-x-auto mt-3">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-zinc-500">
+                    <tr>
+                      <th class="py-2 pr-2">Item</th>
+                      <th class="py-2 pr-2">Category</th>
+                      <th class="py-2 pr-2">Subcategory</th>
+                      <th class="py-2 pr-2">Wallet</th>
+                      <th class="py-2 pr-2 w-28">Amount</th>
+                      <th class="py-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="expensesBody"></tbody>
+                </table>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <button data-add="expenses" class="addRow rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Expense</button>
+                <button id="clearExpenses" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
+              </div>
+            </div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <h3 class="font-semibold">Income</h3>
+              <div class="overflow-x-auto mt-3">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-zinc-500">
+                    <tr>
+                      <th class="py-2 pr-2">Source</th>
+                      <th class="py-2 pr-2">Category</th>
+                      <th class="py-2 pr-2">Subcategory</th>
+                      <th class="py-2 pr-2">Wallet</th>
+                      <th class="py-2 pr-2 w-28">Amount</th>
+                      <th class="py-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="incomeBody"></tbody>
+                </table>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <button data-add="income" class="addRow rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Income</button>
+                <button id="clearIncome" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-4 xl:grid-cols-2">
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <h3 class="font-semibold">Savings & Investments</h3>
+              <div class="overflow-x-auto mt-3">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-zinc-500">
+                    <tr>
+                      <th class="py-2 pr-2">Goal</th>
+                      <th class="py-2 pr-2">Category</th>
+                      <th class="py-2 pr-2">Subcategory</th>
+                      <th class="py-2 pr-2">From Wallet</th>
+                      <th class="py-2 pr-2 w-28">Amount</th>
+                      <th class="py-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="savingsBody"></tbody>
+                </table>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <button data-add="savings" class="addRow rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Saving</button>
+                <button id="clearSavings" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
+              </div>
+            </div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <h3 class="font-semibold">Transfers</h3>
+              <div class="overflow-x-auto mt-3">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-zinc-500">
+                    <tr>
+                      <th class="py-2 pr-2">From</th>
+                      <th class="py-2 pr-2">To</th>
+                      <th class="py-2 pr-2">Purpose</th>
+                      <th class="py-2 pr-2 w-28">Amount</th>
+                      <th class="py-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="transfersBody"></tbody>
+                </table>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <button id="addTransfer" class="rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Transfer</button>
+                <button id="clearTransfers" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+            <h3 class="font-semibold">Lending / Borrowing</h3>
+            <p class="text-xs text-zinc-500">Affects wallet balances but not Net (it’s balance-sheet).</p>
+            <div class="overflow-x-auto mt-3">
+              <table class="w-full text-sm">
+                <thead class="text-left text-zinc-500">
+                  <tr>
+                    <th class="py-2 pr-2">Type</th>
+                    <th class="py-2 pr-2">Wallet</th>
+                    <th class="py-2 pr-2">Category</th>
+                    <th class="py-2 pr-2">Subcategory</th>
+                    <th class="py-2 pr-2 w-28">Amount</th>
+                    <th class="py-2 pr-2">Note</th>
+                    <th class="py-2 w-10"></th>
+                  </tr>
+                </thead>
+                <tbody id="loansBody"></tbody>
+              </table>
+            </div>
+            <div class="mt-3 flex gap-2">
+              <button id="addLoan" class="rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Add Loan Row</button>
+              <button id="clearLoans" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Clear</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- History -->
+        <section data-view="history" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hidden">
+          <h2 class="text-lg font-semibold">Transaction History</h2>
+          <div class="mt-3 grid gap-2 sm:grid-cols-4">
+            <select id="hfType" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm">
+              <option value="all">All</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+              <option value="savings">Savings</option>
+              <option value="transfer">Transfer</option>
+              <option value="loan">Lending/Borrowing</option>
+            </select>
+            <input id="hfSearch" placeholder="Search note/name" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
+            <input id="hfFrom" type="date" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
+            <input id="hfTo" type="date" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
+          </div>
+          <div class="overflow-x-auto mt-3">
+            <table class="w-full text-sm">
+              <thead class="text-left text-zinc-500">
+                <tr>
+                  <th class="py-2 pr-2">Date</th>
+                  <th class="py-2 pr-2">Type</th>
+                  <th class="py-2 pr-2">Name</th>
+                  <th class="py-2 pr-2">Category</th>
+                  <th class="py-2 pr-2">Subcategory</th>
+                  <th class="py-2 pr-2">Wallet/From→To</th>
+                  <th class="py-2 pr-2 w-28">Amount</th>
+                  <th class="py-2 pr-2">Note</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Categories -->
+        <section data-view="cats" class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hidden">
+          <h2 class="text-lg font-semibold">Category Add / Manager</h2>
+          <p class="text-xs text-zinc-500">Add manual Category & Subcategory under these groups: Accounts/Wallets, Savings/Investments, Expense, Income, Lending/Borrowing, Transfer.</p>
+          <div class="grid gap-3 sm:grid-cols-2 mt-3">
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3 space-y-2">
+              <h3 class="font-semibold">Add / Edit</h3>
+              <label class="text-xs">Group</label>
+              <select id="cgGroup" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"></select>
+              <label class="text-xs mt-2">Category (pick existing or type new)</label>
+              <input id="cgCategory" list="cgCategoryList" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" placeholder="e.g., Food & Groceries" />
+              <datalist id="cgCategoryList"></datalist>
+              <label class="text-xs mt-2">Subcategory (optional)</label>
+              <input id="cgSubcategory" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm" placeholder="e.g., Supermarket" />
+              <div class="flex gap-2 mt-2">
+                <button id="cgAddCategory" class="rounded-lg px-3 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-sm">Add Category</button>
+                <button id="cgAddSubcategory" class="rounded-lg px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">Add Subcategory</button>
+                <button id="cgReset" class="ml-auto rounded-lg px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">Reset Defaults</button>
+              </div>
+            </div>
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3">
+              <h3 class="font-semibold">Current Structure</h3>
+              <div id="catsTree" class="text-sm mt-2 space-y-2"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tools -->
+        <section class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+          <h2 class="text-lg font-semibold">Tools</h2>
+          <div class="mt-3 flex flex-wrap gap-2 no-print">
+            <button id="exportJSON" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Export JSON</button>
+            <label class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700 cursor-pointer">Import JSON<input id="importJSON" type="file" accept="application/json" class="hidden"></label>
+            <button id="exportCSV" class="rounded-xl px-4 py-2 border border-zinc-300 dark:border-zinc-700">Export CSV</button>
+            <button id="resetAll" class="rounded-xl px-4 py-2 border border-rose-300 text-rose-600 dark:border-rose-700">Reset Month</button>
+            <button id="printBtn" class="ml-auto rounded-xl px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Print</button>
+          </div>
+          <div class="print:block hidden text-xs text-zinc-500 mt-2">Printed from Personal Finance — BK</div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Footer quick nav -->
+    <footer class="fixed inset-x-0 bottom-0 z-50 no-print">
+      <div class="mx-auto max-w-6xl m-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 flex items-center gap-3 shadow-lg">
+        <div class="text-sm text-zinc-500">Net</div>
+        <div id="netFooter" class="text-lg font-semibold"></div>
+        <div class="ml-auto flex items-center gap-2 overflow-x-auto">
+          <button id="quickToHome" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">🏠 Home</button>
+          <button id="quickToTxn" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">🔁 Txn</button>
+          <button id="quickToHistory" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">📜 History</button>
+          <button id="quickToCats" class="rounded-xl px-3 py-2 border border-zinc-300 dark:border-zinc-700 text-sm">🏷️ Cats</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Password Lock Screen -->
+  <div id="lock" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
+    <div class="w-full max-w-sm rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-sm font-bold select-none">BK</span>
+        <div>
+          <div class="text-base font-semibold">Personal Finance</div>
+          <div class="text-xs text-zinc-500">Protected — enter password</div>
+        </div>
+      </div>
+      <div id="unlockBox" class="space-y-2">
+        <label class="text-xs">Password</label>
+        <div class="flex gap-2">
+          <input id="unlockPw" type="password" inputmode="numeric" pattern="[0-9]*" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="••••" />
+          <button id="unlockToggle" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3">👁️</button>
+        </div>
+        <!-- Mobile keypad -->
+        <div id="keypad" class="grid grid-cols-3 gap-2 mt-2 select-none">
+          <button data-key="1" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">1</button>
+          <button data-key="2" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">2</button>
+          <button data-key="3" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">3</button>
+          <button data-key="4" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">4</button>
+          <button data-key="5" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">5</button>
+          <button data-key="6" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">6</button>
+          <button data-key="7" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">7</button>
+          <button data-key="8" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">8</button>
+          <button data-key="9" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">9</button>
+          <button data-key="clear" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">C</button>
+          <button data-key="0" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">0</button>
+          <button data-key="back" class="rounded-lg border border-zinc-300 dark:border-zinc-700 py-3 text-lg font-medium">⌫</button>
+        </div>
+        <button id="unlockBtn" class="w-full rounded-lg px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 mt-2">Unlock</button>
+        <button id="resetAllSecure" class="w-full rounded-lg px-4 py-2 border border-rose-300 text-rose-600 dark:border-rose-700">Forgot? Reset (clears data)</button>
+        <div id="unlockError" class="text-xs text-rose-600 hidden">Wrong password. Try again.</div>
+      </div>
+      <div id="setBox" class="space-y-2 hidden">
+        <div class="text-sm font-medium">Set a password</div>
+        <label class="text-xs">New password</label>
+        <input id="setPw" type="password" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" />
+        <label class="text-xs">Confirm password</label>
+        <input id="setPw2" type="password" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" />
+        <button id="setBtn" class="w-full rounded-lg px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">Save & Enter</button>
+        <div id="setError" class="text-xs text-rose-600 hidden">Passwords do not match.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Templates -->
+  <template id="row-wallet">
+    <tr>
+      <td class="py-2 pr-2"><input type="text" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 name" placeholder="Cash"></td>
+      <td class="py-2 pr-2 w-32"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 opening" placeholder="0.00"></td>
+      <td class="py-2 pr-2 w-32"><span class="current font-medium">৳0.00</span></td>
+      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
+    </tr>
+  </template>
+
+  <template id="row-expenses">
+    <tr>
+      <td class="py-2 pr-2"><input type="text" placeholder="Rent" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></td>
+      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
+      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
+    </tr>
+  </template>
+
+  <template id="row-income">
+    <tr>
+      <td class="py-2 pr-2"><input type="text" placeholder="Salary" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></td>
+      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
+      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
+    </tr>
+  </template>
+
+  <template id="row-savings">
+    <tr>
+      <td class="py-2 pr-2"><input type="text" placeholder="Emergency Fund" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></td>
+      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
+      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
+    </tr>
+  </template>
+
+  <template id="row-transfer">
+    <tr>
+      <td class="py-2 pr-2"><select class="from w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="to w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="purpose w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount" placeholder="0.00"></td>
+      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
+    </tr>
+  </template>
+
+  <template id="row-loan">
+    <tr>
+      <td class="py-2 pr-2"><select class="kind w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2">
+        <option>Lent Money</option>
+        <option>Borrowed Money</option>
+        <option>Loan Received</option>
+        <option>Loan Paid</option>
+        <option>Custom Loan</option>
+      </select></td>
+      <td class="py-2 pr-2"><select class="wallet w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="category w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2"><select class="subcategory w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2"></select></td>
+      <td class="py-2 pr-2 w-28"><input type="number" step="0.01" inputmode="decimal" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 amount"></td>
+      <td class="py-2 pr-2"><input class="note w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="Note"/></td>
+      <td class="py-2 w-10"><button class="del px-2 py-2">✕</button></td>
+    </tr>
+  </template>
+
+  <script>
+    const el = s => document.querySelector(s)
+    const els = s => Array.from(document.querySelectorAll(s))
+
+    const DEFAULT_WALLETS = [
+      { name:'Cash', opening:0 },
+      { name:'bKash', opening:0 },
+      { name:'Nagad', opening:0 },
+      { name:'Bank', opening:0 }
+    ]
+
+    const DEFAULT_CATS = {
+      accounts: { 'Bank':[], 'bKash':[], 'Nagad':[], 'Cash / Wallet':[], 'Custom Wallet':[] },
+      savings: {
+        'Bank Savings':['Fixed deposits','Normal savings'],
+        'Cash Savings':[], 'DPS / FD':['Deposits with maturity'],
+        'Investments':['Shares','Gold','Mutual funds','Crypto'],
+        'Emergency Fund':[], 'Retirement Fund':[], 'Custom Savings':[]
+      },
+      expense: {
+        'Food & Groceries':['Supermarket','Restaurants','Snacks'],
+        'Rent / House':['Rent','Maintenance'],
+        'Utilities':['Electricity','Gas','Water','Internet'],
+        'Transport':['Fuel','Bus/Train','Taxi'],
+        'Education':['Tuition','Books','Courses'],
+        'Medical & Health':['Medicines','Hospital','Checkups'],
+        'Shopping':['Clothes','Gadgets','Online'],
+        'Entertainment':['Movies','Streaming','Travel'],
+        'Loan Payment':['EMI','Installment'],
+        'Custom Expense':[]
+      },
+      income: {
+        'Salary / Wages':[],
+        'Freelance / Projects':[],
+        'Gifts / Bonus':[],
+        'Investment Income':['Dividend','Interest','Profit'],
+        'Other Income':[],
+        'Custom Income':[]
+      },
+      loan: {
+        'Lent Money':[], 'Borrowed Money':[], 'Loan Received':[], 'Loan Paid':[], 'Custom Loan':[]
+      },
+      transfer: {
+        'Bank → bKash':[], 'Bank → Cash':[], 'bKash → Nagad':[], 'Cash → Bank':[], 'Custom Transfer':[]
+      }
+    }
+
+    const currencySymbols = { BDT:'৳', USD:'$', EUR:'€', INR:'₹' }
+
+    let chart
+    let categories = {}
+    let currentView = 'home'
+
+    // ---- Password helpers ----
+    async function sha256(str){
+      const enc = new TextEncoder().encode(str)
+      const buf = await crypto.subtle.digest('SHA-256', enc)
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')
+    }
+    async function checkPw(pw){ const h=await sha256(pw); return h===localStorage.getItem('pf:passhash') }
+
+    function showLock(){
+      const has = !!localStorage.getItem('pf:passhash')
+      el('#unlockBox').classList.toggle('hidden', !has)
+      el('#setBox').classList.toggle('hidden', has)
+      el('#lock').classList.remove('hidden')
+    }
+    function hideLock(){ el('#lock').classList.add('hidden') }
+
+    // ---- App helpers ----
+    function monthKey(){ return el('#month').value || new Date().toISOString().slice(0,7) }
+    function fmt(n){ const cur=el('#currency').value; const sym=currencySymbols[cur]||cur+' '; const v=isFinite(n)?Number(n).toFixed(2):'0.00'; return sym+v }
+    function parse(n){ if(typeof n==='number') return n; if(!n) return 0; const v=String(n).replace(/[^0-9.,-]/g,'').replace(/,/g,''); return parseFloat(v)||0 }
+
+    function saveCats(){ localStorage.setItem('budgetpro:cats', JSON.stringify(categories)) }
+    function loadCats(){ const raw=localStorage.getItem('budgetpro:cats'); categories = raw? JSON.parse(raw) : DEFAULT_CATS; saveCats(); buildCatsUI() }
+    function catsOf(group){ return Object.keys(categories[group]||{}) }
+    function subcatsOf(group,cat){ return (categories[group] && categories[group][cat])? categories[group][cat] : [] }
+
+    function buildCatsUI(){
+      const groups = Object.keys(categories)
+      el('#cgGroup').innerHTML = groups.map(g=>`<option value="${g}">${labelGroup(g)}</option>`).join('')
+      syncCgCategoryList()
+      const tree = groups.map(g=>{
+        const cats = Object.entries(categories[g]).map(([c,subs])=>{
+          const subsHtml = subs.length? `<div class="ml-4 text-zinc-500">– ${subs.join(', ')}</div>` : ''
+          return `<div class="ml-2"><div class="font-medium">${c}</div>${subsHtml}</div>`
+        }).join('')
+        return `<div><div class="text-sm uppercase tracking-wide text-zinc-500">${labelGroup(g)}</div>${cats}</div>`
+      }).join('')
+      el('#catsTree').innerHTML = tree
+      refreshQEOptions()
+    }
+
+    function labelGroup(g){
+      return ({accounts:'Accounts / Wallets', savings:'Savings / Investments', expense:'Expense', income:'Income', loan:'Lending / Borrowing', transfer:'Transfer / Internal'}[g])||g
+    }
+
+    function syncCgCategoryList(){ const g = el('#cgGroup').value || 'expense'; el('#cgCategoryList').innerHTML = catsOf(g).map(c=>`<option value="${c}">`).join('') }
+    function addCategory(group, category){ if(!category) return; if(!categories[group]) categories[group] = {}; if(!categories[group][category]) categories[group][category] = []; saveCats(); buildCatsUI() }
+    function addSubcategory(group, category, sub){ if(!sub) return; addCategory(group, category); const arr = categories[group][category]; if(!arr.includes(sub)) arr.push(sub); saveCats(); buildCatsUI() }
+
+    // --- Data ---
+    function collect(){
+      const data = { currency: el('#currency').value, month: monthKey(), wallets: [], income: [], expenses: [], savings: [], transfers: [], loans: [], history: [] }
+      els('#walletsBody tr').forEach(tr=>{ const name=tr.querySelector('.name').value.trim(); const opening=parse(tr.querySelector('.opening').value); if(name) data.wallets.push({ name, opening }) })
+      els('#incomeBody tr').forEach(tr=>{ const name=tr.querySelector('td:nth-child(1) input').value.trim(); const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const amount=parse(tr.querySelector('.amount').value); if(name||amount) data.income.push({ date:today(), name, category, sub, wallet, amount, note:'' }) })
+      els('#expensesBody tr').forEach(tr=>{ const name=tr.querySelector('td:nth-child(1) input').value.trim(); const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const amount=parse(tr.querySelector('.amount').value); if(name||amount) data.expenses.push({ date:today(), name, category, sub, wallet, amount, note:'' }) })
+      els('#savingsBody tr').forEach(tr=>{ const name=tr.querySelector('td:nth-child(1) input').value.trim(); const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const amount=parse(tr.querySelector('.amount').value); if(name||amount) data.savings.push({ date:today(), name, category, sub, wallet, amount, note:'' }) })
+      els('#transfersBody tr').forEach(tr=>{ const from=tr.querySelector('select.from')?.value||''; const to=tr.querySelector('select.to')?.value||''; const purpose=tr.querySelector('select.purpose')?.value||''; const amount=parse(tr.querySelector('.amount').value); if((from&&to)||amount) data.transfers.push({ date:today(), from, to, purpose, amount, note:'' }) })
+      els('#loansBody tr').forEach(tr=>{ const kind=tr.querySelector('select.kind')?.value||''; const wallet=tr.querySelector('select.wallet')?.value||''; const category=tr.querySelector('select.category')?.value||''; const sub=tr.querySelector('select.subcategory')?.value||''; const amount=parse(tr.querySelector('.amount').value); const note=tr.querySelector('.note')?.value||''; if(kind&&wallet&&amount) data.loans.push({ date:today(), kind, wallet, category, sub, amount, note }) })
+      return data
+    }
+
+    function save(){ const d=collect(); localStorage.setItem('budgetpro:'+d.month, JSON.stringify(d)) }
+    function load(){ const key='budgetpro:'+monthKey(); const raw=localStorage.getItem(key); if(raw){ render(JSON.parse(raw)) } else { render({ currency: el('#currency').value, month: monthKey(), wallets: DEFAULT_WALLETS }) } }
+
+    function render(data){
+      const wBody = el('#walletsBody'); wBody.innerHTML=''; (data.wallets && data.wallets.length? data.wallets : DEFAULT_WALLETS).forEach(w=> wBody.appendChild(row('wallet', w)))
+      const map = [['income','incomeBody'],['expenses','expensesBody'],['savings','savingsBody']]
+      map.forEach(([key,bodyId])=>{ const body=el('#'+bodyId); body.innerHTML=''; (data[key]||[]).forEach(r=> body.appendChild(row(key.slice(0,-1), r))) })
+      const tBody = el('#transfersBody'); tBody.innerHTML=''; (data.transfers||[]).forEach(r=> tBody.appendChild(row('transfer', r)))
+      const lBody = el('#loansBody'); lBody.innerHTML=''; (data.loans||[]).forEach(r=> lBody.appendChild(row('loan', r)))
+      el('#currency').value = data.currency || 'BDT'
+      update()
+    }
+
+    function row(type, data={}){
+      const tpl = el(`#row-${type}`).content.cloneNode(true)
+      const tr = tpl.querySelector('tr')
+      if(type==='wallet'){
+        tr.querySelector('.name').value = data.name || ''
+        tr.querySelector('.opening').value = data.opening!=null? data.opening: ''
+      }
+      if(['income','expenses','savings'].includes(type)){
+        tr.querySelector('td:nth-child(1) input').value = data.name || ''
+        fillCatSelect(tr.querySelector('select.category'), type)
+        const group = type==='expenses'?'expense': (type==='income'?'income': 'savings')
+        const cat = data.category || (catsOf(group)[0]||'')
+        tr.querySelector('select.category').value = cat
+        fillSubcatSelect(tr.querySelector('select.subcategory'), type, cat)
+        tr.querySelector('select.subcategory').value = data.sub || ''
+        fillWalletSelect(tr.querySelector('select.wallet'), data.wallet)
+        tr.querySelector('.amount').value = (data.amount!=null? data.amount: '')
+      }
+      if(type==='transfer'){
+        fillWalletSelect(tr.querySelector('select.from'), data.from)
+        fillWalletSelect(tr.querySelector('select.to'), data.to)
+        fillPurposeSelect(tr.querySelector('select.purpose'))
+        tr.querySelector('select.purpose').value = data.purpose || 'Custom Transfer'
+        tr.querySelector('.amount').value = (data.amount!=null? data.amount: '')
+      }
+      if(type==='loan'){
+        fillWalletSelect(tr.querySelector('select.wallet'), data.wallet)
+        fillCatSelect(tr.querySelector('select.category'), 'loan')
+        const cat = data.category || (catsOf('loan')[0]||'')
+        tr.querySelector('select.category').value = cat
+        fillSubcatSelect(tr.querySelector('select.subcategory'), 'loan', cat)
+        tr.querySelector('select.subcategory').value = data.sub || ''
+        tr.querySelector('.amount').value = (data.amount!=null? data.amount: '')
+        tr.querySelector('.note').value = data.note || ''
+      }
+      return tr
+    }
+
+    function fillWalletSelect(sel, value){ const wallets=collectWalletsRaw(); sel.innerHTML = wallets.map(w=>`<option>${w.name}</option>`).join(''); if(value) sel.value=value }
+    function fillPurposeSelect(sel){ sel.innerHTML = catsOf('transfer').map(c=>`<option>${c}</option>`).join('') }
+    function fillCatSelect(sel, type){ const group = type==='expenses'?'expense': (type==='income'?'income': (type==='savings'?'savings': type)); sel.innerHTML = catsOf(group).map(c=>`<option>${c}</option>`).join('') }
+    function fillSubcatSelect(sel, type, cat){ const group = type==='expenses'?'expense': (type==='income'?'income': (type==='savings'?'savings': type)); const subs=subcatsOf(group,cat); sel.innerHTML = [''].concat(subs).map(s=>`<option value="${s}">${s}</option>`).join('') }
+    function collectWalletsRaw(){ const rows=els('#walletsBody tr'); if(!rows.length) return DEFAULT_WALLETS; return rows.map(tr=>({ name: tr.querySelector('.name').value.trim()||'Wallet', opening: parse(tr.querySelector('.opening').value) })) }
+
+    function walletBalances(d){
+      const balances = {}
+      ;(d.wallets||[]).forEach(w=> balances[w.name]=parse(w.opening))
+      ;(d.income||[]).forEach(r=>{ if(r.wallet) balances[r.wallet]=(balances[r.wallet]||0)+parse(r.amount) })
+      ;(d.expenses||[]).forEach(r=>{ if(r.wallet) balances[r.wallet]=(balances[r.wallet]||0)-parse(r.amount) })
+      ;(d.savings||[]).forEach(r=>{ if(r.wallet) balances[r.wallet]=(balances[r.wallet]||0)-parse(r.amount) })
+      ;(d.transfers||[]).forEach(t=>{ const a=parse(t.amount); if(t.from) balances[t.from]=(balances[t.from]||0)-a; if(t.to) balances[t.to]=(balances[t.to]||0)+a })
+      ;(d.loans||[]).forEach(l=>{ const a=parse(l.amount); if(['Lent Money','Loan Paid'].includes(l.kind)){ if(l.wallet) balances[l.wallet]=(balances[l.wallet]||0)-a } else { if(l.wallet) balances[l.wallet]=(balances[l.wallet]||0)+a } })
+      return balances
+    }
+
+    function update(){
+      const d = collect()
+      const tInc = d.income.reduce((a,b)=>a+parse(b.amount),0)
+      const tExp = d.expenses.reduce((a,b)=>a+parse(b.amount),0)
+      const tSav = d.savings.reduce((a,b)=>a+parse(b.amount),0)
+      el('#totalIncome').textContent = fmt(tInc)
+      el('#totalExpenses').textContent = fmt(tExp)
+      el('#totalSavings').textContent = fmt(tSav)
+      const net = tInc - tExp - tSav
+      el('#net').textContent = fmt(net)
+      el('#netFooter').textContent = fmt(net)
+
+      els('select.wallet, select.from, select.to').forEach(sel=>{ const cur = sel.value; fillWalletSelect(sel, cur) })
+      const balances = walletBalances(d)
+      els('#walletsBody tr').forEach(tr=>{ const name=tr.querySelector('.name').value.trim(); tr.querySelector('.current').textContent = fmt(balances[name]||0) })
+
+      drawChart(d)
+      save()
+      buildHistory(d)
+      refreshQEOptions()
+    }
+
+    function drawChart(d){
+      const totals = {}
+      d.expenses.forEach(e=>{ const k=e.category||'Misc'; totals[k]=(totals[k]||0)+parse(e.amount) })
+      const labels = Object.keys(totals)
+      const values = Object.values(totals)
+      const ctx = el('#catChart')
+      if(chart){ chart.destroy() }
+      chart = new Chart(ctx, { type:'doughnut', data:{ labels, datasets:[{ data: values }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } })
+    }
+
+    // --- History ---
+    function buildHistory(d){
+      const H=[]
+      d.income.forEach(x=>H.push({date:x.date,type:'income',name:x.name,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
+      d.expenses.forEach(x=>H.push({date:x.date,type:'expense',name:x.name,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
+      d.savings.forEach(x=>H.push({date:x.date,type:'savings',name:x.name,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
+      d.transfers.forEach(x=>H.push({date:x.date,type:'transfer',name:'Transfer',cat:x.purpose,sub:'',wallet:`${x.from}→${x.to}`,amount:x.amount,note:x.note||''}))
+      d.loans.forEach(x=>H.push({date:x.date,type:'loan',name:x.kind,cat:x.category,sub:x.sub,wallet:x.wallet,amount:x.amount,note:x.note||''}))
+
+      const fType = el('#hfType').value||'all'
+      const q = (el('#hfSearch').value||'').toLowerCase()
+      const from = el('#hfFrom').value||''
+      const to = el('#hfTo').value||''
+
+      const rows = H.filter(r=> (fType==='all'||r.type===fType) && (!q || (r.name+r.cat+r.sub+r.note).toLowerCase().includes(q)) && (!from || r.date>=from) && (!to || r.date<=to) )
+        .sort((a,b)=> (a.date>b.date?-1:1))
+        .map(r=>`<tr><td class="py-2 pr-2">${r.date}</td><td class="py-2 pr-2 capitalize">${r.type}</td><td class="py-2 pr-2">${r.name||''}</td><td class="py-2 pr-2">${r.cat||''}</td><td class="py-2 pr-2">${r.sub||''}</td><td class="py-2 pr-2">${r.wallet||''}</td><td class="py-2 pr-2 w-28">${fmt(r.amount)}</td><td class="py-2 pr-2">${r.note||''}</td></tr>`).join('')
+      el('#historyBody').innerHTML = rows
+    }
+
+    // --- Quick Entry ---
+    function refreshQEOptions(){
+      const t = el('#qeType').value
+      fillWalletSelect(el('#qeWallet'))
+      const group = (t==='expense')?'expense': (t==='income')?'income': (t==='savings')?'savings': (t==='loan')?'loan':'transfer'
+      el('#qeCategory').innerHTML = catsOf(group).map(c=>`<option>${c}</option>`).join('')
+      const cat = el('#qeCategory').value || catsOf(group)[0] || ''
+      el('#qeSubcategory').innerHTML = [''].concat(subcatsOf(group, cat)).map(s=>`<option value="${s}">${s}</option>`).join('')
+      el('#qeSwap').classList.toggle('hidden', t!=='transfer')
+    }
+
+    function today(){ return new Date().toISOString().slice(0,10) }
+
+    function addQuickEntry(){
+      const t = el('#qeType').value
+      const date = el('#qeDate').value || today()
+      const amount = parse(el('#qeAmount').value)
+      if(!amount) return
+      const note = el('#qeNote').value||''
+      if(t==='expense'){
+        const name = note || 'Expense'
+        const r = { date, name, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, wallet:el('#qeWallet').value, amount, note }
+        el('#expensesBody').appendChild(row('expenses', r))
+      } else if(t==='income'){
+        const name = note || 'Income'
+        const r = { date, name, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, wallet:el('#qeWallet').value, amount, note }
+        el('#incomeBody').appendChild(row('income', r))
+      } else if(t==='savings'){
+        const name = note || 'Saving'
+        const r = { date, name, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, wallet:el('#qeWallet').value, amount, note }
+        el('#savingsBody').appendChild(row('savings', r))
+      } else if(t==='loan'){
+        const r = { date, kind:el('#qeCategory').value||'Custom Loan', wallet:el('#qeWallet').value, category:el('#qeCategory').value, sub:el('#qeSubcategory').value, amount, note }
+        el('#loansBody').appendChild(row('loan', r))
+      } else if(t==='transfer'){
+        el('#transfersBody').appendChild(row('transfer', { purpose:el('#qeCategory').value, amount }))
+      }
+      bindRowEvents(); update(); el('#qeAmount').value=''; el('#qeNote').value=''
+    }
+
+    function bindRowEvents(){ els('tbody input, tbody select').forEach(x=> x.oninput=update ); els('button.del').forEach(b=> b.onclick=(e)=>{ e.currentTarget.closest('tr').remove(); update() }) }
+
+    function switchView(v){ currentView=v; els('[data-view]').forEach(sec=> sec.classList.toggle('hidden', sec.dataset.view!==v)); els('.nav-btn').forEach(b=> b.setAttribute('aria-current', b.dataset.section===v? 'true':'false')) }
+
+    function exportJSON(){ const d=collect(); const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`PersonalFinance-${d.month}.json`; a.click() }
+    function exportCSV(){
+      const d = collect(); const rows = []
+      rows.push(['Type','Date','Name','Category','Subcategory','Wallet/From','To','Amount','Currency','Month','Note'])
+      d.income.forEach(r=>rows.push(['Income', r.date, r.name, r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
+      d.expenses.forEach(r=>rows.push(['Expense', r.date, r.name, r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
+      d.savings.forEach(r=>rows.push(['Savings', r.date, r.name, r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
+      d.transfers.forEach(r=>rows.push(['Transfer', r.date, 'Transfer', r.purpose||'', '', r.from||'', r.to||'', r.amount, d.currency, d.month, r.note||'']))
+      d.loans.forEach(r=>rows.push(['Loan', r.date, r.kind||'', r.category||'', r.sub||'', r.wallet||'', '', r.amount, d.currency, d.month, r.note||'']))
+      const csv = rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\n')
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`PersonalFinance-${d.month}.csv`; a.click()
+    }
+
+    function resetAll(){ if(!confirm('Clear current month data?')) return; localStorage.removeItem('budgetpro:'+monthKey()); render({ currency: el('#currency').value, month: monthKey(), wallets: DEFAULT_WALLETS }) }
+
+    // ---- Bootstrapping with lock ----
+    async function startApp(){
+      if(window.__pf_started) return; window.__pf_started = true
+      loadCats(); loadTheme(); initMonth(); load(); bindRowEvents();
+      els('.nav-btn').forEach(b=> b.onclick=()=> switchView(b.dataset.section)); switchView('home')
+      el('#quickToHome').onclick=()=>switchView('home')
+      el('#quickToTxn').onclick=()=>switchView('txn')
+      el('#quickToHistory').onclick=()=>switchView('history')
+      el('#quickToCats').onclick=()=>switchView('cats')
+      el('#qeDate').value = today(); el('#qeType').onchange=refreshQEOptions; el('#qeCategory').onchange=()=>refreshQEOptions(); el('#qeAdd').onclick=addQuickEntry
+      els('.addRow').forEach(b=> b.onclick=()=>{ const t=b.dataset.add; const body=el('#'+t+'Body'); body.appendChild(row(t.slice(0,-1),{})); bindRowEvents(); update() })
+      el('#clearIncome').onclick=()=>{ el('#incomeBody').innerHTML=''; update() }
+      el('#clearExpenses').onclick=()=>{ el('#expensesBody').innerHTML=''; update() }
+      el('#clearSavings').onclick=()=>{ el('#savingsBody').innerHTML=''; update() }
+      el('#addTransfer').onclick=()=>{ el('#transfersBody').appendChild(row('transfer',{})); bindRowEvents(); update() }
+      el('#clearTransfers').onclick=()=>{ el('#transfersBody').innerHTML=''; update() }
+      el('#addLoan').onclick=()=>{ el('#loansBody').appendChild(row('loan',{})); bindRowEvents(); update() }
+      el('#clearLoans').onclick=()=>{ el('#loansBody').innerHTML=''; update() }
+      el('#addWallet').onclick=()=>{ el('#walletsBody').appendChild(row('wallet',{})); bindRowEvents(); update() }
+      el('#resetWallets').onclick=()=>{ el('#walletsBody').innerHTML=''; DEFAULT_WALLETS.forEach(w=> el('#walletsBody').appendChild(row('wallet',w))); bindRowEvents(); update() }
+      el('#cgGroup').onchange=syncCgCategoryList
+      el('#cgAddCategory').onclick=()=>{ addCategory(el('#cgGroup').value, el('#cgCategory').value.trim()) }
+      el('#cgAddSubcategory').onclick=()=>{ addSubcategory(el('#cgGroup').value, el('#cgCategory').value.trim(), el('#cgSubcategory').value.trim()) }
+      el('#cgReset').onclick=()=>{ if(confirm('Reset categories to defaults?')){ categories=DEFAULT_CATS; saveCats(); buildCatsUI() } }
+      el('#currency').onchange=update
+      el('#month').onchange=load
+      el('#exportJSON').onclick=exportJSON
+      el('#exportCSV').onclick=exportCSV
+      el('#resetAll').onclick=resetAll
+      el('#importJSON').addEventListener('change', e=>{ const f=e.target.files?.[0]; if(f){ const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d&&d.month){ render(d); save() } }catch(e){ alert('Invalid JSON') } }; r.readAsText(f) } })
+      el('#printBtn').onclick=()=>window.print()
+      el('#darkToggle').onclick=toggleDark
+      ;['#hfType','#hfSearch','#hfFrom','#hfTo'].forEach(id=> el(id).oninput=update)
+    }
+
+    function initMonth(){ el('#month').value = new Date().toISOString().slice(0,7) }
+    function toggleDark(){ const html=document.documentElement; const on=html.classList.toggle('dark'); localStorage.setItem('budgetpro:theme', on?'dark':'light'); el('#darkToggle').textContent = on?'☀️':'🌙' }
+    function loadTheme(){ const t=localStorage.getItem('budgetpro:theme'); if(t==='dark'){ document.documentElement.classList.add('dark'); el('#darkToggle').textContent='☀️' } }
+
+    // Lock screen wiring
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Set default password hash to '2025' if none exists
+      if(!localStorage.getItem('pf:passhash')){
+        localStorage.setItem('pf:passhash','b2b2f104d32c638903e151a9b20d6e27b41d8c0c84cf8458738f83ca2f1dd744')
+      }
+      // Prepare lock UI
+      const has = !!localStorage.getItem('pf:passhash')
+      if(has){ el('#unlockBox').classList.remove('hidden'); el('#setBox').classList.add('hidden') } else { el('#unlockBox').classList.add('hidden'); el('#setBox').classList.remove('hidden') }
+
+      // keypad wiring
+      function keypadPress(val){ const i=el('#unlockPw'); if(val==='back'){ i.value = i.value.slice(0,-1) } else if(val==='clear'){ i.value=''} else { i.value = (i.value||'')+val } el('#unlockError').classList.add('hidden'); i.focus() }
+      els('#keypad button').forEach(b=> b.onclick = ()=> keypadPress(b.dataset.key) )
+
+      // input helpers
+      el('#unlockPw').addEventListener('keydown', e=>{ if(e.key==='Enter'){ el('#unlockBtn').click() } })
+      el('#unlockToggle').onclick = ()=>{ const i=el('#unlockPw'); i.type = i.type==='password'?'text':'password' }
+
+      // actions
+      el('#unlockBtn').onclick = async ()=>{ const pw=el('#unlockPw').value; if(await checkPw(pw)){ hideLock(); startApp() } else { el('#unlockError').classList.remove('hidden') } }
+      el('#setBtn').onclick = async ()=>{ const p1=el('#setPw').value, p2=el('#setPw2').value; if(!p1 || p1!==p2){ el('#setError').classList.remove('hidden'); return } const h=await sha256(p1); localStorage.setItem('pf:passhash', h); hideLock(); startApp() }
+      el('#resetAllSecure').onclick = ()=>{ if(confirm('This will clear ALL data and password. Continue?')){ const keys=[]; for(let i=0;i<localStorage.length;i++){ keys.push(localStorage.key(i)) } keys.forEach(k=>{ if(k.startsWith('budgetpro:')||k.startsWith('pf:')) localStorage.removeItem(k) }); el('#unlockPw').value=''; el('#setPw').value=''; el('#setPw2').value=''; el('#unlockBox').classList.add('hidden'); el('#setBox').classList.remove('hidden') } }
+
+      showLock()
+    })
+  </script>
+</body>
+</html>
