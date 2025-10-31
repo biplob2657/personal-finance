@@ -621,14 +621,18 @@
                 { id: 2, name: 'Savings / Investments', type: 'expense' },
                 { id: 3, name: 'Expense', type: 'expense' },
                 { id: 4, name: 'Income', type: 'income' },
-                { id: 5, name: 'Lending / Borrowing', type: 'asset' }
+                { id: 5, name: 'Lending', type: 'asset' },  // Changed from "Lending / Borrowing"
+                { id: 6, name: 'Borrowing', type: 'liability' }  // New category for borrowing
             ];
             const defaultSubcategories = [
                 { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
                 { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 }, { id: 9, name: 'Emergency Fund', categoryId: 2 }, { id: 10, name: 'Retirement Fund', categoryId: 2 },
                 { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
                 { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
-                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 }
+                { id: 25, name: 'Lent Money', categoryId: 5 },  // Now under Lending category
+                { id: 26, name: 'Loan Received Back', categoryId: 5 },  // Now under Lending category
+                { id: 27, name: 'Borrowed Money', categoryId: 6 },  // Now under Borrowing category
+                { id: 28, name: 'Loan Repaid', categoryId: 6 }  // Now under Borrowing category
             ];
             
             let wallets = [];
@@ -722,13 +726,13 @@
                 }
                 
                 // FIX: Correctly handle Borrowed Money
-                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                if (categoryType === 'liability' && subcategoryName === 'Borrowed Money') {
                     wallet.balance += amount; // Add money to wallet
                     return;
                 }
 
                 if (isSource) {
-                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
+                    if (['expense', 'asset'].includes(categoryType)) wallet.balance -= amount;
                     if (['income'].includes(categoryType)) wallet.balance += amount;
                 } else {
                     if (categoryType === 'asset') wallet.balance += amount;
@@ -760,12 +764,12 @@
                     }
                     
                     // FIX: Correctly reverse Borrowed Money
-                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                    if (categoryType === 'liability' && subcategoryName === 'Borrowed Money') {
                         wallet.balance -= transaction.amount;
                         return;
                     }
 
-                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance += transaction.amount;
+                    if (['expense', 'asset'].includes(categoryType)) wallet.balance += transaction.amount;
                     if (['income'].includes(categoryType)) wallet.balance -= transaction.amount;
                 }
             };
@@ -1287,12 +1291,47 @@
                 document.body.removeChild(link);
             };
 
+            // --- Migration Function ---
+            const migrateCategories = async () => {
+                // Check if migration is needed
+                if (categories.some(c => c.name === 'Lending / Borrowing')) {
+                    // Create new categories
+                    const lendingCategory = { id: Date.now(), name: 'Lending', type: 'asset' };
+                    const borrowingCategory = { id: Date.now() + 1, name: 'Borrowing', type: 'liability' };
+                    
+                    // Add new categories
+                    categories.push(lendingCategory, borrowingCategory);
+                    
+                    // Update subcategories
+                    subcategories.forEach(sub => {
+                        if (sub.name === 'Lent Money' || sub.name === 'Loan Received Back') {
+                            sub.categoryId = lendingCategory.id;
+                        } else if (sub.name === 'Borrowed Money' || sub.name === 'Loan Repaid') {
+                            sub.categoryId = borrowingCategory.id;
+                        }
+                    });
+                    
+                    // Remove old category
+                    categories = categories.filter(c => c.name !== 'Lending / Borrowing');
+                    
+                    // Save changes
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    
+                    // Refresh UI
+                    renderCategories();
+                    populateCategoryDropdowns();
+                }
+            };
+
             // --- Initial Load ---
             const data = await api.load();
             wallets = data.wallets;
             categories = data.categories;
             subcategories = data.subcategories;
             transactions = data.transactions;
+
+            // Run migration if needed
+            await migrateCategories();
 
             // Set default date for new transaction
             document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
