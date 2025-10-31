@@ -1,986 +1,1439 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Personal Finance — BK</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  :root{
-    --accent-h: 200;
-    --accent: hsl(var(--accent-h) 87% 42%);
-    --accent-2: hsl(calc(var(--accent-h)+12) 87% 52%);
-    --ink: #0e1624;
-    --muted:#6c7a90;
-    --line:#e8ecf3;
-    --surface:#ffffffcc;
-    --surface-2:#f7f9fc;
-    --radius:14px;
-    --shadow-sm:0 6px 20px rgba(16,24,40,.06);
-    --shadow-lg:0 20px 60px rgba(16,24,40,.10);
-    --nav-h:64px;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --ink:#eaf1ff; --muted:#9fb2c8; --line:#1e2a3c;
-      --surface:#131b27cc; --surface-2:#0f1724;
-      --shadow-sm:0 8px 30px rgba(0,0,0,.45);
-      --shadow-lg:0 28px 80px rgba(0,0,0,.55);
-    }
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color:var(--ink); background:
-      radial-gradient(1200px 600px at 10% -10%, hsl(var(--accent-h) 90% 85% / .35), transparent 60%),
-      radial-gradient(900px 520px at 110% 0%, hsl(calc(var(--accent-h)+40) 90% 80% / .25), transparent 60%),
-      linear-gradient(#f6f8fb, #eef2f8);
-    background-attachment: fixed;
-  }
-  .sheet{max-width:1180px; margin:14px auto; padding:14px}
-  .top{
-    display:flex; align-items:center; justify-content:space-between;
-    background:var(--surface); backdrop-filter: blur(10px);
-    border:1px solid var(--line); border-radius:20px; padding:12px 14px; box-shadow:var(--shadow-sm);
-  }
-  .brand{display:flex; align-items:center; gap:10px}
-  .monogram{
-    width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
-    color:#fff; font-weight:800; letter-spacing:.5px;
-    background:linear-gradient(135deg, var(--accent), var(--accent-2));
-    box-shadow:0 10px 28px hsl(var(--accent-h) 87% 42% / .35);
-  }
-  .title{font-weight:800; letter-spacing:.2px}
-  .tools{display:flex; align-items:center; gap:8px}
-  .chip{
-    width:24px; height:24px; border-radius:999px; border:1px solid var(--line); cursor:pointer; box-shadow:var(--shadow-sm)
-  }
-  .chip[data-h="200"]{background:hsl(200 87% 42%)}
-  .chip[data-h="265"]{background:hsl(265 87% 52%)}
-  .chip[data-h="15"] {background:hsl(15 87% 52%)}
-  .chip[data-h="95"] {background:hsl(95 87% 40%)}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance</title>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- Basic Reset & Mobile-First Styling --- */
+        :root {
+            --primary-color: #17a2b8; /* Teal */
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            --nav-height: 60px;
+            --shadow-light: 0 2px 5px rgba(0,0,0,0.08);
+            --shadow-medium: 0 5px 15px rgba(0,0,0,0.12);
+            --shadow-heavy: 0 10px 30px rgba(0,0,0,0.15);
+        }
 
-  .layout{display:grid; grid-template-columns: 1fr; gap:16px; margin-top:12px}
-  @media (min-width: 980px){ .layout{grid-template-columns:220px 1fr} }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #e9ecef, #c8d6e5);
+            margin: 0;
+            padding: 0;
+            color: var(--dark-color);
+            height: 100vh;
+            overflow: hidden;
+        }
 
-  /* Nav (sidebar on desktop, bottom on mobile) */
-  .nav{
-    position:sticky; top:14px; background:var(--surface); border:1px solid var(--line);
-    border-radius:16px; box-shadow:var(--shadow-sm); padding:8px; height:max-content;
-  }
-  .tab{
-    display:flex; align-items:center; gap:10px; padding:10px 12px; text-decoration:none; color:var(--muted);
-    border-radius:12px; font-weight:700;
-  }
-  .tab + .tab{margin-top:6px}
-  .tab.active{color:var(--ink); background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.04))}
-  .tab .dot{
-    width:8px; height:8px; border-radius:999px; background:var(--line);
-  }
-  .tab.active .dot{
-    background:linear-gradient(135deg, var(--accent), var(--accent-2));
-    box-shadow:0 0 0 4px hsl(var(--accent-h) 90% 45% / .18);
-  }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 
-  @media (max-width: 979px){
-    .nav{
-      position:fixed; left:50%; transform:translateX(-50%); bottom:12px; width:min(96%, 640px);
-      display:flex; gap:8px; padding:8px; z-index:20;
-    }
-    .tab{justify-content:center; flex:1}
-    .tab + .tab{margin-top:0}
-  }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: calc(var(--nav-height) + 15px);
+        }
 
-  /* Cards, sections */
-  .card{
-    background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-sm);
-  }
-  section.view{display:none}
-  section.view.active{display:block}
-  .section-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line)}
-  h1{margin:0; font-size:1.25rem}
-  h2{margin:0; font-size:.95rem; color:var(--muted); font-weight:600; letter-spacing:.2px}
+        .view-section {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .view-section.active {
+            display: block;
+        }
 
-  .pad{padding:16px}
-  .grid-wallets{display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(180px,1fr))}
-  .wallet{
-    padding:14px; border-radius:14px; border:1px solid var(--line);
-    background:linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.14));
-    transition: transform .12s, box-shadow .12s;
-  }
-  .wallet:hover{transform:translateY(-2px); box-shadow:var(--shadow-lg)}
-  .wallet h4{margin:0 0 4px; font-size:.95rem; font-weight:700}
-  .wallet p{margin:0; font-size:1.15rem; font-weight:800; color:var(--accent)}
+        /* --- Bottom Navigation Bar --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: linear-gradient(to top, #ffffff, #f8f9fa);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 0.8em;
+            transition: color 0.2s, transform 0.2s;
+            padding: 5px;
+        }
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        .nav-item span {
+            font-size: 1.5em;
+        }
+        .nav-item:hover {
+            transform: translateY(-2px);
+        }
 
-  .summary{display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(200px,1fr))}
-  .sum{
-    padding:14px; border-radius:14px; border:1px solid var(--line);
-    background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
-  }
-  .sum h3{margin:0 0 4px; font-size:.85rem; color:var(--muted)}
-  .sum p{margin:0; font-size:1.1rem; font-weight:800}
-  .i{--col:#16a34a} .e{--col:#ef4444} .l{--col:#f59e0b} .b{--col:#06b6d4} .n{--col:#7c3aed} .sv{--col:#0ea5e9}
-  .sum p{color:var(--col)}
+        /* --- Desktop Sidebar (for wider screens) --- */
+        @media (min-width: 768px) {
+            body { overflow: auto; }
+            .app-container {
+                flex-direction: row;
+                max-width: 1400px;
+                margin: 0 auto;
+                height: calc(100vh - 30px);
+                margin-top: 15px;
+                border-radius: 12px;
+                box-shadow: var(--shadow-heavy);
+                overflow: hidden;
+            }
+            .main-content {
+                padding-bottom: 15px;
+            }
+            .bottom-nav {
+                flex-direction: column;
+                width: 150px;
+                height: 100%;
+                position: relative;
+                border-top: none;
+                border-right: 1px solid var(--border-color);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            .nav-item {
+                flex-direction: row;
+                height: 60px;
+                font-size: 1em;
+            }
+            .nav-item span {
+                margin-right: 10px;
+                font-size: 1.2em;
+            }
+        }
 
-  .charts{display:grid; gap:12px; grid-template-columns:1fr 1fr}
-  @media (max-width:900px){ .charts{grid-template-columns:1fr} }
-  .chart-card{padding:14px}
+        /* --- Component Styles --- */
+        h1 { text-align: center; color: var(--dark-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;}
+        .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+        .wallet-card { 
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 20px;
+            border-radius: 12px; 
+            text-align: center; 
+            border-left: 5px solid var(--primary-color); 
+            box-shadow: var(--shadow-medium);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .wallet-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--shadow-heavy); }
+        .wallet-card h4 { margin: 0 0 5px 0; font-size: 1em; }
+        .wallet-card p { margin: 0; font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
+        .add-wallet-btn { 
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            border: 2px dashed var(--border-color); 
+            color: #6c757d; 
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .add-wallet-btn:hover { 
+            border-color: var(--primary-color); 
+            color: var(--primary-color); 
+            background: linear-gradient(145deg, #ffffff, #e0f7fa);
+            transform: translateY(-5px) scale(1.02);
+        }
 
-  /* Form controls */
-  .form{display:grid; gap:12px; padding:14px}
-  .fg{display:grid; gap:6px}
-  label{font-weight:700; font-size:.9rem}
-  input, select, button{
-    font-family:inherit; font-size:1rem;
-  }
-  input, select{
-    padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:inherit; outline:none;
-    transition:border-color .15s, box-shadow .15s;
-  }
-  input:focus, select:focus{border-color:var(--accent); box-shadow:0 0 0 4px hsl(var(--accent-h) 90% 45% / .18)}
-  .row{display:flex; gap:10px; flex-wrap:wrap}
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .summary-card { 
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .summary-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-medium); }
+        .summary-card.income { border-left: 5px solid var(--success-color); }
+        .summary-card.expense { border-left: 5px solid var(--danger-color); }
+        .summary-card.lent { border-left: 5px solid var(--warning-color); }
+        .summary-card.borrowed { border-left: 5px solid var(--info-color); }
+        .summary-card.net-worth { border-left: 5px solid #6f42c1; }
+        .summary-card.total-savings { border-left: 5px solid #20c997; }
+        .summary-card h3 { margin: 0 0 5px 0; font-size: 0.9em; color: #6c757d; }
+        .summary-card p { margin: 0; font-size: 1.3em; font-weight: bold; }
 
-  .btn{
-    border:none; border-radius:12px; padding:10px 14px; font-weight:800; letter-spacing:.2px; color:#fff; cursor:pointer;
-    background:linear-gradient(135deg, var(--accent), var(--accent-2));
-    box-shadow:0 10px 28px hsl(var(--accent-h) 90% 45% / .28);
-  }
-  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line)}
-  .btn-danger{background:linear-gradient(135deg, #ef4444, #b91c1c)}
-  .btn-success{background:linear-gradient(135deg, #16a34a, #0f7a34)}
-  .btn.small{padding:6px 10px; font-size:.9rem}
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .chart-card {
+            background: linear-gradient(145deg, #ffffff, #f7f8f9);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--shadow-heavy);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .chart-card canvas {
+            max-height: 300px;
+        }
+        @media (max-width: 768px) {
+            .charts-container { grid-template-columns: 1fr; }
+        }
 
-  /* History list */
-  .list{list-style:none; margin:0; padding:0}
-  .item{padding:12px 14px; border-top:1px solid var(--line)}
-  .item:first-child{border-top:0}
-  .topline{display:flex; align-items:center; justify-content:space-between; gap:10px}
-  .meta{margin-top:4px; color:var(--muted); font-size:.9rem}
-  .amt{font-weight:900}
-  .amt.in{color:#16a34a} .amt.ex{color:#ef4444} .amt.tr{color:#06b6d4} .amt.as{color:#f59e0b} .amt.li{color:var(--accent)}
+        .tracker-form, .category-form, .backup-restore-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 25px;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+        }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            font-size: 1em;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(23, 162, 184, 0.5);
+        }
+        button { 
+            padding: 12px; 
+            background: linear-gradient(145deg, var(--primary-color), #138496);
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 1.1em; 
+            font-weight: bold;
+            cursor: pointer; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: var(--shadow-light);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
+        button:active { transform: translateY(1px); box-shadow: var(--shadow-light); }
+        button.danger-btn { background: linear-gradient(145deg, var(--danger-color), #c82333); }
+        button.success-btn { background: linear-gradient(145deg, var(--success-color), #1e7e34); }
+        button.small-btn { padding: 5px 10px; font-size: 0.8em; }
+        button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        .premium-form .form-group {
+            position: relative;
+        }
+        .premium-form .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .premium-form .form-group label::before {
+            content: attr(data-icon);
+            font-size: 1.2em;
+        }
 
-  /* Category chips */
-  .chip-type{
-    padding:4px 8px; border-radius:999px; border:1px solid var(--line); font-size:.8rem; color:var(--muted); background:var(--surface-2)
-  }
-  .group{padding:10px 14px; border-top:1px solid var(--line)}
-  .group:first-child{border-top:0}
-  .subrow{display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-top:1px dashed var(--line)}
-  .subrow:first-child{border-top:0}
+        .category-list { list-style: none; padding: 0; }
+        .category-item { 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            box-shadow: var(--shadow-light);
+        }
+        .category-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px; 
+            background: linear-gradient(to right, var(--light-color), #ffffff);
+            font-weight: bold; 
+            border-radius: 12px 12px 0 0;
+        }
+        .subcategories { padding: 10px; }
+        .subcategory-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 15px; 
+            border-bottom: 1px solid #f1f1f1; 
+        }
+        .subcategory-item:last-child { border-bottom: none; }
+        .no-subcategories { padding: 10px 15px; color: #6c757d; font-style: italic; }
 
-  /* Modals */
-  .modal{display:none; position:fixed; inset:0; background:rgba(10,16,28,.4); backdrop-filter: blur(2px); z-index:40; align-items:center; justify-content:center}
-  .modal.show{display:flex}
-  .modal-card{width:92%; max-width:560px}
-  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line)}
-  .modal-body{padding:14px}
-  .modal-foot{padding:0 14px 14px; display:flex; gap:10px; justify-content:flex-end}
-  .close{font-size:26px; color:var(--muted); cursor:pointer}
+        .transaction-list { list-style-type: none; padding: 0; margin: 0; }
+        .transaction-item { 
+            display: flex; 
+            flex-direction: column;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            margin-bottom: 12px; 
+            border-radius: 12px; 
+            padding: 15px;
+            box-shadow: var(--shadow-light);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .transaction-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
+        .transaction-top-row { display: flex; justify-content: space-between; align-items: center; }
+        .transaction-details { flex-grow: 1; }
+        .transaction-description { font-weight: 500; }
+        .transaction-meta { font-size: 0.8em; color: #6c757d; margin-top: 5px; }
+        .transaction-amount { font-size: 1.1em; font-weight: bold; margin-right: 10px; }
+        .transaction-actions { display: flex; gap: 8px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 1.2em; padding: 5px; }
+        .amount-income { color: var(--success-color); }
+        .amount-expense { color: var(--danger-color); }
+        .amount-transfer { color: var(--info-color); }
+        .amount-asset { color: var(--warning-color); }
+        .amount-liability { color: var(--primary-color); }
 
-  /* Toast */
-  .toast{
-    position:fixed; right:16px; bottom:16px; z-index:60; opacity:0; transform:translateY(6px);
-    background:#101827; color:#fff; border-radius:12px; padding:10px 12px; font-weight:800; letter-spacing:.2px;
-    transition:opacity .2s, transform .2s;
-  }
-  .toast.show{opacity:1; transform:translateY(0)}
-</style>
+        /* --- Modal --- */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(5px);
+        }
+        .modal.show { display: flex; }
+        .modal-content { 
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            margin: auto; 
+            padding: 30px; 
+            border: 1px solid var(--border-color); 
+            width: 90%; 
+            max-width: 500px; 
+            border-radius: 12px; 
+            box-shadow: var(--shadow-heavy);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-body { margin-bottom: 20px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; }
+        .close-btn:hover, .close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
+    </style>
 </head>
 <body>
-  <div class="sheet">
-    <header class="top">
-      <div class="brand">
-        <div class="monogram">BK</div>
-        <div class="title">Personal Finance</div>
-      </div>
-      <div class="tools" title="Accent">
-        <div class="chip" data-h="200" aria-label="Teal"></div>
-        <div class="chip" data-h="265" aria-label="Purple"></div>
-        <div class="chip" data-h="15"  aria-label="Coral"></div>
-        <div class="chip" data-h="95"  aria-label="Lime"></div>
-      </div>
-    </header>
 
-    <div class="layout">
-      <!-- NAV -->
-      <nav class="nav card">
-        <a class="tab active" href="#" data-target="v-home"><span class="dot"></span> Wallets</a>
-        <a class="tab" href="#" data-target="v-add"><span class="dot"></span> Add</a>
-        <a class="tab" href="#" data-target="v-history"><span class="dot"></span> History</a>
-        <a class="tab" href="#" data-target="v-categories"><span class="dot"></span> Categories</a>
-      </nav>
-
-      <!-- MAIN -->
-      <main>
-        <!-- HOME -->
-        <section id="v-home" class="view active card">
-          <div class="section-head">
-            <h1>Overview</h1>
-            <h2>At a glance</h2>
-          </div>
-          <div class="pad">
-            <h2>Wallets</h2>
-            <div id="walletsGrid" class="grid-wallets"></div>
-
-            <h2 style="margin-top:14px">Summary</h2>
-            <div class="summary" id="summary">
-              <div class="sum i"><h3>Total Income</h3><p id="totalIncome">৳0.00</p></div>
-              <div class="sum e"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
-              <div class="sum l"><h3>Total Lent</h3><p id="totalLent">৳0.00</p></div>
-              <div class="sum b"><h3>Total Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
-              <div class="sum n"><h3>Net Worth</h3><p id="netWorth">৳0.00</p></div>
-              <div class="sum sv"><h3>Total Savings</h3><p id="totalSavings">৳0.00</p></div>
-            </div>
-
-            <h2 style="margin-top:14px">Analytics</h2>
-            <div class="charts">
-              <div class="card chart-card"><canvas id="expensePieChart"></canvas></div>
-              <div class="card chart-card"><canvas id="incomeExpenseBarChart"></canvas></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ADD -->
-        <section id="v-add" class="view card">
-          <div class="section-head"><h1>Add Transaction</h1><h2>Record a new entry</h2></div>
-          <form id="trackerForm" class="form">
-            <div class="fg"><label for="description">Description</label><input id="description" type="text" placeholder="e.g., Weekly Groceries" required></div>
-            <div class="row" style="width:100%">
-              <div class="fg" style="flex:1 1 180px"><label for="amount">Amount (৳)</label><input id="amount" type="number" step="0.01" min="0.01" placeholder="0.00" required></div>
-              <div class="fg" style="flex:1 1 180px"><label for="transactionDate">Date</label><input id="transactionDate" type="date" required></div>
-              <div class="fg" style="flex:1 1 180px"><label for="wallet">Wallet</label><select id="wallet" required></select></div>
-            </div>
-            <div class="row">
-              <div class="fg" style="flex:1 1 240px"><label for="category">Category</label><select id="category" required></select></div>
-              <div class="fg" style="flex:1 1 240px"><label for="subcategory">Subcategory</label><select id="subcategory" required></select></div>
-            </div>
-            <div id="transferFields" class="row" style="display:none">
-              <div class="fg" style="flex:1 1 240px"><label for="toWallet">To Wallet</label><select id="toWallet"></select></div>
-            </div>
-            <div class="row">
-              <button type="submit" class="btn">Add Transaction</button>
-            </div>
-          </form>
-        </section>
-
-        <!-- HISTORY -->
-        <section id="v-history" class="view card">
-          <div class="section-head"><h1>Transaction History</h1><h2>Filter & export</h2></div>
-          <div class="pad">
-            <div class="row" style="align-items:flex-end">
-              <div class="fg" style="flex:1 1 260px"><label for="categorySearch">Filter by Category</label><select id="categorySearch"><option value="all">All Categories</option></select></div>
-              <button id="downloadCsvBtn" class="btn btn-success">📥 Download CSV</button>
-            </div>
-            <ul id="transactionList" class="list" style="margin-top:10px"></ul>
-          </div>
-        </section>
-
-        <!-- CATEGORIES -->
-        <section id="v-categories" class="view card">
-          <div class="section-head"><h1>Manage Categories</h1><h2>Organize by type</h2></div>
-          <div class="pad">
-            <div class="card" style="padding:14px; margin-bottom:12px">
-              <h2 style="margin-bottom:10px">Add New Category</h2>
-              <div class="row">
-                <input id="newCategoryName" type="text" placeholder="e.g., Business" style="flex:2 1 260px">
-                <select id="newCategoryType" style="flex:1 1 200px">
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                  <option value="asset">Lent Money (Asset)</option>
-                  <option value="liability">Borrowed Money (Liability)</option>
-                  <option value="transfer">Transfer</option>
-                </select>
-                <button id="addCategoryBtn" type="button" class="btn small">➕ Add</button>
-              </div>
-            </div>
-
-            <div class="card" style="padding:14px; margin-bottom:12px">
-              <h2 style="margin-bottom:10px">Backup & Restore</h2>
-              <div class="row">
-                <button id="backupBtn" type="button" class="btn btn-success">⬆️ Backup to Drive</button>
-                <button id="listBackupsBtn" type="button" class="btn">📄 List Backups</button>
-              </div>
-              <div id="restoreSection" style="display:none; margin-top:10px">
-                <div class="row">
-                  <select id="restoreFileSelect" style="flex:1 1 360px">
-                    <option value="">-- Select a backup --</option>
-                  </select>
-                  <button id="restoreBtn" type="button" class="btn btn-danger" disabled>⬇️ Restore Selected</button>
+    <div class="app-container">
+        <main class="main-content">
+            
+            <!-- View 1: Wallets -->
+            <section id="view-wallets" class="view-section active">
+                <h1>Personal Finance</h1>
+                <h2>Wallets</h2>
+                <div id="walletsGrid" class="wallets-grid"></div>
+                <h2 style="margin-top:30px;">Summary</h2>
+                <div class="summary-grid">
+                    <div class="summary-card income"><h3>Total Income</h3><p id="totalIncome">৳0.00</p></div>
+                    <div class="summary-card expense"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
+                    <div class="summary-card lent"><h3>Total Lent</h3><p id="totalLent">৳0.00</p></div>
+                    <div class="summary-card borrowed"><h3>Total Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
+                    <div class="summary-card net-worth"><h3>Net Worth</h3><p id="netWorth">৳0.00</p></div>
+                    <div class="summary-card total-savings"><h3>Total Savings</h3><p id="totalSavings">৳0.00</p></div>
                 </div>
-              </div>
+                <h2>Analytics</h2>
+                <div class="charts-container">
+                    <div class="chart-card"><canvas id="expensePieChart"></canvas></div>
+                    <div class="chart-card"><canvas id="incomeExpenseBarChart"></canvas></div>
+                </div>
+            </section>
+
+            <!-- View 2: Add Transaction -->
+            <section id="view-add-transaction" class="view-section">
+                <h1>Add Transaction</h1>
+                <form id="trackerForm" class="tracker-form premium-form">
+                    <div class="form-group"><label for="description" data-icon="📝">Description</label><input type="text" id="description" placeholder="e.g., Weekly Groceries" required></div>
+                    <div class="form-group"><label for="amount" data-icon="💵">Amount (৳)</label><input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required></div>
+                    <div class="form-group"><label for="transactionDate" data-icon="📅">Date</label><input type="date" id="transactionDate" required></div>
+                    <div class="form-group"><label for="wallet" data-icon="💳">Wallet</label><select id="wallet" required></select></div>
+                    <div class="form-group"><label for="category" data-icon="📂">Category</label><select id="category" required></select></div>
+                    <div class="form-group"><label for="subcategory" data-icon="🏷️">Subcategory</label><select id="subcategory" required></select></div>
+                    <div id="transferFields" style="display:none;">
+                        <div class="form-group"><label for="toWallet" data-icon="➡️">To Wallet</label><select id="toWallet"></select></div>
+                    </div>
+                    <button type="submit">Add Transaction</button>
+                </form>
+            </section>
+
+            <!-- View 3: Transaction History -->
+            <section id="view-history" class="view-section">
+                <h1>Transaction History</h1>
+                <div style="display:flex; gap:10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                    <div class="form-group" style="margin:0; flex-grow:1;">
+                        <label for="categorySearch">Filter by Category</label>
+                        <select id="categorySearch">
+                            <option value="all">All Categories</option>
+                        </select>
+                    </div>
+                    <button id="downloadCsvBtn" class="success-btn" style="align-self:flex-end;">📥 Download as CSV</button>
+                </div>
+                <ul id="transactionList" class="transaction-list"></ul>
+            </section>
+
+            <!-- View 4: Manage Categories -->
+            <section id="view-manage-categories" class="view-section">
+                <h1>Manage Categories</h1>
+                <div class="category-form">
+                    <h3>Add New Category</h3>
+                    <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                        <input type="text" id="newCategoryName" placeholder="e.g., Business" class="premium-input" style="flex-grow: 1;">
+                        <select id="newCategoryType" class="premium-input">
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                            <option value="asset">Lent Money (Asset)</option>
+                            <option value="liability">Borrowed Money (Liability)</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <button type="button" id="addCategoryBtn">➕ Add Category</button>
+                </div>
+
+                <div class="backup-restore-form">
+                    <h3>Backup & Restore</h3>
+                    <p style="font-size:0.9em; color:#6c757d;">Create a backup file in your Google Drive or restore data from a previous backup.</p>
+                    <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                        <button type="button" id="backupBtn" class="success-btn">⬆️ Backup to Drive</button>
+                        <button type="button" id="listBackupsBtn">📄 List Backups</button>
+                    </div>
+                    <div id="restoreSection" style="display:none; margin-top:15px;">
+                        <label for="restoreFileSelect">Select a backup to restore:</label>
+                        <select id="restoreFileSelect">
+                            <option value="">-- Select a file --</option>
+                        </select>
+                        <button type="button" id="restoreBtn" class="danger-btn" disabled>⬇️ Restore Selected</button>
+                    </div>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border-color);">
+                    <button type="button" id="resetAllDataBtn" class="danger-btn">🔄 Reset All Data</button>
+                </div>
+
+                <ul id="categoryList" class="category-list"></ul>
+            </section>
+
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-target="view-wallets">
+                <span>💳</span> Wallets
+            </a>
+            <a href="#" class="nav-item" data-target="view-add-transaction">
+                <span>➕</span> Add
+            </a>
+            <a href="#" class="nav-item" data-target="view-history">
+                <span>📜</span> History
+            </a>
+            <a href="#" class="nav-item" data-target="view-manage-categories">
+                <span>⚙️</span> Categories
+            </a>
+        </nav>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Transaction</h2><span class="close-btn" data-target="editModal">&times;</span></div>
+            <form id="editForm" class="tracker-form premium-form">
+                <input type="hidden" id="editId">
+                <div class="form-group"><label for="editDescription" data-icon="📝">Description</label><input type="text" id="editDescription" required></div>
+                <div class="form-group"><label for="editAmount" data-icon="💵">Amount (৳)</label><input type="number" id="editAmount" step="0.01" min="0.01" required></div>
+                <div class="form-group"><label for="editTransactionDate" data-icon="📅">Date</label><input type="date" id="editTransactionDate" required></div>
+                <div class="form-group"><label for="editWallet" data-icon="💳">Wallet</label><select id="editWallet" required></select></div>
+                <div class="form-group"><label for="editCategory" data-icon="📂">Category</label><select id="editCategory" required></select></div>
+                <div class="form-group"><label for="editSubcategory" data-icon="🏷️">Subcategory</label><select id="editSubcategory" required></select></div>
+                <div id="editTransferFields" style="display:none;">
+                    <div class="form-group"><label for="editToWallet" data-icon="➡️">To Wallet</label><select id="editToWallet"></select></div>
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Subcategory Modal -->
+    <div id="addSubcategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Add New Subcategory</h2><span class="close-btn" data-target="addSubcategoryModal">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newSubcategoryName">Subcategory Name</label>
+                    <input type="text" id="newSubcategoryName" placeholder="e.g., Office Supplies">
+                </div>
             </div>
-
-            <!-- Grouped by type -->
-            <div id="categoryGroups" class="card">
-              <div class="section-head"><h2 style="color:var(--ink)">Categories</h2><span class="chip-type">Grouped by Type</span></div>
-              <div id="categoryList" class="pad"></div>
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="addSubcategoryModal">Close</button>
+                <button type="button" id="saveSubcategoryBtn">Save</button>
             </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  </div>
-
-  <!-- Modals -->
-  <div id="editModal" class="modal">
-    <div class="modal-card card">
-      <div class="modal-head"><h1>Edit Transaction</h1><span class="close" data-target="editModal">&times;</span></div>
-      <form id="editForm" class="modal-body form">
-        <input type="hidden" id="editId">
-        <div class="fg"><label for="editDescription">Description</label><input id="editDescription" required></div>
-        <div class="row">
-          <div class="fg" style="flex:1 1 180px"><label for="editAmount">Amount (৳)</label><input id="editAmount" type="number" step="0.01" min="0.01" required></div>
-          <div class="fg" style="flex:1 1 180px"><label for="editTransactionDate">Date</label><input id="editTransactionDate" type="date" required></div>
         </div>
-        <div class="row">
-          <div class="fg" style="flex:1 1 200px"><label for="editWallet">Wallet</label><select id="editWallet" required></select></div>
-          <div class="fg" style="flex:1 1 200px"><label for="editCategory">Category</label><select id="editCategory" required></select></div>
-          <div class="fg" style="flex:1 1 200px"><label for="editSubcategory">Subcategory</label><select id="editSubcategory" required></select></div>
-        </div>
-        <div id="editTransferFields" class="row" style="display:none">
-          <div class="fg" style="flex:1 1 240px"><label for="editToWallet">To Wallet</label><select id="editToWallet"></select></div>
-        </div>
-        <div class="modal-foot">
-          <button type="button" class="btn btn-ghost" data-target="editModal">Cancel</button>
-          <button type="submit" class="btn">Save Changes</button>
-        </div>
-      </form>
     </div>
-  </div>
 
-  <div id="addSubcategoryModal" class="modal">
-    <div class="modal-card card">
-      <div class="modal-head"><h1>Add Subcategory</h1><span class="close" data-target="addSubcategoryModal">&times;</span></div>
-      <div class="modal-body form">
-        <div class="fg"><label for="newSubcategoryName">Name</label><input id="newSubcategoryName" placeholder="e.g., Office Supplies"></div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-ghost" data-target="addSubcategoryModal">Close</button>
-        <button type="button" id="saveSubcategoryBtn" class="btn">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="editCategoryModal" class="modal">
-    <div class="modal-card card">
-      <div class="modal-head"><h1>Edit Category</h1><span class="close" data-target="editCategoryModal">&times;</span></div>
-      <div class="modal-body form">
-        <input type="hidden" id="editCategoryId">
-        <div class="fg"><label for="editCategoryName">Category Name</label><input id="editCategoryName" required></div>
-        <div class="fg"><label for="editCategoryType">Type</label>
-          <select id="editCategoryType">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-            <option value="asset">Lent Money (Asset)</option>
-            <option value="liability">Borrowed Money (Liability)</option>
-            <option value="transfer">Transfer</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-ghost" data-target="editCategoryModal">Close</button>
-        <button type="button" id="saveCategoryChangesBtn" class="btn">Save Changes</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="editSubcategoryModal" class="modal">
-    <div class="modal-card card">
-      <div class="modal-head"><h1>Edit Subcategory</h1><span class="close" data-target="editSubcategoryModal">&times;</span></div>
-      <div class="modal-body form">
-        <input type="hidden" id="editSubcategoryId">
-        <div class="fg"><label for="editSubcategoryName">Subcategory Name</label><input id="editSubcategoryName" required></div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-ghost" data-target="editSubcategoryModal">Close</button>
-        <button type="button" id="saveSubcategoryChangesBtn" class="btn">Save Changes</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="deleteConfirmModal" class="modal">
-    <div class="modal-card card">
-      <div class="modal-head"><h1>Confirm Deletion</h1><span class="close" data-target="deleteConfirmModal">&times;</span></div>
-      <div class="modal-body"><p id="deleteConfirmMessage" style="margin:0">Are you sure?</p></div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-ghost" data-target="deleteConfirmModal">Cancel</button>
-        <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-  /* CONFIG */
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec';
-
-  /* Shortcuts */
-  const $ = s => document.querySelector(s);
-  const $$ = s => document.querySelectorAll(s);
-
-  /* Accent chooser */
-  $$('.chip').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      document.documentElement.style.setProperty('--accent-h', el.dataset.h);
-    });
-  });
-
-  /* Toast */
-  const toast = $('#toast');
-  const showToast = (msg) => { toast.textContent = msg; toast.classList.add('show'); setTimeout(()=> toast.classList.remove('show'), 2000); };
-
-  /* Nav */
-  const tabs = $$('.tab'), views = $$('.view');
-  const switchView = id => {
-    views.forEach(v=>v.classList.remove('active'));
-    tabs.forEach(t=>t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelector(`.tab[data-target="${id}"]`).classList.add('active');
-  };
-  tabs.forEach(t=> t.addEventListener('click', e=>{ e.preventDefault(); switchView(t.getAttribute('data-target')); }));
-
-  /* Elements */
-  const walletsGrid = $('#walletsGrid');
-  const transactionList = $('#transactionList');
-  const form = $('#trackerForm'); const editForm = $('#editForm');
-
-  const categoryListEl = $('#categoryList'); const categoryGroups = $('#categoryGroups');
-  const categorySelect = $('#category'); const subcategorySelect = $('#subcategory');
-  const walletSelect = $('#wallet'); const toWalletSelect = $('#toWallet'); const transferFields = $('#transferFields');
-
-  const editCategorySelect = $('#editCategory'); const editSubcategorySelect = $('#editSubcategory');
-  const editWalletSelect = $('#editWallet'); const editToWalletSelect = $('#editToWallet'); const editTransferFields = $('#editTransferFields');
-
-  const categorySearchSelect = $('#categorySearch'); const downloadCsvBtn = $('#downloadCsvBtn');
-
-  const backupBtn = $('#backupBtn'); const listBackupsBtn = $('#listBackupsBtn');
-  const restoreSection = $('#restoreSection'); const restoreFileSelect = $('#restoreFileSelect'); const restoreBtn = $('#restoreBtn');
-
-  /* Data */
-  const defaultCategories = [
-    { id: 1, name: 'Accounts / Wallets', type: 'transfer' },
-    { id: 2, name: 'Savings / Investments', type: 'expense' },
-    { id: 3, name: 'Expense', type: 'expense' },
-    { id: 4, name: 'Income', type: 'income' },
-    { id: 5, name: 'Lending / Borrowing', type: 'asset' }
-  ];
-  const defaultSubcategories = [
-    { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
-    { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 }, { id: 9, name: 'Emergency Fund', categoryId: 2 }, { id: 10, name: 'Retirement Fund', categoryId: 2 },
-    { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
-    { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
-    { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 }
-  ];
-
-  let wallets=[], categories=[], subcategories=[], transactions=[];
-  let currentCategoryIdForSubcategory = null, deleteCallback = null;
-  let expensePieChart=null, incomeExpenseBarChart=null;
-
-  /* API */
-  const api = {
-    async load(){
-      try{
-        const r = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
-        if(!r.ok) throw new Error('Network');
-        return await r.json();
-      }catch(e){
-        return {
-          wallets: JSON.parse(localStorage.getItem('advTrackerWallets')) || [{ id:1, name:'Cash', balance:0 }, { id:2, name:'Bank', balance:0 }, { id:3, name:'bKash', balance:0 }, { id:4, name:'Nagad', balance:0 }],
-          categories: JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories,
-          subcategories: JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories,
-          transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || []
-        };
-      }
-    },
-    async save(data){
-      try{
-        const r = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'saveAll', data})});
-        if(!r.ok) throw new Error('Network'); await r.json();
-      }catch(e){
-        localStorage.setItem('advTrackerWallets', JSON.stringify(data.wallets));
-        localStorage.setItem('advTrackerCategories', JSON.stringify(data.categories));
-        localStorage.setItem('advTrackerSubcategories', JSON.stringify(data.subcategories));
-        localStorage.setItem('advTrackerTransactions', JSON.stringify(data.transactions));
-      }
-    },
-    async callScript(action, params={}){
-      try{
-        const url = new URL(GOOGLE_SCRIPT_URL);
-        Object.entries(params).forEach(([k,v])=> url.searchParams.append(k, v));
-        url.searchParams.append('action', action);
-        const r = await fetch(url);
-        if(!r.ok) throw new Error('Network');
-        return await r.json();
-      }catch(e){ return {status:'error', message:e.toString()}; }
-    }
-  };
-
-  /* Helpers */
-  const typeSign = t => t==='transfer' ? '↔️' : (['expense','asset','liability'].includes(t) ? '-' : '+');
-  const typeClass = t => t==='transfer'?'tr' : t==='income'?'in' : t==='expense'?'ex' : t==='asset'?'as' : 'li';
-
-  const updateWalletBalance = (walletId, amount, type, subName, isSource=true) => {
-    const w = wallets.find(x=>x.id===walletId); if(!w) return;
-    if (type==='transfer') return;
-    if (type==='asset' && subName==='Loan Received Back'){ w.balance += amount; return; }
-    if (type==='liability' && subName==='Loan Repaid'){ w.balance -= amount; return; }
-    if (isSource){
-      if (['expense','asset','liability'].includes(type)) w.balance -= amount;
-      if (type==='income') w.balance += amount;
-    }else{
-      if (type==='asset') w.balance += amount;
-      if (type==='liability') w.balance -= amount;
-    }
-  };
-  const reverseWalletBalance = (t) => {
-    const w = wallets.find(x=>x.id===t.walletId);
-    const c = categories.find(x=>x.id===t.categoryId);
-    const s = subcategories.find(x=>x.id===t.subcategoryId);
-    if(!c) return;
-    if (c.type==='transfer'){ const toW = wallets.find(x=>x.id===t.toWalletId); if(w) w.balance += t.amount; if(toW) toW.balance -= t.amount; return; }
-    if (c.type==='asset' && s?.name==='Loan Received Back'){ if(w) w.balance -= t.amount; return; }
-    if (c.type==='liability' && s?.name==='Loan Repaid'){ if(w) w.balance += t.amount; return; }
-    if (['expense','asset','liability'].includes(c.type)){ if(w) w.balance += t.amount; }
-    if (c.type==='income'){ if(w) w.balance -= t.amount; }
-  };
-
-  /* Render */
-  const renderWallets = () => {
-    walletsGrid.innerHTML = ''; walletSelect.innerHTML = ''; editWalletSelect.innerHTML=''; toWalletSelect.innerHTML=''; editToWalletSelect.innerHTML='';
-    wallets.forEach(w=>{
-      const card = document.createElement('div');
-      card.className = 'wallet';
-      card.innerHTML = `<h4>${w.name}</h4><p>৳${(w.balance||0).toFixed(2)}</p>`;
-      walletsGrid.appendChild(card);
-      const opt = new Option(w.name, w.id);
-      walletSelect.add(opt.cloneNode(true)); editWalletSelect.add(opt.cloneNode(true));
-      toWalletSelect.add(opt.cloneNode(true)); editToWalletSelect.add(opt.cloneNode(true));
-    });
-    const add = document.createElement('div');
-    add.className = 'wallet'; add.style.borderStyle='dashed'; add.style.textAlign='center'; add.style.cursor='pointer';
-    add.innerHTML = `<h4>+ Add Wallet</h4><p style="color:var(--muted)">Create a wallet</p>`;
-    add.onclick = ()=>{ const name = prompt('Enter new wallet name:'); if(name) addWallet(name); };
-    walletsGrid.appendChild(add);
-  };
-
-  const renderSummary = () => {
-    let income=0, expense=0, lent=0, borrowed=0, savings=0, lentBack=0, borrowedPaid=0;
-    transactions.forEach(t=>{
-      const c = categories.find(x=>x.id===t.categoryId); if(!c) return;
-      const s = subcategories.find(x=>x.id===t.subcategoryId); const a=t.amount; const sn=s?.name||'';
-      if(c.type==='income') income += a;
-      if(c.type==='expense'){ expense += a; if(c.name==='Savings / Investments') savings += a; }
-      if(c.type==='asset'){ if(sn==='Lent Money') lent += a; if(sn==='Loan Received Back') lentBack += a; }
-      if(c.type==='liability'){ if(sn==='Borrowed Money') borrowed += a; if(sn==='Loan Repaid') borrowedPaid += a; }
-    });
-    const walletBal = wallets.reduce((s,w)=> s + (w.balance||0), 0);
-    const net = walletBal - (borrowed - borrowedPaid);
-    $('#totalIncome').textContent = `৳${income.toFixed(2)}`;
-    $('#totalExpense').textContent = `৳${expense.toFixed(2)}`;
-    $('#totalLent').textContent = `৳${(lent - lentBack).toFixed(2)}`;
-    $('#totalBorrowed').textContent = `৳${(borrowed - borrowedPaid).toFixed(2)}`;
-    $('#netWorth').textContent = `৳${net.toFixed(2)}`;
-    $('#totalSavings').textContent = `৳${savings.toFixed(2)}`;
-  };
-
-  const renderCharts = () => {
-    const expenseData = {}; const monthly = {};
-    transactions.forEach(t=>{
-      const c = categories.find(x=>x.id===t.categoryId); if(!c) return;
-      const s = subcategories.find(x=>x.id===t.subcategoryId);
-      const label = s ? s.name : c.name;
-      const m = new Date(t.date).toLocaleDateString('en-US',{year:'numeric', month:'short'});
-      if(c.type==='expense') expenseData[label] = (expenseData[label]||0) + t.amount;
-      if(!monthly[m]) monthly[m] = {income:0, expense:0};
-      if(c.type==='income') monthly[m].income += t.amount;
-      if(c.type==='expense') monthly[m].expense += t.amount;
-    });
-
-    const pieCtx = document.getElementById('expensePieChart').getContext('2d');
-    if (expensePieChart) expensePieChart.destroy();
-    expensePieChart = new Chart(pieCtx, {
-      type:'pie',
-      data:{ labels:Object.keys(expenseData),
-        datasets:[{ data:Object.values(expenseData),
-          backgroundColor:['#0ea5e9','#8b5cf6','#ef4444','#f59e0b','#22c55e','#e11d48'] }]},
-      options:{responsive:true, plugins:{legend:{position:'top'}, title:{display:true,text:'Expense Breakdown'}}}
-    });
-
-    const barCtx = document.getElementById('incomeExpenseBarChart').getContext('2d');
-    if (incomeExpenseBarChart) incomeExpenseBarChart.destroy();
-    const months = Object.keys(monthly).sort((a,b)=> new Date(a) - new Date(b));
-    incomeExpenseBarChart = new Chart(barCtx,{
-      type:'bar',
-      data:{
-        labels:months,
-        datasets:[
-          {label:'Income', data: months.map(m=>monthly[m].income), backgroundColor:'rgba(22,163,74,.75)', borderColor:'#16a34a', borderWidth:1},
-          {label:'Expense', data: months.map(m=>monthly[m].expense), backgroundColor:'rgba(239,68,68,.75)', borderColor:'#ef4444', borderWidth:1}
-        ]
-      },
-      options:{responsive:true, scales:{y:{beginAtZero:true}}, plugins:{legend:{position:'top'}, title:{display:true, text:'Income vs Expense'}}}
-    });
-  };
-
-  const renderTransactions = (arr = transactions) => {
-    transactionList.innerHTML = '';
-    const list = [...arr].sort((a,b)=> new Date(b.date) - new Date(a.date));
-    if(!list.length){ transactionList.innerHTML = `<li class="item">No transactions found.</li>`; return; }
-    list.forEach(t=>{
-      const w = wallets.find(x=>x.id==t.walletId), c = categories.find(x=>x.id==t.categoryId), s = subcategories.find(x=>x.id==t.subcategoryId);
-      const klass = c ? typeClass(c.type) : 'ex', sign = c ? typeSign(c.type) : '-';
-      const d = new Date(t.date).toLocaleDateString(undefined,{year:'numeric', month:'short', day:'numeric'});
-      const li = document.createElement('li'); li.className='item';
-      li.innerHTML = `
-        <div class="topline">
-          <div style="font-weight:800">${t.description}</div>
-          <div class="amt ${klass}">${sign}৳${t.amount.toFixed(2)}</div>
-        </div>
-        <div class="meta">${d} • ${(w?w.name:'N/A')} • ${(c?c.name:'N/A')} → ${(s?s.name:'N/A')}</div>
-        <div class="row" style="justify-content:flex-end; margin-top:8px">
-          <button class="btn small btn-ghost" data-edit="${t.id}">✏️ Edit</button>
-          <button class="btn small btn-danger" data-del="${t.id}">🗑️ Delete</button>
-        </div>`;
-      transactionList.appendChild(li);
-    });
-  };
-
-  const renderCategories = () => {
-    // Group by type for perfect clarity
-    const types = ['income','expense','asset','liability','transfer'];
-    const labels = {income:'Income', expense:'Expense', asset:'Asset (Lent)', liability:'Liability (Borrowed)', transfer:'Transfer'};
-    categoryListEl.innerHTML = '';
-    types.forEach(tp=>{
-      const groupCats = categories.filter(c=> c.type===tp);
-      const group = document.createElement('div'); group.className='group';
-      group.innerHTML = `<div class="row" style="justify-content:space-between; align-items:center">
-        <div style="display:flex; align-items:center; gap:10px"><h2 style="margin:0; color:var(--ink)">${labels[tp]}</h2><span class="chip-type">${groupCats.length} categories</span></div>
-      </div>`;
-      // each category
-      groupCats.forEach(cat=>{
-        const subs = subcategories.filter(s=> s.categoryId===cat.id);
-        const catBlock = document.createElement('div'); catBlock.style.marginTop='8px';
-        catBlock.innerHTML = `
-          <div class="row" style="align-items:center; justify-content:space-between">
-            <div><strong>${cat.name}</strong></div>
-            <div class="row">
-              <button class="btn small btn-ghost" data-editcat="${cat.id}">Edit</button>
-              <button class="btn small btn-danger" data-delcat="${cat.id}">Delete</button>
+    <!-- Edit Category Modal -->
+    <div id="editCategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Category</h2><span class="close-btn" data-target="editCategoryModal">&times;</span></div>
+            <div class="modal-body">
+                <input type="hidden" id="editCategoryId">
+                <div class="form-group">
+                    <label for="editCategoryName">Category Name</label>
+                    <input type="text" id="editCategoryName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCategoryType">Type</label>
+                    <select id="editCategoryType">
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                        <option value="asset">Lent Money (Asset)</option>
+                        <option value="liability">Borrowed Money (Liability)</option>
+                        <option value="transfer">Transfer</option>
+                    </select>
+                </div>
             </div>
-          </div>
-        `;
-        // subcategories
-        if(subs.length){
-          subs.forEach(s=>{
-            const line = document.createElement('div'); line.className='subrow';
-            line.innerHTML = `<div>${s.name}</div>
-              <div class="row">
-                <button class="btn small btn-ghost" data-editsub="${s.id}">Edit</button>
-                <button class="btn small btn-danger" data-delsub="${s.id}">Delete</button>
-              </div>`;
-            catBlock.appendChild(line);
-          });
-        }else{
-          const none = document.createElement('div'); none.className='subrow'; none.innerHTML = `<div style="color:var(--muted); font-style:italic">No subcategories</div>`;
-          catBlock.appendChild(none);
-        }
-        const addBtn = document.createElement('button'); addBtn.className='btn small'; addBtn.textContent='+ Add Subcategory'; addBtn.setAttribute('data-addsub', cat.id);
-        addBtn.style.marginTop='6px';
-        catBlock.appendChild(addBtn);
-        group.appendChild(catBlock);
-      });
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="editCategoryModal">Close</button>
+                <button type="button" id="saveCategoryChangesBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Subcategory Modal -->
+    <div id="editSubcategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Edit Subcategory</h2><span class="close-btn" data-target="editSubcategoryModal">&times;</span></div>
+            <div class="modal-body">
+                <input type="hidden" id="editSubcategoryId">
+                <div class="form-group">
+                    <label for="editSubcategoryName">Subcategory Name</label>
+                    <input type="text" id="editSubcategoryName" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="editSubcategoryModal">Close</button>
+                <button type="button" id="saveSubcategoryChangesBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
 
-      categoryListEl.appendChild(group);
-    });
-  };
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Confirm Deletion</h2><span class="close-btn" data-target="deleteConfirmModal">&times;</span></div>
+            <div class="modal-body">
+                <p id="deleteConfirmMessage">Are you sure you want to delete this?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="deleteConfirmModal">Cancel</button>
+                <button type="button" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
 
-  const populateCategoryDropdowns = () => {
-    categorySelect.innerHTML=''; editCategorySelect.innerHTML=''; categorySearchSelect.innerHTML='<option value="all">All Categories</option>';
-    categories.forEach(c=>{
-      categorySelect.add(new Option(c.name, c.id));
-      editCategorySelect.add(new Option(c.name, c.id));
-      categorySearchSelect.add(new Option(c.name, c.id));
-    });
-  };
-  const updateSubcategoryDropdown = (categoryId, target) => {
-    const subs = subcategories.filter(s => s.categoryId == categoryId);
-    target.innerHTML = ''; subs.forEach(s=> target.add(new Option(s.name, s.id)));
-  };
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- CONFIGURATION ---
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec';
 
-  const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); renderCharts(); };
+            // --- DOM Elements ---
+            const navItems = document.querySelectorAll('.nav-item');
+            const viewSections = document.querySelectorAll('.view-section');
+            const categorySearchSelect = document.getElementById('categorySearch');
+            const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+            
+            const form = document.getElementById('trackerForm');
+            const editForm = document.getElementById('editForm');
+            const transactionList = document.getElementById('transactionList');
+            const walletsGrid = document.getElementById('walletsGrid');
+            const categoryList = document.getElementById('categoryList');
+            const categorySelect = document.getElementById('category');
+            const subcategorySelect = document.getElementById('subcategory');
+            const walletSelect = document.getElementById('wallet');
+            const toWalletSelect = document.getElementById('toWallet');
+            const transferFields = document.getElementById('transferFields');
+            
+            // Backup/Restore Elements
+            const backupBtn = document.getElementById('backupBtn');
+            const listBackupsBtn = document.getElementById('listBackupsBtn');
+            const restoreSection = document.getElementById('restoreSection');
+            const restoreFileSelect = document.getElementById('restoreFileSelect');
+            const restoreBtn = document.getElementById('restoreBtn');
+            const resetAllDataBtn = document.getElementById('resetAllDataBtn');
 
-  /* CRUD */
-  const addWallet = async (name) => {
-    if (wallets.some(w => w.name.toLowerCase()===name.toLowerCase())){ alert('A wallet with this name already exists.'); return; }
-    wallets.push({id: Date.now(), name, balance:0});
-    await api.save({wallets, categories, subcategories, transactions});
-    renderWallets(); showToast('Wallet added');
-  };
-  const addCategory = async () => {
-    const name = $('#newCategoryName').value.trim(); const type = $('#newCategoryType').value; if(!name) return;
-    categories.push({id: Date.now(), name, type});
-    await api.save({wallets, categories, subcategories, transactions});
-    renderCategories(); populateCategoryDropdowns(); $('#newCategoryName').value=''; showToast('Category added');
-  };
-  const addSubcategory = async (categoryId, name) => {
-    subcategories.push({id: Date.now(), name, categoryId});
-    await api.save({wallets, categories, subcategories, transactions});
-    renderCategories(); showToast('Subcategory added');
-  };
-  const deleteCategory = async (id) => {
-    subcategories = subcategories.filter(s => s.categoryId !== id);
-    categories = categories.filter(c => c.id !== id);
-    await api.save({wallets, categories, subcategories, transactions});
-    renderCategories(); populateCategoryDropdowns(); showToast('Category deleted');
-  };
-  const deleteSubcategory = async (id) => {
-    subcategories = subcategories.filter(s => s.id !== id);
-    await api.save({wallets, categories, subcategories, transactions});
-    renderCategories(); showToast('Subcategory deleted');
-  };
-  const editCategoryFn = async (id, name, type) => {
-    const c = categories.find(x=>x.id===id); if(!c) return; c.name=name; c.type=type;
-    await api.save({wallets, categories, subcategories, transactions});
-    renderCategories(); populateCategoryDropdowns(); showToast('Category updated');
-  };
-  const editSubcategoryFn = async (id, name) => {
-    const s = subcategories.find(x=>x.id===id); if(!s) return; s.name=name;
-    await api.save({wallets, categories, subcategories, transactions});
-    renderCategories(); populateCategoryDropdowns(); showToast('Subcategory updated');
-  };
+            // Modal Elements
+            const modals = document.querySelectorAll('.modal');
+            const closeModalBtns = document.querySelectorAll('.close-btn[data-target], button[data-target]');
+            const addSubcategoryModal = document.getElementById('addSubcategoryModal');
+            const newSubcategoryNameInput = document.getElementById('newSubcategoryName');
+            const saveSubcategoryBtn = document.getElementById('saveSubcategoryBtn');
+            const editCategoryModal = document.getElementById('editCategoryModal');
+            const editCategoryIdInput = document.getElementById('editCategoryId');
+            const editCategoryNameInput = document.getElementById('editCategoryName');
+            const editCategoryTypeSelect = document.getElementById('editCategoryType');
+            const saveCategoryChangesBtn = document.getElementById('saveCategoryChangesBtn');
+            const editSubcategoryModal_inList = document.getElementById('editSubcategoryModal');
+            const editSubcategoryIdInput = document.getElementById('editSubcategoryId');
+            const editSubcategoryNameInput = document.getElementById('editSubcategoryName');
+            const saveSubcategoryChangesBtn_inList = document.getElementById('saveSubcategoryChangesBtn');
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            const deleteConfirmMessage = document.getElementById('deleteConfirmMessage');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            // Edit Modal Elements
+            const editCategorySelect_inForm = document.getElementById('editCategory');
+            const editSubcategorySelect_inForm = document.getElementById('editSubcategory');
+            const editWalletSelect_inForm = document.getElementById('editWallet');
+            const editToWalletSelect_inForm = document.getElementById('editToWallet');
+            const editTransferFields_inForm = document.getElementById('editTransferFields');
 
-  /* Add / Edit transactions */
-  const addTransaction = async (e) => {
-    e.preventDefault();
-    const description = $('#description').value.trim();
-    const amount = parseFloat($('#amount').value);
-    const date = $('#transactionDate').value;
-    const walletId = parseInt($('#wallet').value);
-    const categoryId = parseInt($('#category').value);
-    const subcategoryId = parseInt($('#subcategory').value);
-    const c = categories.find(x=>x.id===categoryId);
-    const s = subcategories.find(x=>x.id===subcategoryId);
+            // --- Data Initialization ---
+            const defaultCategories = [
+                { id: 1, name: 'Accounts / Wallets', type: 'transfer' },
+                { id: 2, name: 'Savings / Investments', type: 'expense' },
+                { id: 3, name: 'Expense', type: 'expense' },
+                { id: 4, name: 'Income', type: 'income' },
+                { id: 5, name: 'Lending / Borrowing', type: 'asset' }
+            ];
+            const defaultSubcategories = [
+                { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
+                { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 }, { id: 9, name: 'Emergency Fund', categoryId: 2 }, { id: 10, name: 'Retirement Fund', categoryId: 2 },
+                { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
+                { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
+                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 }
+            ];
+            
+            let wallets = [];
+            let categories = [];
+            let subcategories = [];
+            let transactions = [];
+            let currentCategoryIdForSubcategory = null;
+            let deleteCallback = null;
+            let expensePieChart = null;
+            let incomeExpenseBarChart = null;
 
-    if(!c){ alert('Please select a category.'); return; }
+            // --- API / Data Handling ---
+            const api = {
+                async load() {
+                    if (GOOGLE_SCRIPT_URL) {
+                        try {
+                            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
+                            if (!response.ok) throw new Error("Network response was not ok");
+                            const data = await response.json();
+                            return data;
+                        } catch (error) {
+                            console.error("Failed to load from Google Sheet. Falling back to local storage.", error);
+                            return this.loadLocal();
+                        }
+                    } else {
+                        return this.loadLocal();
+                    }
+                },
+                loadLocal() {
+                    return {
+                        wallets: JSON.parse(localStorage.getItem('advTrackerWallets')) || [{ id: 1, name: 'Cash', balance: 0 }, { id: 2, name: 'Bank', balance: 0 }, { id: 3, name: 'bKash', balance: 0 }, { id: 4, name: 'Nagad', balance: 0 }],
+                        categories: JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories,
+                        subcategories: JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories,
+                        transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || []
+                    };
+                },
+                async save(data) {
+                    if (GOOGLE_SCRIPT_URL) {
+                        try {
+                            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'saveAll', data: data })
+                            });
+                            if (!response.ok) throw new Error("Network response was not ok");
+                            return await response.json();
+                        } catch (error) {
+                            console.error("Failed to save to Google Sheet. Saving to local storage.", error);
+                            this.saveLocal(data);
+                        }
+                    } else {
+                        this.saveLocal(data);
+                    }
+                },
+                saveLocal(data) {
+                    localStorage.setItem('advTrackerWallets', JSON.stringify(data.wallets));
+                    localStorage.setItem('advTrackerCategories', JSON.stringify(data.categories));
+                    localStorage.setItem('advTrackerSubcategories', JSON.stringify(data.subcategories));
+                    localStorage.setItem('advTrackerTransactions', JSON.stringify(data.transactions));
+                },
+                async callScript(action, params = {}) {
+                    if (!GOOGLE_SCRIPT_URL) return { status: "error", message: "Google Script URL not configured." };
+                    try {
+                        const url = new URL(GOOGLE_SCRIPT_URL);
+                        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+                        url.searchParams.append('action', action);
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error("Network response was not ok");
+                        return await response.json();
+                    } catch (error) {
+                        console.error(`Error calling script action ${action}:`, error);
+                        return { status: "error", message: error.toString() };
+                    }
+                }
+            };
 
-    let t = {id: Date.now(), description, amount, date, walletId, categoryId, subcategoryId};
+            // --- Functions ---
+            const updateWalletBalance = (walletId, amount, categoryType, subcategoryName, isSource = true) => {
+                const wallet = wallets.find(w => w.id === walletId);
+                if (!wallet) return;
+                if (categoryType === 'transfer') return;
 
-    if(c.type==='transfer'){
-      const toWalletId = parseInt($('#toWallet').value);
-      if(!toWalletId){ alert('Please select a destination wallet.'); return; }
-      if(walletId === toWalletId){ alert('Cannot transfer to the same wallet.'); return; }
-      t.toWalletId = toWalletId;
-      const fromW = wallets.find(w=>w.id===walletId);
-      const toW = wallets.find(w=>w.id===toWalletId);
-      if(fromW) fromW.balance -= amount; if(toW) toW.balance += amount;
-    }else{
-      updateWalletBalance(walletId, amount, c.type, s ? s.name : '');
-    }
+                // Special handling for custom subcategories
+                if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') {
+                    wallet.balance += amount; // Add money back
+                    return;
+                }
+                if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
+                    wallet.balance -= amount; // Cut money for repayment
+                    return;
+                }
+                
+                // FIX: Correctly handle Borrowed Money
+                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                    wallet.balance += amount; // Add money to wallet
+                    return;
+                }
 
-    transactions.push(t);
-    await api.save({wallets, categories, subcategories, transactions});
-    renderAll(); form.reset(); $('#transactionDate').value = new Date().toISOString().split('T')[0];
-    transferFields.style.display='none'; switchView('v-history'); showToast('Transaction added');
-  };
+                if (isSource) {
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
+                    if (['income'].includes(categoryType)) wallet.balance += amount;
+                } else {
+                    if (categoryType === 'asset') wallet.balance += amount;
+                    if (categoryType === 'liability') wallet.balance -= amount;
+                }
+            };
+            
+            const reverseWalletBalance = (transaction) => {
+                const wallet = wallets.find(w => w.id === transaction.walletId);
+                if (!wallet) return;
+                const category = categories.find(c => c.id === transaction.categoryId);
+                const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
+                const categoryType = category ? category.type : 'expense';
+                const subcategoryName = subcategory ? subcategory.name : '';
+                
+                if (categoryType === 'transfer') {
+                    const toWallet = wallets.find(w => w.id === transaction.toWalletId);
+                    if (wallet) wallet.balance += transaction.amount;
+                    if (toWallet) toWallet.balance -= transaction.amount;
+                } else {
+                    // Reverse the special cases
+                    if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') {
+                        wallet.balance -= transaction.amount;
+                        return;
+                    }
+                    if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
+                        wallet.balance += transaction.amount;
+                        return;
+                    }
+                    
+                    // FIX: Correctly reverse Borrowed Money
+                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                        wallet.balance -= transaction.amount;
+                        return;
+                    }
 
-  const showEditModal = (id) => {
-    const t = transactions.find(x=>x.id===id); if(!t) return;
-    $('#editId').value = t.id;
-    $('#editDescription').value = t.description;
-    $('#editAmount').value = t.amount;
-    $('#editTransactionDate').value = t.date;
-    $('#editWallet').value = t.walletId;
-    $('#editCategory').value = t.categoryId;
-    updateSubcategoryDropdown(t.categoryId, editSubcategorySelect);
-    $('#editSubcategory').value = t.subcategoryId;
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance += transaction.amount;
+                    if (['income'].includes(categoryType)) wallet.balance -= transaction.amount;
+                }
+            };
 
-    const c = categories.find(x=>x.id===t.categoryId);
-    if(c && c.type==='transfer'){ editTransferFields.style.display = 'block'; $('#editToWallet').value = t.toWalletId; }
-    else{ editTransferFields.style.display = 'none'; }
-    showModal('editModal');
-  };
+            const renderWallets = () => {
+                walletsGrid.innerHTML = ''; walletSelect.innerHTML = ''; editWalletSelect_inForm.innerHTML = ''; toWalletSelect.innerHTML = ''; editToWalletSelect_inForm.innerHTML = '';
+                wallets.forEach(wallet => {
+                    const card = document.createElement('div'); card.classList.add('wallet-card');
+                    card.innerHTML = `<h4>${wallet.name}</h4><p>৳${wallet.balance.toFixed(2)}</p>`; walletsGrid.appendChild(card);
+                    const option = new Option(wallet.name, wallet.id);
+                    walletSelect.add(option.cloneNode(true)); editWalletSelect_inForm.add(option.cloneNode(true));
+                    toWalletSelect.add(option.cloneNode(true)); editToWalletSelect_inForm.add(option.cloneNode(true));
+                });
+                const addWalletCard = document.createElement('div'); addWalletCard.classList.add('wallet-card', 'add-wallet-btn');
+                addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; addWalletCard.onclick = () => showAddWalletModal(); walletsGrid.appendChild(addWalletCard);
+            };
+            
+            const renderCategories = () => {
+                categoryList.innerHTML = '';
+                categories.forEach(cat => {
+                    const li = document.createElement('li'); li.classList.add('category-item');
+                    const subcats = subcategories.filter(sub => sub.categoryId === cat.id);
+                    li.innerHTML = `
+                        <div class="category-header">
+                            <span>${cat.name} (${cat.type})</span>
+                            <div>
+                                <button class="small-btn edit-category-btn" data-id="${cat.id}">Edit</button>
+                                <button class="small-btn danger-btn delete-category-btn" data-id="${cat.id}">Delete</button>
+                            </div>
+                        </div>
+                        <div class="subcategories">${subcats.length > 0 ? subcats.map(sub => `
+                            <div class="subcategory-item">
+                                <span>${sub.name}</span>
+                                <div>
+                                    <button class="small-btn edit-subcategory-btn" data-id="${sub.id}">Edit</button>
+                                    <button class="small-btn danger-btn delete-subcategory-btn" data-id="${sub.id}">Delete</button>
+                                </div>
+                            </div>`).join('') : '<p class="no-subcategories">No subcategories yet.</p>'}<button class="small-btn add-subcategory-btn" data-id="${cat.id}">+ Add Subcategory</button></div>
+                    `;
+                    categoryList.appendChild(li);
+                });
+            };
 
-  const updateTransaction = async (e) => {
-    e.preventDefault();
-    const id = parseInt($('#editId').value);
-    const t = transactions.find(x=>x.id===id); if(!t) return;
+            const populateCategoryDropdowns = () => {
+                categorySelect.innerHTML = ''; editCategorySelect_inForm.innerHTML = ''; categorySearchSelect.innerHTML = '<option value="all">All Categories</option>';
+                categories.forEach(cat => { 
+                    categorySelect.add(new Option(cat.name, cat.id)); 
+                    editCategorySelect_inForm.add(new Option(cat.name, cat.id));
+                    categorySearchSelect.add(new Option(cat.name, cat.id));
+                });
+            };
+            
+            const updateSubcategoryDropdown = (categoryId, targetSelect) => {
+                const subcats = subcategories.filter(sub => sub.categoryId == categoryId);
+                targetSelect.innerHTML = '';
+                subcats.forEach(sub => targetSelect.add(new Option(sub.name, sub.id)));
+            };
 
-    reverseWalletBalance(t);
+            const renderSummary = () => {
+                let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0, totalSavings = 0;
+                let lentRepaid = 0, borrowedRepaid = 0;
 
-    t.description = $('#editDescription').value.trim();
-    t.amount = parseFloat($('#editAmount').value);
-    t.date = $('#editTransactionDate').value;
-    t.walletId = parseInt($('#editWallet').value);
-    t.categoryId = parseInt($('#editCategory').value);
-    t.subcategoryId = parseInt($('#editSubcategory').value);
+                transactions.forEach(t => {
+                    const category = categories.find(c => c.id === t.categoryId);
+                    const subcategory = subcategories.find(s => s.id === t.subcategoryId);
+                    if (!category) return;
+                    const amount = t.amount;
+                    const subcategoryName = subcategory ? subcategory.name : '';
 
-    const c = categories.find(x=>x.id===t.categoryId);
-    const s = subcategories.find(x=>x.id===t.subcategoryId);
+                    switch(category.type) {
+                        case 'income': totalIncome += amount; break;
+                        case 'expense': 
+                            totalExpense += amount;
+                            if(category.name === 'Savings / Investments') totalSavings += amount;
+                            break;
+                        case 'asset': 
+                            if(subcategoryName === 'Lent Money') totalLent += amount;
+                            if(subcategoryName === 'Loan Received Back') lentRepaid += amount;
+                            // BUG FIX: Moved "Borrowed Money" calculation here from the 'liability' case
+                            if(subcategoryName === 'Borrowed Money') totalBorrowed += amount;
+                            break;
+                        case 'liability': 
+                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount;
+                            break;
+                    }
+                });
+                const totalWalletBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
+                const netWorth = totalWalletBalance - (totalBorrowed - borrowedRepaid);
 
-    if(c.type==='transfer'){
-      t.toWalletId = parseInt($('#editToWallet').value);
-      if(!t.toWalletId || t.toWalletId===t.walletId){ alert('Choose a different destination wallet.'); return; }
-      const fromW = wallets.find(w=>w.id===t.walletId);
-      const toW = wallets.find(w=>w.id===t.toWalletId);
-      if(fromW) fromW.balance -= t.amount; if(toW) toW.balance += t.amount;
-    }else{
-      updateWalletBalance(t.walletId, t.amount, c.type, s ? s.name : '');
-    }
+                document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
+                document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
+                document.getElementById('totalLent').textContent = `৳${(totalLent - lentRepaid).toFixed(2)}`;
+                document.getElementById('totalBorrowed').textContent = `৳${(totalBorrowed - borrowedRepaid).toFixed(2)}`;
+                document.getElementById('netWorth').textContent = `৳${netWorth.toFixed(2)}`;
+                document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
+            };
 
-    await api.save({wallets, categories, subcategories, transactions});
-    renderAll(); hideModal('editModal'); showToast('Changes saved');
-  };
+            const renderCharts = () => {
+                const expenseData = {};
+                const monthlyData = {};
 
-  /* CSV */
-  const downloadCSV = (rows) => {
-    const headers = ['Date','Description','Amount','Wallet','Category','Subcategory'];
-    const lines = [headers.join(',')].concat(rows.map(t=>{
-      const w = wallets.find(x=>x.id==t.walletId);
-      const c = categories.find(x=>x.id==t.categoryId);
-      const s = subcategories.find(x=>x.id==t.subcategoryId);
-      return [
-        t.date,
-        `"${t.description.replace(/"/g,'""')}"`,
-        t.amount,
-        `"${w ? w.name : 'N/A'}"`,
-        `"${c ? c.name : 'N/A'}"`,
-        `"${s ? s.name : 'N/A'}"`
-      ].join(',');
-    }));
-    const blob = new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `transactions_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove();
-  };
+                transactions.forEach(t => {
+                    const category = categories.find(c => c.id === t.categoryId);
+                    const subcategory = subcategories.find(s => s.id === t.subcategoryId);
+                    if (!category) return;
+                    const categoryName = subcategory ? subcategory.name : category.name;
+                    const amount = t.amount;
+                    const monthYear = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
 
-  /* Backup / Restore */
-  const handleBackup = async () => {
-    backupBtn.disabled = true; backupBtn.textContent = 'Creating Backup...';
-    const r = await api.callScript('backupToDrive');
-    backupBtn.disabled = false; backupBtn.textContent = '⬆️ Backup to Drive';
-    (r.status==='success') ? showToast(r.message||'Backup complete') : showToast('Backup failed');
-  };
-  const handleListBackups = async () => {
-    listBackupsBtn.disabled = true; listBackupsBtn.textContent = 'Loading...';
-    const r = await api.callScript('listBackupFiles');
-    listBackupsBtn.disabled = false; listBackupsBtn.textContent = '📄 List Backups';
-    restoreFileSelect.innerHTML = '<option value="">-- Select a backup --</option>'; restoreSection.style.display='block';
-    if(r.status==='success' && Array.isArray(r.files) && r.files.length) r.files.forEach(f=> restoreFileSelect.add(new Option(f.name, f.id)));
-    else restoreFileSelect.innerHTML = '<option value="">No backups found</option>';
-  };
-  const handleRestore = async () => {
-    const fid = restoreFileSelect.value; if(!fid){ alert('Please select a backup file to restore.'); return; }
-    if(!confirm('WARNING: This will overwrite ALL your current data. Continue?')) return;
-    restoreBtn.disabled = true; restoreBtn.textContent = 'Restoring...';
-    const r = await api.callScript('restoreFromDrive', {fileId: fid});
-    restoreBtn.disabled = false; restoreBtn.textContent = '⬇️ Restore Selected';
-    if(r.status==='success'){
-      showToast(r.message||'Restore complete');
-      const data = await api.load();
-      wallets = data.wallets; categories = data.categories; subcategories = data.subcategories; transactions = data.transactions;
-      renderAll(); renderCategories(); populateCategoryDropdowns();
-    }else showToast('Restore failed');
-  };
+                    if (category.type === 'expense') {
+                        expenseData[categoryName] = (expenseData[categoryName] || 0) + amount;
+                    }
+                    
+                    monthlyData[monthYear] = monthlyData[monthYear] || { income: 0, expense: 0 };
+                    if (category.type === 'income') monthlyData[monthYear].income += amount;
+                    if (category.type === 'expense') monthlyData[monthYear].expense += amount;
+                });
 
-  /* Modals */
-  const showModal = id => document.getElementById(id).classList.add('show');
-  const hideModal = id => document.getElementById(id).classList.remove('show');
-  const closeBtns = $$('.close[data-target], .modal .btn[data-target]');
-  closeBtns.forEach(b=> b.addEventListener('click', ()=> hideModal(b.getAttribute('data-target'))));
-  window.addEventListener('click', e => { if(e.target.classList?.contains('modal')) e.target.classList.remove('show'); });
+                // --- Expense Pie Chart ---
+                const pieCtx = document.getElementById('expensePieChart').getContext('2d');
+                if (expensePieChart) expensePieChart.destroy();
+                expensePieChart = new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(expenseData),
+                        datasets: [{
+                            label: 'Expenses',
+                            data: Object.values(expenseData),
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Expense Breakdown' }
+                        }
+                    }
+                });
 
-  /* Delegation */
-  transactionList.addEventListener('click', (e) => {
-    const idEdit = e.target.getAttribute('data-edit');
-    const idDel  = e.target.getAttribute('data-del');
-    if(idEdit){ showEditModal(parseInt(idEdit)); }
-    else if(idDel){
-      $('#deleteConfirmMessage').textContent='Delete this transaction?';
-      deleteCallback = async ()=>{ const id = parseInt(idDel); const t = transactions.find(x=>x.id===id); if(t){ reverseWalletBalance(t); transactions = transactions.filter(x=>x.id!==id); await api.save({wallets, categories, subcategories, transactions}); renderAll(); showToast('Deleted'); } };
-      showModal('deleteConfirmModal');
-    }
-  });
-  $('#confirmDeleteBtn').addEventListener('click', ()=>{ if(deleteCallback) deleteCallback(); hideModal('deleteConfirmModal'); });
+                // --- Income vs Expense Bar Chart ---
+                const barCtx = document.getElementById('incomeExpenseBarChart').getContext('2d');
+                if (incomeExpenseBarChart) incomeExpenseBarChart.destroy();
+                const sortedMonths = Object.keys(monthlyData).sort((a,b) => new Date(a) - new Date(b));
+                incomeExpenseBarChart = new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedMonths,
+                        datasets: [
+                            {
+                                label: 'Income',
+                                data: sortedMonths.map(m => monthlyData[m].income),
+                                backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                                borderColor: 'rgba(40, 167, 69, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Expense',
+                                data: sortedMonths.map(m => monthlyData[m].expense),
+                                backgroundColor: 'rgba(220, 53, 69, 0.6)',
+                                borderColor: 'rgba(220, 53, 69, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Income vs. Expense' }
+                        }
+                    }
+                });
+            };
 
-  categoryListEl.addEventListener('click', (e)=>{
-    const editCat = e.target.getAttribute('data-editcat');
-    const delCat  = e.target.getAttribute('data-delcat');
-    const addSub  = e.target.getAttribute('data-addsub');
-    const editSub = e.target.getAttribute('data-editsub');
-    const delSub  = e.target.getAttribute('data-delsub');
-    if(editCat){
-      const c = categories.find(x=>x.id==editCat);
-      if(c){ $('#editCategoryId').value=c.id; $('#editCategoryName').value=c.name; $('#editCategoryType').value=c.type; showModal('editCategoryModal'); }
-    }else if(delCat){
-      const id = parseInt(delCat);
-      $('#deleteConfirmMessage').textContent='Delete this category and all its subcategories?';
-      deleteCallback = ()=> deleteCategory(id); showModal('deleteConfirmModal');
-    }else if(addSub){
-      currentCategoryIdForSubcategory = parseInt(addSub);
-      $('#newSubcategoryName').value=''; showModal('addSubcategoryModal');
-    }else if(editSub){
-      const s = subcategories.find(x=>x.id==editSub);
-      if(s){ $('#editSubcategoryId').value=s.id; $('#editSubcategoryName').value=s.name; showModal('editSubcategoryModal'); }
-    }else if(delSub){
-      const id = parseInt(delSub);
-      $('#deleteConfirmMessage').textContent='Delete this subcategory?';
-      deleteCallback = ()=> deleteSubcategory(id); showModal('deleteConfirmModal');
-    }
-  });
-  $('#saveSubcategoryBtn').addEventListener('click', ()=>{
-    const name = $('#newSubcategoryName').value.trim(); if(!name) return;
-    addSubcategory(currentCategoryIdForSubcategory, name); hideModal('addSubcategoryModal');
-  });
-  $('#saveCategoryChangesBtn').addEventListener('click', ()=>{
-    const id = parseInt($('#editCategoryId').value);
-    const name = $('#editCategoryName').value.trim();
-    const type = $('#editCategoryType').value;
-    if(!name) return; editCategoryFn(id,name,type); hideModal('editCategoryModal');
-  });
-  $('#saveSubcategoryChangesBtn').addEventListener('click', ()=>{
-    const id = parseInt($('#editSubcategoryId').value);
-    const name = $('#editSubcategoryName').value.trim();
-    if(!name) return; editSubcategoryFn(id,name); hideModal('editSubcategoryModal');
-  });
+            const renderTransactions = (transactionsToRender = transactions) => {
+                transactionList.innerHTML = '';
+                const sortedTransactions = [...transactionsToRender].sort((a, b) => new Date(b.date) - new Date(a.date));
+                if (sortedTransactions.length === 0) { transactionList.innerHTML = '<li class="transaction-item">No transactions found.</li>'; return; }
+                sortedTransactions.forEach(t => {
+                    const wallet = wallets.find(w => w.id == t.walletId);
+                    const category = categories.find(c => c.id == t.categoryId);
+                    const subcategory = subcategories.find(s => s.id == t.subcategoryId);
+                    const amountClass = getAmountClass(category ? category.type : 'expense');
+                    const sign = getTransactionSign(category ? category.type : 'expense');
+                    const formattedDate = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                    
+                    const li = document.createElement('li'); li.classList.add('transaction-item');
+                    li.innerHTML = `
+                        <div class="transaction-top-row">
+                            <div class="transaction-details">
+                                <span class="transaction-description">${t.description}</span>
+                                <span class="transaction-meta">${formattedDate} &bull; ${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}</span>
+                            </div>
+                            <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="transaction-actions">
+                            <button class="action-btn edit-btn" data-id="${t.id}">✏️</button>
+                            <button class="action-btn delete-btn danger-btn" data-id="${t.id}">🗑️</button>
+                        </div>
+                    `;
+                    transactionList.appendChild(li);
+                });
+            };
+            
+            const getTransactionSign = (type) => { if (type === 'transfer') return '↔️'; return ['expense', 'asset', 'liability'].includes(type) ? '-' : '+'; };
+            const getAmountClass = (type) => { if (type === 'transfer') return 'amount-transfer'; if (type === 'income') return 'amount-income'; if (type === 'expense') return 'amount-expense'; if (type === 'asset') return 'amount-asset'; if (type === 'liability') return 'amount-liability'; return ''; };
 
-  categorySelect.addEventListener('change', ()=>{
-    const c = categories.find(x=>x.id==categorySelect.value);
-    transferFields.style.display = (c && c.type==='transfer') ? 'block' : 'none';
-    updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
-  });
-  editCategorySelect.addEventListener('change', ()=>{
-    const c = categories.find(x=>x.id==editCategorySelect.value);
-    editTransferFields.style.display = (c && c.type==='transfer') ? 'block' : 'none';
-    updateSubcategoryDropdown(editCategorySelect.value, editSubcategorySelect);
-  });
+            const addTransaction = async (e) => {
+                e.preventDefault();
+                const description = document.getElementById('description').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const date = document.getElementById('transactionDate').value;
+                const walletId = parseInt(document.getElementById('wallet').value);
+                const categoryId = parseInt(document.getElementById('category').value);
+                const subcategoryId = parseInt(document.getElementById('subcategory').value);
+                const category = categories.find(c => c.id === categoryId);
+                const subcategory = subcategories.find(s => s.id === subcategoryId);
+                
+                let newTransaction = { id: Date.now(), description, amount, date, walletId, categoryId, subcategoryId };
 
-  categorySearchSelect.addEventListener('change', (e)=>{
-    const id = e.target.value;
-    if(id==='all') renderTransactions(); else renderTransactions(transactions.filter(t => t.categoryId == id));
-  });
-  downloadCsvBtn.addEventListener('click', ()=>{
-    const id = categorySearchSelect.value;
-    const rows = id==='all' ? transactions : transactions.filter(t => t.categoryId == id);
-    downloadCSV(rows);
-  });
+                if (category.type === 'transfer') {
+                    const toWalletId = parseInt(document.getElementById('toWallet').value);
+                    if (walletId === toWalletId) { alert("Cannot transfer to the same wallet."); return; }
+                    newTransaction.toWalletId = toWalletId;
+                    const fromWallet = wallets.find(w => w.id === walletId);
+                    const toWallet = wallets.find(w => w.id === toWalletId);
+                    fromWallet.balance -= amount;
+                    toWallet.balance += amount;
+                } else {
+                    updateWalletBalance(walletId, amount, category.type, subcategory ? subcategory.name : '');
+                }
 
-  backupBtn.addEventListener('click', handleBackup);
-  listBackupsBtn.addEventListener('click', handleListBackups);
-  restoreFileSelect.addEventListener('change', ()=> restoreBtn.disabled = !restoreFileSelect.value);
-  restoreBtn.addEventListener('click', handleRestore);
+                transactions.push(newTransaction);
+                await api.save({ wallets, categories, subcategories, transactions });
+                renderAll();
+                form.reset();
+                document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+                transferFields.style.display = 'none';
+                switchView('view-history');
+            };
+            
+            const addWallet = async (name) => {
+                if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) {
+                    wallets.push({ id: Date.now(), name, balance: 0 });
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderWallets();
+                } else if (name) {
+                    alert("A wallet with this name already exists.");
+                }
+            };
+            const addCategory = async () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); await api.save({ wallets, categories, subcategories, transactions }); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
+            const addSubcategory = async (categoryId, name) => {
+                if (name) {
+                    subcategories.push({ id: Date.now(), name, categoryId });
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderCategories();
+                }
+            };
+            const deleteCategory = async (id) => {
+                subcategories = subcategories.filter(s => s.categoryId !== id);
+                categories = categories.filter(c => c.id !== id);
+                await api.save({ wallets, categories, subcategories, transactions });
+                renderCategories();
+                populateCategoryDropdowns();
+            };
+            const deleteSubcategory = async (id) => {
+                subcategories = subcategories.filter(s => s.id !== id);
+                await api.save({ wallets, categories, subcategories, transactions });
+                renderCategories();
+            };
+            const editCategory = async (id, name, type) => {
+                const category = categories.find(c => c.id === id);
+                if(category) {
+                    category.name = name;
+                    category.type = type;
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderCategories();
+                    populateCategoryDropdowns();
+                }
+            };
+            const editSubcategory = async (id, name) => {
+                const subcategory = subcategories.find(s => s.id === id);
+                if(subcategory) {
+                    subcategory.name = name;
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderCategories();
+                    populateCategoryDropdowns();
+                }
+            };
 
-  /* INIT */
-  const data = await api.load();
-  wallets = data.wallets; categories = data.categories; subcategories = data.subcategories; transactions = data.transactions;
-  $('#transactionDate').value = new Date().toISOString().split('T')[0];
-  renderAll(); renderCategories(); populateCategoryDropdowns();
-  // ensure subcategory defaults
-  if(categorySelect.value) updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+            const deleteTransaction = async (id) => {
+                const transaction = transactions.find(t => t.id === id);
+                if (transaction) {
+                    reverseWalletBalance(transaction);
+                    transactions = transactions.filter(t => t.id !== id);
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderAll();
+                }
+            };
+            const showEditModal = (id) => { 
+                const transaction = transactions.find(t => t.id === id); 
+                if (transaction) { 
+                    document.getElementById('editId').value = transaction.id; 
+                    document.getElementById('editDescription').value = transaction.description; 
+                    document.getElementById('editAmount').value = transaction.amount;
+                    document.getElementById('editTransactionDate').value = transaction.date;
+                    document.getElementById('editWallet').value = transaction.walletId; 
+                    document.getElementById('editCategory').value = transaction.categoryId; 
+                    updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect_inForm); 
+                    document.getElementById('editSubcategory').value = transaction.subcategoryId; 
+                    const category = categories.find(c => c.id === transaction.categoryId); 
+                    if(category.type === 'transfer') { 
+                        editTransferFields_inForm.style.display = 'block'; 
+                        document.getElementById('editToWallet').value = transaction.toWalletId; 
+                    } else { 
+                        editTransferFields_inForm.style.display = 'none'; 
+                    } 
+                    showModal('editModal'); 
+                } 
+            };
+            const updateTransaction = async (e) => { 
+                e.preventDefault(); 
+                const id = parseInt(document.getElementById('editId').value); 
+                const transaction = transactions.find(t => t.id === id); 
+                if (transaction) { 
+                    reverseWalletBalance(transaction); 
+                    transaction.description = document.getElementById('editDescription').value; 
+                    transaction.amount = parseFloat(document.getElementById('editAmount').value);
+                    transaction.date = document.getElementById('editTransactionDate').value;
+                    transaction.walletId = parseInt(document.getElementById('editWallet').value); 
+                    transaction.categoryId = parseInt(document.getElementById('editCategory').value); 
+                    transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); 
+                    const category = categories.find(c => c.id === transaction.categoryId); 
+                    const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
+                    if(category.type === 'transfer') { 
+                        transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); 
+                        const fromWallet = wallets.find(w => w.id === transaction.walletId); 
+                        const toWallet = wallets.find(w => w.id === transaction.toWalletId); 
+                        fromWallet.balance -= transaction.amount; 
+                        toWallet.balance += transaction.amount; 
+                    } else { 
+                        updateWalletBalance(transaction.walletId, transaction.amount, category.type, subcategory ? subcategory.name : ''); 
+                    } 
+                    await api.save({ wallets, categories, subcategories, transactions }); 
+                    renderAll(); 
+                    hideModal('editModal'); 
+                } 
+            };
+            
+            const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); renderCharts(); };
+            const switchView = (targetId) => {
+                viewSections.forEach(section => section.classList.remove('active'));
+                navItems.forEach(item => item.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+                document.querySelector(`[data-target="${targetId}"]`).classList.add('active');
+            }
+            
+            // --- Modal Management ---
+            const showModal = (modalId) => document.getElementById(modalId).classList.add('show');
+            const hideModal = (modalId) => document.getElementById(modalId).classList.remove('show');
+            
+            const showAddWalletModal = () => {
+                const name = prompt("Enter new wallet name:");
+                if(name) addWallet(name);
+            };
+            
+            const showAddSubcategoryModal = (categoryId) => {
+                currentCategoryIdForSubcategory = categoryId;
+                newSubcategoryNameInput.value = '';
+                showModal('addSubcategoryModal');
+            };
+            const handleAddSubcategory = () => {
+                const name = newSubcategoryNameInput.value.trim();
+                if (name) {
+                    addSubcategory(currentCategoryIdForSubcategory, name);
+                    hideModal('addSubcategoryModal');
+                }
+            };
 
-});
-</script>
+            const showEditCategoryModal = (id) => {
+                const category = categories.find(c => c.id === id);
+                if(category) {
+                    editCategoryIdInput.value = category.id;
+                    editCategoryNameInput.value = category.name;
+                    editCategoryTypeSelect.value = category.type;
+                    showModal('editCategoryModal');
+                }
+            };
+            const handleEditCategory = () => {
+                const id = parseInt(editCategoryIdInput.value);
+                const name = editCategoryNameInput.value.trim();
+                const type = editCategoryTypeSelect.value;
+                if (name) {
+                    editCategory(id, name, type);
+                    hideModal('editCategoryModal');
+                }
+            };
+            
+            const showEditSubcategoryModal = (id) => {
+                const subcategory = subcategories.find(s => s.id === id);
+                if(subcategory) {
+                    editSubcategoryIdInput.value = subcategory.id;
+                    editSubcategoryNameInput.value = subcategory.name;
+                    showModal('editSubcategoryModal_inList');
+                }
+            };
+            const handleEditSubcategory = () => {
+                const id = parseInt(editSubcategoryIdInput.value);
+                const name = editSubcategoryNameInput.value.trim();
+                if (name) {
+                    editSubcategory(id, name);
+                    hideModal('editSubcategoryModal_inList');
+                }
+            };
+
+            const showDeleteConfirmation = (message, callback) => {
+                deleteConfirmMessage.textContent = message;
+                deleteCallback = callback;
+                showModal('deleteConfirmModal');
+            };
+            const handleConfirmDelete = () => {
+                if (deleteCallback) {
+                    deleteCallback();
+                }
+                hideModal('deleteConfirmModal');
+            };
+
+            // --- Backup / Restore Functions ---
+            const handleBackup = async () => {
+                backupBtn.disabled = true;
+                backupBtn.textContent = 'Creating Backup...';
+                const result = await api.callScript('backupToDrive');
+                if (result.status === 'success') {
+                    alert(result.message);
+                } else {
+                    alert('Backup failed: ' + result.message);
+                }
+                backupBtn.disabled = false;
+                backupBtn.textContent = '⬆️ Backup to Drive';
+            };
+
+            const handleListBackups = async () => {
+                listBackupsBtn.disabled = true;
+                listBackupsBtn.textContent = 'Loading...';
+                const result = await api.callScript('listBackupFiles');
+                restoreFileSelect.innerHTML = '<option value="">-- Select a file --</option>';
+                if (result.status === 'success' && result.files.length > 0) {
+                    restoreSection.style.display = 'block';
+                    result.files.forEach(file => {
+                        const option = new Option(file.name, file.id);
+                        restoreFileSelect.add(option);
+                    });
+                } else {
+                    restoreSection.style.display = 'block';
+                    restoreFileSelect.innerHTML = '<option value="">No backups found</option>';
+                }
+                listBackupsBtn.disabled = false;
+                listBackupsBtn.textContent = '📄 List Backups';
+            };
+
+            const handleRestore = async () => {
+                const fileId = restoreFileSelect.value;
+                if (!fileId) {
+                    alert('Please select a backup file to restore.');
+                    return;
+                }
+                const confirmRestore = confirm("WARNING: This will overwrite ALL your current data. Are you absolutely sure you want to continue?");
+                if (!confirmRestore) return;
+
+                restoreBtn.disabled = true;
+                restoreBtn.textContent = 'Restoring...';
+                const result = await api.callScript('restoreFromDrive', { fileId: fileId });
+                if (result.status === 'success') {
+                    alert(result.message + " The page will now reload.");
+                    const data = await api.load();
+                    wallets = data.wallets;
+                    categories = data.categories;
+                    subcategories = data.subcategories;
+                    transactions = data.transactions;
+                    renderAll();
+                    renderCategories();
+                    populateCategoryDropdowns();
+                } else {
+                    alert('Restore failed: ' + result.message);
+                }
+                restoreBtn.disabled = false;
+                restoreBtn.textContent = '⬇️ Restore Selected';
+            };
+
+            // --- Reset All Data Function ---
+            const handleResetAllData = async () => {
+                // 1. Clear local storage
+                localStorage.removeItem('advTrackerWallets');
+                localStorage.removeItem('advTrackerCategories');
+                localStorage.removeItem('advTrackerSubcategories');
+                localStorage.removeItem('advTrackerTransactions');
+
+                // 2. Reset in-memory data to defaults
+                wallets = [{ id: 1, name: 'Cash', balance: 0 }, { id: 2, name: 'Bank', balance: 0 }, { id: 3, name: 'bKash', balance: 0 }, { id: 4, name: 'Nagad', balance: 0 }];
+                categories = defaultCategories;
+                subcategories = defaultSubcategories;
+                transactions = [];
+
+                // 3. Try to clear the Google Sheet data as well by saving the empty/default state
+                await api.save({ wallets, categories, subcategories, transactions });
+
+                // 4. Re-render everything
+                renderAll();
+                renderCategories();
+                populateCategoryDropdowns();
+                updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+
+                // 5. Give user feedback
+                alert("All data has been successfully reset. The app is now in its default state.");
+            };
+
+            const downloadCSV = (transactionsToDownload) => {
+                const headers = ['Date', 'Description', 'Amount', 'Wallet', 'Category', 'Subcategory'];
+                const csvContent = [
+                    headers.join(','),
+                    ...transactionsToDownload.map(t => {
+                        const wallet = wallets.find(w => w.id == t.walletId);
+                        const category = categories.find(c => c.id == t.categoryId);
+                        const subcategory = subcategories.find(s => s.id == t.subcategoryId);
+                        return [
+                            t.date,
+                            `"${t.description}"`,
+                            t.amount,
+                            `"${wallet ? wallet.name : 'N/A'}"`,
+                            `"${category ? category.name : 'N/A'}"`,
+                            `"${subcategory ? subcategory.name : 'N/A'}"`
+                        ].join(',');
+                    })
+                ].join('\n');
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `transactions_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            // --- Initial Load ---
+            const data = await api.load();
+            wallets = data.wallets;
+            categories = data.categories;
+            subcategories = data.subcategories;
+            transactions = data.transactions;
+
+            // Set default date for new transaction
+            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+
+            renderAll();
+            renderCategories();
+            populateCategoryDropdowns();
+            updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+
+            // --- Event Listeners ---
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = item.getAttribute('data-target');
+                    switchView(targetId);
+                });
+            });
+
+            form.addEventListener('submit', addTransaction);
+            editForm.addEventListener('submit', updateTransaction);
+            document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+            saveSubcategoryBtn.addEventListener('click', handleAddSubcategory);
+            saveCategoryChangesBtn.addEventListener('click', handleEditCategory);
+            saveSubcategoryChangesBtn_inList.addEventListener('click', handleEditSubcategory);
+            confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
+            
+            // Backup/Restore Listeners
+            backupBtn.addEventListener('click', handleBackup);
+            listBackupsBtn.addEventListener('click', handleListBackups);
+            restoreFileSelect.addEventListener('change', () => {
+                restoreBtn.disabled = !restoreFileSelect.value;
+            });
+            restoreBtn.addEventListener('click', handleRestore);
+
+            // Reset Data Listener
+            resetAllDataBtn.addEventListener('click', () => {
+                showDeleteConfirmation(
+                    "WARNING: This will permanently delete ALL your data (wallets, transactions, categories). This action cannot be undone. Are you absolutely sure?",
+                    handleResetAllData
+                );
+            });
+
+            // Download CSV Listener
+            downloadCsvBtn.addEventListener('click', () => {
+                const selectedCategoryId = categorySearchSelect.value;
+                const transactionsToDownload = selectedCategoryId === 'all' 
+                    ? transactions 
+                    : transactions.filter(t => t.categoryId == selectedCategoryId);
+                downloadCSV(transactionsToDownload);
+            });
+            
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetModal = btn.getAttribute('data-target');
+                    hideModal(targetModal);
+                });
+            });
+
+            window.onclick = (event) => { if (event.target.classList.contains('modal')) { event.target.classList.remove('show'); } };
+            
+            // Event Delegation for dynamic buttons
+            transactionList.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('delete-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    showDeleteConfirmation("Are you sure you want to delete this transaction?", () => deleteTransaction(id));
+                } else if (target.classList.contains('edit-btn')) {
+                    showEditModal(parseInt(target.dataset.id));
+                }
+            });
+
+            categoryList.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('delete-category-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    showDeleteConfirmation("Are you sure? This will also delete all its subcategories.", () => deleteCategory(id));
+                } else if (target.classList.contains('edit-category-btn')) {
+                    showEditCategoryModal(parseInt(target.dataset.id));
+                } else if (target.classList.contains('delete-subcategory-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    showDeleteConfirmation("Are you sure you want to delete this subcategory?", () => deleteSubcategory(id));
+                } else if (target.classList.contains('edit-subcategory-btn')) {
+                    showEditSubcategoryModal(parseInt(target.dataset.id));
+                } else if (target.classList.contains('add-subcategory-btn')) {
+                    showAddSubcategoryModal(parseInt(target.dataset.id));
+                }
+            });
+
+            categorySelect.addEventListener('change', () => {
+                const selectedCategory = categories.find(c => c.id == categorySelect.value);
+                if (selectedCategory && selectedCategory.type === 'transfer') { transferFields.style.display = 'block'; } else { transferFields.style.display = 'none'; }
+                updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+            });
+            editCategorySelect_inForm.addEventListener('change', () => {
+                const selectedCategory = categories.find(c => c.id == editCategorySelect_inForm.value);
+                if (selectedCategory && selectedCategory.type === 'transfer') { editTransferFields_inForm.style.display = 'block'; } else { editTransferFields_inForm.style.display = 'none'; }
+                updateSubcategoryDropdown(editCategorySelect_inForm.value, editSubcategorySelect_inForm);
+            });
+
+            // Category Search functionality
+            categorySearchSelect.addEventListener('change', (e) => {
+                const selectedCategoryId = e.target.value;
+                if (selectedCategoryId === 'all') {
+                    renderTransactions();
+                } else {
+                    const filteredTransactions = transactions.filter(t => t.categoryId == selectedCategoryId);
+                    renderTransactions(filteredTransactions);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
