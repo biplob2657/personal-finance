@@ -129,6 +129,7 @@
 
         /* --- Component Styles --- */
         h1 { text-align: center; color: var(--dark-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;}
         .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
         .wallet-card { 
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
@@ -178,7 +179,7 @@
         .summary-card h3 { margin: 0 0 5px 0; font-size: 0.9em; color: #6c757d; }
         .summary-card p { margin: 0; font-size: 1.3em; font-weight: bold; }
 
-        .tracker-form, .category-form {
+        .tracker-form, .category-form, .backup-restore-form {
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -212,7 +213,9 @@
         button:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
         button:active { transform: translateY(1px); box-shadow: var(--shadow-light); }
         button.danger-btn { background: linear-gradient(145deg, var(--danger-color), #c82333); }
+        button.success-btn { background: linear-gradient(145deg, var(--success-color), #1e7e34); }
         button.small-btn { padding: 5px 10px; font-size: 0.8em; }
+        button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
 
         .category-list { list-style: none; padding: 0; }
         .category-item { 
@@ -367,6 +370,23 @@
                     </div>
                     <button type="button" id="addCategoryBtn">Add Category</button>
                 </div>
+
+                <div class="backup-restore-form">
+                    <h3>Backup & Restore</h3>
+                    <p style="font-size:0.9em; color:#6c757d;">Create a backup file in your Google Drive or restore data from a previous backup.</p>
+                    <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                        <button type="button" id="backupBtn" class="success-btn">⬆️ Backup to Drive</button>
+                        <button type="button" id="listBackupsBtn">📄 List Backups</button>
+                    </div>
+                    <div id="restoreSection" style="display:none; margin-top:15px;">
+                        <label for="restoreFileSelect">Select a backup to restore:</label>
+                        <select id="restoreFileSelect">
+                            <option value="">-- Select a file --</option>
+                        </select>
+                        <button type="button" id="restoreBtn" class="danger-btn" disabled>⬇️ Restore Selected</button>
+                    </div>
+                </div>
+
                 <ul id="categoryList" class="category-list"></ul>
             </section>
 
@@ -488,6 +508,13 @@
             const toWalletSelect = document.getElementById('toWallet');
             const transferFields = document.getElementById('transferFields');
             
+            // Backup/Restore Elements
+            const backupBtn = document.getElementById('backupBtn');
+            const listBackupsBtn = document.getElementById('listBackupsBtn');
+            const restoreSection = document.getElementById('restoreSection');
+            const restoreFileSelect = document.getElementById('restoreFileSelect');
+            const restoreBtn = document.getElementById('restoreBtn');
+
             // Modal Elements
             const modals = document.querySelectorAll('.modal');
             const closeModalBtns = document.querySelectorAll('.close-btn[data-target], button[data-target]');
@@ -581,6 +608,20 @@
                     localStorage.setItem('advTrackerCategories', JSON.stringify(data.categories));
                     localStorage.setItem('advTrackerSubcategories', JSON.stringify(data.subcategories));
                     localStorage.setItem('advTrackerTransactions', JSON.stringify(data.transactions));
+                },
+                async callScript(action, params = {}) {
+                    if (!GOOGLE_SCRIPT_URL) return { status: "error", message: "Google Script URL not configured." };
+                    try {
+                        const url = new URL(GOOGLE_SCRIPT_URL);
+                        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+                        url.searchParams.append('action', action);
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error("Network response was not ok");
+                        return await response.json();
+                    } catch (error) {
+                        console.error(`Error calling script action ${action}:`, error);
+                        return { status: "error", message: error.toString() };
+                    }
                 }
             };
 
@@ -912,6 +953,69 @@
                 hideModal('deleteConfirmModal');
             };
 
+            // --- Backup / Restore Functions ---
+            const handleBackup = async () => {
+                backupBtn.disabled = true;
+                backupBtn.textContent = 'Creating Backup...';
+                const result = await api.callScript('backupToDrive');
+                if (result.status === 'success') {
+                    alert(result.message);
+                } else {
+                    alert('Backup failed: ' + result.message);
+                }
+                backupBtn.disabled = false;
+                backupBtn.textContent = '⬆️ Backup to Drive';
+            };
+
+            const handleListBackups = async () => {
+                listBackupsBtn.disabled = true;
+                listBackupsBtn.textContent = 'Loading...';
+                const result = await api.callScript('listBackupFiles');
+                restoreFileSelect.innerHTML = '<option value="">-- Select a file --</option>';
+                if (result.status === 'success' && result.files.length > 0) {
+                    restoreSection.style.display = 'block';
+                    result.files.forEach(file => {
+                        const option = new Option(file.name, file.id);
+                        restoreFileSelect.add(option);
+                    });
+                } else {
+                    restoreSection.style.display = 'block';
+                    restoreFileSelect.innerHTML = '<option value="">No backups found</option>';
+                }
+                listBackupsBtn.disabled = false;
+                listBackupsBtn.textContent = '📄 List Backups';
+            };
+
+            const handleRestore = async () => {
+                const fileId = restoreFileSelect.value;
+                if (!fileId) {
+                    alert('Please select a backup file to restore.');
+                    return;
+                }
+                const confirmRestore = confirm("WARNING: This will overwrite ALL your current data. Are you absolutely sure you want to continue?");
+                if (!confirmRestore) return;
+
+                restoreBtn.disabled = true;
+                restoreBtn.textContent = 'Restoring...';
+                const result = await api.callScript('restoreFromDrive', { fileId: fileId });
+                if (result.status === 'success') {
+                    alert(result.message + " The page will now reload.");
+                    // Reload data from the sheet
+                    const data = await api.load();
+                    wallets = data.wallets;
+                    categories = data.categories;
+                    subcategories = data.subcategories;
+                    transactions = data.transactions;
+                    renderAll();
+                    renderCategories();
+                    populateCategoryDropdowns();
+                } else {
+                    alert('Restore failed: ' + result.message);
+                }
+                restoreBtn.disabled = false;
+                restoreBtn.textContent = '⬇️ Restore Selected';
+            };
+
             // --- Initial Load ---
             const data = await api.load();
             wallets = data.wallets;
@@ -942,6 +1046,14 @@
             saveSubcategoryBtn.addEventListener('click', handleAddSubcategory);
             saveCategoryChangesBtn.addEventListener('click', handleEditCategory);
             confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
+            
+            // Backup/Restore Listeners
+            backupBtn.addEventListener('click', handleBackup);
+            listBackupsBtn.addEventListener('click', handleListBackups);
+            restoreFileSelect.addEventListener('change', () => {
+                restoreBtn.disabled = !restoreFileSelect.value;
+            });
+            restoreBtn.addEventListener('click', handleRestore);
             
             closeModalBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
