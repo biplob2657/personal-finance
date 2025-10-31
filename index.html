@@ -49,7 +49,7 @@
 
         .view-section {
             display: none;
-            max-width: 900px; /* Increased width for charts */
+            max-width: 900px;
             margin: 0 auto;
         }
         .view-section.active {
@@ -98,7 +98,7 @@
             body { overflow: auto; }
             .app-container {
                 flex-direction: row;
-                max-width: 1400px; /* Increased width for charts */
+                max-width: 1400px;
                 margin: 0 auto;
                 height: calc(100vh - 30px);
                 margin-top: 15px;
@@ -188,10 +188,20 @@
             margin-bottom: 25px;
         }
         .chart-card {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-medium);
+            background: linear-gradient(145deg, #ffffff, #f7f8f9);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--shadow-heavy);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .chart-card canvas {
+            max-height: 300px;
         }
         @media (max-width: 768px) {
             .charts-container { grid-template-columns: 1fr; }
@@ -404,8 +414,8 @@
                 <div class="category-form">
                     <h3>Add New Category</h3>
                     <div style="display:flex; gap:10px; flex-wrap: wrap;">
-                        <input type="text" id="newCategoryName" placeholder="e.g., Business" style="flex-grow: 1;">
-                        <select id="newCategoryType">
+                        <input type="text" id="newCategoryName" placeholder="e.g., Business" class="premium-input" style="flex-grow: 1;">
+                        <select id="newCategoryType" class="premium-input">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
                             <option value="asset">Lent Money (Asset)</option>
@@ -710,6 +720,12 @@
                     wallet.balance -= amount; // Cut money for repayment
                     return;
                 }
+                
+                // FIX: Correctly handle Borrowed Money
+                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                    wallet.balance += amount; // Add money to wallet
+                    return;
+                }
 
                 if (isSource) {
                     if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
@@ -740,6 +756,12 @@
                     }
                     if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
                         wallet.balance += transaction.amount;
+                        return;
+                    }
+                    
+                    // FIX: Correctly reverse Borrowed Money
+                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                        wallet.balance -= transaction.amount;
                         return;
                     }
 
