@@ -162,6 +162,25 @@
             transform: translateY(-5px) scale(1.02);
         }
 
+        .summary-filter-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        .summary-filter-container label {
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        .summary-filter-container select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            box-shadow: var(--shadow-light);
+        }
+
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .summary-card { 
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
@@ -360,7 +379,13 @@
                 <h1>Personal Finance</h1>
                 <h2>Wallets</h2>
                 <div id="walletsGrid" class="wallets-grid"></div>
-                <h2 style="margin-top:30px;">Summary</h2>
+                
+                <div class="summary-filter-container">
+                    <label for="summaryMonthFilter">Summary for:</label>
+                    <select id="summaryMonthFilter"></select>
+                </div>
+
+                <h2>Summary</h2>
                 <div class="summary-grid">
                     <div class="summary-card income"><h3>Total Income</h3><p id="totalIncome">৳0.00</p></div>
                     <div class="summary-card expense"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
@@ -572,6 +597,7 @@
             const viewSections = document.querySelectorAll('.view-section');
             const categorySearchSelect = document.getElementById('categorySearch');
             const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+            const summaryMonthFilter = document.getElementById('summaryMonthFilter');
             
             const form = document.getElementById('trackerForm');
             const editForm = document.getElementById('editForm');
@@ -714,20 +740,14 @@
                 if (!wallet) return;
                 if (categoryType === 'transfer') return;
 
-                // Special handling for custom subcategories
                 if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') {
-                    wallet.balance += amount; // Add money back
-                    return;
+                    wallet.balance += amount; return;
                 }
                 if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
-                    wallet.balance -= amount; // Cut money for repayment
-                    return;
+                    wallet.balance -= amount; return;
                 }
-                
-                // FIX: Correctly handle Borrowed Money
                 if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
-                    wallet.balance += amount; // Add money to wallet
-                    return;
+                    wallet.balance += amount; return;
                 }
 
                 if (isSource) {
@@ -752,22 +772,9 @@
                     if (wallet) wallet.balance += transaction.amount;
                     if (toWallet) toWallet.balance -= transaction.amount;
                 } else {
-                    // Reverse the special cases
-                    if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') {
-                        wallet.balance -= transaction.amount;
-                        return;
-                    }
-                    if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
-                        wallet.balance += transaction.amount;
-                        return;
-                    }
-                    
-                    // FIX: Correctly reverse Borrowed Money
-                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
-                        wallet.balance -= transaction.amount;
-                        return;
-                    }
-
+                    if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') { wallet.balance -= transaction.amount; return; }
+                    if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') { wallet.balance += transaction.amount; return; }
+                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') { wallet.balance -= transaction.amount; return; }
                     if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance += transaction.amount;
                     if (['income'].includes(categoryType)) wallet.balance -= transaction.amount;
                 }
@@ -827,11 +834,25 @@
                 subcats.forEach(sub => targetSelect.add(new Option(sub.name, sub.id)));
             };
 
-            const renderSummary = () => {
+            const populateSummaryFilter = () => {
+                const monthSet = new Set();
+                transactions.forEach(t => {
+                    const monthYear = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+                    monthSet.add(monthYear);
+                });
+                const sortedMonths = Array.from(monthSet).sort((a, b) => new Date(b) - new Date(a));
+                
+                summaryMonthFilter.innerHTML = '<option value="all">All Months</option>';
+                sortedMonths.forEach(month => {
+                    summaryMonthFilter.add(new Option(month, month));
+                });
+            };
+
+            const renderSummary = (transactionsToRender = transactions) => {
                 let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0, totalSavings = 0;
                 let lentRepaid = 0, borrowedRepaid = 0;
 
-                transactions.forEach(t => {
+                transactionsToRender.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
                     const subcategory = subcategories.find(s => s.id === t.subcategoryId);
                     if (!category) return;
@@ -847,7 +868,6 @@
                         case 'asset': 
                             if(subcategoryName === 'Lent Money') totalLent += amount;
                             if(subcategoryName === 'Loan Received Back') lentRepaid += amount;
-                            // BUG FIX: Moved "Borrowed Money" calculation here from the 'liability' case
                             if(subcategoryName === 'Borrowed Money') totalBorrowed += amount;
                             break;
                         case 'liability': 
@@ -866,11 +886,11 @@
                 document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
             };
 
-            const renderCharts = () => {
+            const renderCharts = (transactionsToRender = transactions) => {
                 const expenseData = {};
                 const monthlyData = {};
 
-                transactions.forEach(t => {
+                transactionsToRender.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
                     const subcategory = subcategories.find(s => s.id === t.subcategoryId);
                     if (!category) return;
@@ -1121,7 +1141,13 @@
                 } 
             };
             
-            const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); renderCharts(); };
+            const renderAll = () => { 
+                renderWallets(); 
+                renderSummary(); 
+                renderTransactions(); 
+                renderCharts(); 
+                populateSummaryFilter();
+            };
             const switchView = (targetId) => {
                 viewSections.forEach(section => section.classList.remove('active'));
                 navItems.forEach(item => item.classList.remove('active'));
@@ -1263,28 +1289,19 @@
 
             // --- Reset All Data Function ---
             const handleResetAllData = async () => {
-                // 1. Clear local storage
                 localStorage.removeItem('advTrackerWallets');
                 localStorage.removeItem('advTrackerCategories');
                 localStorage.removeItem('advTrackerSubcategories');
                 localStorage.removeItem('advTrackerTransactions');
-
-                // 2. Reset in-memory data to defaults
                 wallets = [{ id: 1, name: 'Cash', balance: 0 }, { id: 2, name: 'Bank', balance: 0 }, { id: 3, name: 'bKash', balance: 0 }, { id: 4, name: 'Nagad', balance: 0 }];
                 categories = defaultCategories;
                 subcategories = defaultSubcategories;
                 transactions = [];
-
-                // 3. Try to clear the Google Sheet data as well by saving the empty/default state
                 await api.save({ wallets, categories, subcategories, transactions });
-
-                // 4. Re-render everything
                 renderAll();
                 renderCategories();
                 populateCategoryDropdowns();
                 updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
-
-                // 5. Give user feedback
                 alert("All data has been successfully reset. The app is now in its default state.");
             };
 
@@ -1325,7 +1342,6 @@
             subcategories = data.subcategories;
             transactions = data.transactions;
 
-            // Set default date for new transaction
             document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
 
             renderAll();
@@ -1364,6 +1380,20 @@
                     "WARNING: This will permanently delete ALL your data (wallets, transactions, categories). This action cannot be undone. Are you absolutely sure?",
                     handleResetAllData
                 );
+            });
+
+            // Summary Filter Listener
+            summaryMonthFilter.addEventListener('change', (e) => {
+                const selectedMonth = e.target.value;
+                let filteredTransactions = transactions;
+                if (selectedMonth !== 'all') {
+                    filteredTransactions = transactions.filter(t => {
+                        const transactionMonth = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+                        return transactionMonth === selectedMonth;
+                    });
+                }
+                renderSummary(filteredTransactions);
+                renderCharts(filteredTransactions);
             });
 
             // Download CSV Listener
