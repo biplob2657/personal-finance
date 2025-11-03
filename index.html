@@ -869,6 +869,7 @@
                             if(subcategoryName === 'Lent Money') totalLent += amount;
                             if(subcategoryName === 'Loan Received Back') lentRepaid += amount;
                             if(subcategoryName === 'Borrowed Money') totalBorrowed += amount;
+                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount; // Fixed: Handle Loan Repaid here
                             break;
                         case 'liability': 
                             if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount;
