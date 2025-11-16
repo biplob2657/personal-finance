@@ -657,7 +657,8 @@
                 { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 }, { id: 9, name: 'Emergency Fund', categoryId: 2 }, { id: 10, name: 'Retirement Fund', categoryId: 2 },
                 { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
                 { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
-                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 }
+                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 },
+                { id: 29, name: 'Bank → Investment', categoryId: 1 }
             ];
             
             let wallets = [];
@@ -885,6 +886,9 @@
                 document.getElementById('totalBorrowed').textContent = `৳${(totalBorrowed - borrowedRepaid).toFixed(2)}`;
                 document.getElementById('netWorth').textContent = `৳${netWorth.toFixed(2)}`;
                 document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
+                
+                // Debug log
+                console.log('Total Wallet Balance:', totalWalletBalance, 'Total Borrowed:', totalBorrowed, 'Borrowed Repaid:', borrowedRepaid, 'Net Worth:', netWorth);
             };
 
             const renderCharts = (transactionsToRender = transactions) => {
@@ -1019,8 +1023,22 @@
                     newTransaction.toWalletId = toWalletId;
                     const fromWallet = wallets.find(w => w.id === walletId);
                     const toWallet = wallets.find(w => w.id === toWalletId);
+                    
+                    // Debug logs
+                    console.log('Transfer from', fromWallet.name, 'to', toWallet.name, 'amount:', amount);
+                    console.log('Before transfer - From wallet balance:', fromWallet.balance, 'To wallet balance:', toWallet.balance);
+                    
                     fromWallet.balance -= amount;
                     toWallet.balance += amount;
+                    
+                    // Debug logs
+                    console.log('After transfer - From wallet balance:', fromWallet.balance, 'To wallet balance:', toWallet.balance);
+                    
+                    // Ensure changes are saved immediately
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    
+                    // Force re-render of wallets
+                    renderWallets();
                 } else {
                     updateWalletBalance(walletId, amount, category.type, subcategory ? subcategory.name : '');
                 }
