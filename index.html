@@ -6,8 +6,8 @@
     <title>FinTrack Pro</title>
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts: Plus Jakarta Sans (English) & Hind Siliguri (Bangla) -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         /* --- CSS Variables & Design Tokens --- */
@@ -34,7 +34,6 @@
             
             /* Typography */
             --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-bn: 'Hind Siliguri', sans-serif;
             --text-dark: #0f172a;
             --text-muted: #64748b;
             
@@ -42,6 +41,7 @@
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
             
             --radius-sm: 8px;
             --radius-md: 12px;
@@ -49,7 +49,6 @@
             --radius-xl: 24px;
 
             --nav-height: 70px;
-            --top-bar-height: 60px;
         }
 
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -61,12 +60,10 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            overflow: hidden; /* Prevents body scroll, forces app container scroll */
+            overflow: hidden;
             display: flex;
             justify-content: center;
         }
-        
-        body.lang-bn { font-family: var(--font-bn); }
 
         /* --- App Container --- */
         .app-container {
@@ -79,38 +76,12 @@
             position: relative;
         }
 
-        /* --- Top Bar for Settings/Language --- */
-        .top-bar {
-            height: var(--top-bar-height);
-            min-height: var(--top-bar-height);
-            padding: 0 20px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-light);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 15px;
-            flex-shrink: 0; /* Keeps top bar from shrinking */
-            z-index: 50;
-        }
-        .lang-select {
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--primary);
-            background: #f0fdf4;
-            color: var(--primary);
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            outline: none;
-        }
-
         /* --- Main Content Area --- */
         .main-content {
-            flex-grow: 1;
-            overflow-y: auto; /* This allows content to scroll */
+            flex-grow:1;
+            overflow-y: auto;
             padding: 20px;
-            padding-bottom: calc(var(--nav-height) + 20px);
+            padding-bottom: calc(var(--nav-height) + 40px);
             scroll-behavior: smooth;
         }
         
@@ -122,9 +93,9 @@
         .view-section.active { display: block; opacity: 1; transform: translateY(0); }
 
         h1 { 
-            font-size: 1.5rem; 
+            font-size:1.5rem; 
             font-weight: 700; 
-            margin-bottom: 1.5rem; 
+            margin-bottom:1.5rem; 
             color: var(--text-dark);
             display: flex; 
             align-items: center; 
@@ -148,10 +119,10 @@
             left: 0;
             width: 100%;
             height: var(--nav-height);
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border-light);
+            border-top:1px solid var(--border-light);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -237,83 +208,16 @@
             }
         }
 
-        /* --- Calendar Widget --- */
-        .calendar-wrapper {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-light);
-            margin-bottom: 24px;
-        }
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .calendar-header button {
-            background: transparent;
-            box-shadow: none;
-            color: var(--text-muted);
-            padding: 4px 8px;
-            font-size: 1.2rem;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            text-align: center;
-        }
-        .weekday {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            padding-bottom: 8px;
-        }
-        .day-cell {
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            cursor: pointer;
-            position: relative;
-            background: #f8fafc;
-            transition: all 0.2s;
-        }
-        .day-cell:hover { background: #e0e7ff; color: var(--primary); }
-        .day-cell.today { border: 2px solid var(--primary); color: var(--primary); font-weight: 700; }
-        
-        /* Highlighting dates with transactions */
-        .day-cell.has-transaction {
-            background-color: #f0fdf4; /* Light Green Bg */
-            color: var(--success-text);
-            font-weight: 700;
-        }
-        .day-cell.has-transaction::after {
-            content: '';
-            width: 6px;
-            height: 6px;
-            background: var(--success-text);
-            border-radius: 50%;
-            position: absolute;
-            bottom: 6px;
-        }
-        .day-cell.empty { background: transparent; cursor: default; }
-
-        /* --- Wallets Grid --- */
+        /* --- Wallets Grid (Optimized for Mobile) --- */
         .wallets-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Smaller boxes */
             gap: 12px;
             margin-bottom: 24px;
         }
         .wallet-card {
             background: var(--bg-card);
-            padding: 16px;
+            padding: 16px; /* Reduced padding */
             border-radius: var(--radius-lg);
             text-align: left;
             border: 1px solid var(--border-light);
@@ -325,17 +229,30 @@
             flex-direction: column;
             justify-content: center;
             height: auto;
-            min-height: 100px;
+            min-height: 100px; /* Tighter height */
         }
         .wallet-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
+            top: 0; left: 0; width: 100%; height: 4px; /* Thinner accent */
             background: var(--primary-gradient);
         }
         .wallet-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .wallet-card h4 { margin: 0 0 6px 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
-        .wallet-card p { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+        .wallet-card h4 { 
+            margin: 0 0 6px 0; 
+            font-size: 0.85rem; /* Smaller text */
+            color: var(--text-muted); 
+            font-weight: 500; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .wallet-card p { 
+            margin: 0; 
+            font-size: 1.1rem; /* Smaller font size */
+            font-weight: 700; 
+            color: var(--text-dark); 
+        }
         
         .add-wallet-btn {
             background: rgba(99, 102, 241, 0.03);
@@ -350,17 +267,22 @@
             height: auto;
             min-height: 100px;
         }
-        .add-wallet-btn:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+        .add-wallet-btn:hover { 
+            border-color: var(--primary); 
+            background: rgba(99, 102, 241, 0.1);
+        }
         .add-wallet-btn h4 { margin: 0; color: var(--primary); font-size: 0.85rem; }
 
         /* --- Summary Grid --- */
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* 2 Columns on mobile */
             gap: 12px;
             margin-bottom: 32px;
         }
-        @media(min-width: 600px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media(min-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(3, 1fr); }
+        }
         .summary-card { 
             background: var(--bg-card);
             padding: 16px; 
@@ -372,6 +294,7 @@
         .summary-card:hover { transform: translateY(-2px); }
         .summary-card h3 { margin: 0 0 6px 0; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .summary-card p { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+        
         .summary-card.income h3 { color: var(--success-text); }
         .summary-card.expense h3 { color: var(--danger-text); }
         .summary-card.net-worth h3 { color: var(--primary); }
@@ -402,7 +325,9 @@
             gap: 24px;
             margin-bottom: 32px;
         }
-        @media (min-width: 768px) { .charts-container { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 768px) {
+            .charts-container { grid-template-columns: 1fr 1fr; }
+        }
         .chart-card {
             background: var(--bg-card);
             border: 1px solid var(--border-light);
@@ -411,7 +336,7 @@
             box-shadow: var(--shadow-sm);
         }
 
-        /* --- Forms --- */
+        /* --- Premium Form Styles --- */
         .tracker-form, .category-form, .backup-restore-form {
             display: flex;
             flex-direction: column;
@@ -426,7 +351,11 @@
             position: relative;
             overflow: hidden;
         }
-        .category-form { border-left: 5px solid var(--primary); }
+        
+        /* Premium Category Form Specialization */
+        .category-form {
+            border-left: 5px solid var(--primary);
+        }
         .category-form h3 {
             margin: 0 0 8px 0;
             font-size: 1.1rem;
@@ -435,7 +364,11 @@
             align-items: center;
             gap: 8px;
         }
-        .category-form .input-group { display: grid; grid-template-columns: 1fr 140px; gap: 10px; }
+        .category-form .input-group {
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 10px;
+        }
 
         .form-group label { 
             display: block; 
@@ -570,29 +503,11 @@
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-lg);
             animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h2 { margin: 0; font-size: 1.1rem; }
         .close-btn { color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; line-height: 1; }
         .close-btn:hover { color: var(--text-dark); }
-        .modal-body { overflow-y: auto; padding-right: 5px; }
-
-        /* --- Daily History Specific --- */
-        .daily-summary {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: var(--radius-md);
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--border-light);
-        }
-        .daily-summary .label { font-size: 0.85rem; color: var(--text-muted); }
-        .daily-summary .total { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
 
         /* --- Toast Notification --- */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;}
@@ -619,7 +534,6 @@
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Utilities */
         .text-success { color: var(--success-text); }
         .text-danger { color: var(--danger-text); }
         .text-primary { color: var(--primary); }
@@ -633,43 +547,34 @@
     <div id="toast-container"></div>
 
     <div class="app-container">
-        <!-- Top Bar (Always Visible) -->
-        <div class="top-bar">
-            <div style="margin-right: auto; font-weight:700; color:var(--primary);">FinTrack Pro</div>
-            <select id="languageSelect" class="lang-select">
-                <option value="en">English</option>
-                <option value="bn">বাংলা</option>
-            </select>
-        </div>
-
-        <main class="main-content" id="mainContent">
+        <main class="main-content">
             
             <!-- View 1: Wallets & Dashboard -->
             <section id="view-wallets" class="view-section active">
-                <h1 data-i18n="wallets">
+                <h1>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                    Wallets
+                    Dashboard
                 </h1>
                 
-                <h2 data-i18n="wallets">My Wallets</h2>
+                <h2>Wallets</h2>
                 <div id="walletsGrid" class="wallets-grid"></div>
                 
                 <div class="summary-filter-container">
-                    <label for="summaryMonthFilter" style="margin-right: 8px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;" data-i18n="period">Period:</label>
+                    <label for="summaryMonthFilter" style="margin-right: 8px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Period:</label>
                     <select id="summaryMonthFilter"></select>
                 </div>
 
-                <h2 data-i18n="overview">Overview</h2>
+                <h2>Overview</h2>
                 <div class="summary-grid">
-                    <div class="summary-card income"><h3 data-i18n="income">Income</h3><p id="totalIncome" class="text-success">৳0</p></div>
-                    <div class="summary-card expense"><h3 data-i18n="expense">Expense</h3><p id="totalExpense" class="text-danger">৳0</p></div>
-                    <div class="summary-card net-worth"><h3 data-i18n="netWorth">Net Worth</h3><p id="netWorth" class="text-primary">৳0</p></div>
-                    <div class="summary-card"><h3 data-i18n="savings">Savings</h3><p id="totalSavings">৳0</p></div>
-                    <div class="summary-card"><h3 data-i18n="lent">Lent</h3><p id="totalLent">৳0</p></div>
-                    <div class="summary-card"><h3 data-i18n="borrowed">Borrowed</h3><p id="totalBorrowed">৳0</p></div>
+                    <div class="summary-card income"><h3>Income</h3><p id="totalIncome" class="text-success">৳0</p></div>
+                    <div class="summary-card expense"><h3>Expense</h3><p id="totalExpense" class="text-danger">৳0</p></div>
+                    <div class="summary-card net-worth"><h3>Net Worth</h3><p id="netWorth" class="text-primary">৳0</p></div>
+                    <div class="summary-card"><h3>Savings</h3><p id="totalSavings">৳0</p></div>
+                    <div class="summary-card"><h3>Lent</h3><p id="totalLent">৳0</p></div>
+                    <div class="summary-card"><h3>Borrowed</h3><p id="totalBorrowed">৳0</p></div>
                 </div>
                 
-                <h2 data-i18n="analytics">Analytics</h2>
+                <h2>Analytics</h2>
                 <div class="charts-container">
                     <div class="chart-card">
                         <canvas id="expensePieChart"></canvas>
@@ -682,56 +587,56 @@
 
             <!-- View 2: Add Transaction -->
             <section id="view-add-transaction" class="view-section">
-                <h1 data-i18n="newTransaction">
+                <h1>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     New Transaction
                 </h1>
                 <form id="trackerForm" class="tracker-form">
                     <div class="form-group">
-                        <label data-i18n="description">Description</label>
+                        <label>Description</label>
                         <input type="text" id="description" placeholder="e.g., Groceries" required>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="amount">Amount (৳)</label>
+                        <label>Amount (৳)</label>
                         <input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="date">Date</label>
+                        <label>Date</label>
                         <input type="date" id="transactionDate" required>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="wallet">Wallet</label>
+                        <label>Wallet</label>
                         <select id="wallet" required></select>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="category">Category</label>
+                        <label>Category</label>
                         <select id="category" required></select>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="subcategory">Subcategory</label>
+                        <label>Subcategory</label>
                         <select id="subcategory" required></select>
                     </div>
                     <div id="transferFields" style="display:none;">
                         <div class="form-group">
-                            <label data-i18n="transferTo">Transfer To</label>
+                            <label>Transfer To</label>
                             <select id="toWallet"></select>
                         </div>
                     </div>
-                    <button type="submit" data-i18n="addTransaction">Add Transaction</button>
+                    <button type="submit">Add Transaction</button>
                 </form>
             </section>
 
             <!-- View 3: Transaction History -->
             <section id="view-history" class="view-section">
-                <h1 data-i18n="history">
+                <h1>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     History
                 </h1>
                 <div style="display:flex; gap:12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; background: white; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
                     <div style="flex-grow:1; min-width: 150px;">
-                        <label style="display:block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;" data-i18n="filter">Filter</label>
+                        <label style="display:block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Filter</label>
                         <select id="categorySearch" style="width:100%; padding: 8px;">
-                            <option value="all" data-i18n="allCategories">All Categories</option>
+                            <option value="all">All Categories</option>
                         </select>
                     </div>
                     <button id="downloadCsvBtn" class="success-btn" style="margin-top: auto; font-size: 0.9rem; padding: 10px 16px;">
@@ -742,30 +647,9 @@
                 <ul id="transactionList" class="transaction-list"></ul>
             </section>
 
-            <!-- View 4: Mini Calendar (NEW MENU) -->
-            <section id="view-calendar" class="view-section">
-                <h1 data-i18n="calendar">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Calendar
-                </h1>
-                <p style="color:var(--text-muted); margin-bottom: 20px;" data-i18n="calendarHint">Click a date to see daily transactions.</p>
-                
-                <!-- Mini Calendar -->
-                <div class="calendar-wrapper">
-                    <div class="calendar-header">
-                        <button id="prevMonth">&lt;</button>
-                        <span id="currentMonthLabel" style="font-weight: 600;">Month Year</span>
-                        <button id="nextMonth">&gt;</button>
-                    </div>
-                    <div class="calendar-grid" id="calendarGrid">
-                        <!-- Generated by JS -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- View 5: Manage Categories -->
+            <!-- View 4: Manage Categories -->
             <section id="view-manage-categories" class="view-section">
-                <h1 data-i18n="settings">
+                <h1>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     Settings
                 </h1>
@@ -773,36 +657,36 @@
                 <div class="category-form">
                     <h3>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        <span data-i18n="createCategory">Create Category</span>
+                        Create Category
                     </h3>
                     <div class="input-group">
                         <input type="text" id="newCategoryName" placeholder="Category Name" style="flex-grow: 1;">
                         <select id="newCategoryType">
-                            <option value="income" data-i18n="income">Income</option>
-                            <option value="expense" data-i18n="expense">Expense</option>
-                            <option value="asset" data-i18n="lent">Lent</option>
-                            <option value="liability" data-i18n="borrowed">Borrowed</option>
-                            <option value="transfer" data-i18n="transfer">Transfer</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                            <option value="asset">Lent</option>
+                            <option value="liability">Borrowed</option>
+                            <option value="transfer">Transfer</option>
                         </select>
                     </div>
-                    <button type="button" id="addCategoryBtn" style="width: 100%;" data-i18n="addCategory">Add Category</button>
+                    <button type="button" id="addCategoryBtn" style="width: 100%;">Add Category</button>
                 </div>
 
                 <div class="backup-restore-form" style="max-width: 100%;">
-                    <h3 data-i18n="dataManagement">Data Management</h3>
+                    <h3>Data Management</h3>
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
-                        <button type="button" id="backupBtn" class="success-btn" data-i18n="backup">Backup</button>
-                        <button type="button" id="listBackupsBtn" data-i18n="listBackups">List Backups</button>
+                        <button type="button" id="backupBtn" class="success-btn">Backup</button>
+                        <button type="button" id="listBackupsBtn">List Backups</button>
                     </div>
                     <div id="restoreSection" style="display:none; margin-top:15px; background: #f8fafc; padding: 12px; border-radius: var(--radius-md);">
-                        <label style="display:block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem;" data-i18n="selectBackup">Select Backup:</label>
+                        <label style="display:block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem;">Select Backup:</label>
                         <select id="restoreFileSelect" style="margin-bottom: 8px; width: 100%;">
                             <option value="">-- Select file --</option>
                         </select>
-                        <button type="button" id="restoreBtn" class="danger-btn" disabled data-i18n="restore">Restore</button>
+                        <button type="button" id="restoreBtn" class="danger-btn" disabled>Restore</button>
                     </div>
                     <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border-light);">
-                    <button type="button" id="resetAllDataBtn" class="danger-btn" style="background: white; color: var(--danger-text); border: 1px solid #fee2e2; box-shadow: none;" data-i18n="resetAllData">Reset All Data</button>
+                    <button type="button" id="resetAllDataBtn" class="danger-btn" style="background: white; color: var(--danger-text); border: 1px solid #fee2e2; box-shadow: none;">Reset All Data</button>
                 </div>
 
                 <ul id="categoryList" class="category-list"></ul>
@@ -812,19 +696,16 @@
 
         <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-target="view-wallets">
-                <span>💳</span> <span>Wallets</span>
+                <span>💳</span> Wallets
             </a>
             <a href="#" class="nav-item" data-target="view-add-transaction">
-                <span>➕</span> <span>ADD</span>
+                <span>➕</span> Add
             </a>
             <a href="#" class="nav-item" data-target="view-history">
-                <span>📜</span> <span data-i18n="history">History</span>
-            </a>
-            <a href="#" class="nav-item" data-target="view-calendar">
-                <span>📅</span> <span data-i18n="calendar">Calendar</span>
+                <span>📜</span> History
             </a>
             <a href="#" class="nav-item" data-target="view-manage-categories">
-                <span>⚙️</span> <span data-i18n="settings">Settings</span>
+                <span>⚙️</span> Settings
             </a>
         </nav>
     </div>
@@ -832,92 +713,75 @@
     <!-- Modals -->
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2 data-i18n="editTransaction">Edit Transaction</h2><span class="close-btn" data-target="editModal">&times;</span></div>
+            <div class="modal-header"><h2>Edit Transaction</h2><span class="close-btn" data-target="editModal">&times;</span></div>
             <form id="editForm" class="tracker-form">
                 <input type="hidden" id="editId">
-                <div class="form-group"><label data-i18n="description">Description</label><input type="text" id="editDescription" required></div>
-                <div class="form-group"><label data-i18n="amount">Amount (৳)</label><input type="number" id="editAmount" step="0.01" min="0.01" required></div>
-                <div class="form-group"><label data-i18n="date">Date</label><input type="date" id="editTransactionDate" required></div>
-                <div class="form-group"><label data-i18n="wallet">Wallet</label><select id="editWallet" required></select></div>
-                <div class="form-group"><label data-i18n="category">Category</label><select id="editCategory" required></select></div>
-                <div class="form-group"><label data-i18n="subcategory">Subcategory</label><select id="editSubcategory" required></select></div>
+                <div class="form-group"><label>Description</label><input type="text" id="editDescription" required></div>
+                <div class="form-group"><label>Amount (৳)</label><input type="number" id="editAmount" step="0.01" min="0.01" required></div>
+                <div class="form-group"><label>Date</label><input type="date" id="editTransactionDate" required></div>
+                <div class="form-group"><label>Wallet</label><select id="editWallet" required></select></div>
+                <div class="form-group"><label>Category</label><select id="editCategory" required></select></div>
+                <div class="form-group"><label>Subcategory</label><select id="editSubcategory" required></select></div>
                 <div id="editTransferFields" style="display:none;">
-                    <div class="form-group"><label data-i18n="toWallet">To Wallet</label><select id="editToWallet"></select></div>
+                    <div class="form-group"><label>To Wallet</label><select id="editToWallet"></select></div>
                 </div>
-                <button type="submit" data-i18n="saveChanges">Save Changes</button>
+                <button type="submit">Save Changes</button>
             </form>
-        </div>
-    </div>
-
-    <!-- Daily History Modal -->
-    <div id="dailyHistoryModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="dailyHistoryDate">Date</h2>
-                <span class="close-btn" data-target="dailyHistoryModal">&times;</span>
-            </div>
-            <div class="daily-summary">
-                <span class="label" data-i18n="totalSpent">Total</span>
-                <span class="total" id="dailyTotalAmount">৳0.00</span>
-            </div>
-            <div class="modal-body">
-                <ul id="dailyTransactionList" class="transaction-list"></ul>
-            </div>
         </div>
     </div>
 
     <div id="addSubcategoryModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2 data-i18n="addSubcategory">Add Subcategory</h2><span class="close-btn" data-target="addSubcategoryModal">&times;</span></div>
+            <div class="modal-header"><h2>Add Subcategory</h2><span class="close-btn" data-target="addSubcategoryModal">&times;</span></div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label data-i18n="name">Name</label>
+                <label>Name</label>
                 <input type="text" id="newSubcategoryName" placeholder="e.g., Office Supplies">
             </div>
             <div style="display:flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="addSubcategoryModal" data-i18n="cancel">Cancel</button>
-                <button type="button" id="saveSubcategoryBtn" data-i18n="save">Save</button>
+                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="addSubcategoryModal">Cancel</button>
+                <button type="button" id="saveSubcategoryBtn">Save</button>
             </div>
         </div>
     </div>
 
     <div id="editCategoryModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2 data-i18n="editCategory">Edit Category</h2><span class="close-btn" data-target="editCategoryModal">&times;</span></div>
+            <div class="modal-header"><h2>Edit Category</h2><span class="close-btn" data-target="editCategoryModal">&times;</span></div>
             <input type="hidden" id="editCategoryId">
-            <div class="form-group"><label data-i18n="name">Name</label><input type="text" id="editCategoryName" required></div>
-            <div class="form-group"><label data-i18n="type">Type</label><select id="editCategoryType">
-                <option value="income" data-i18n="income">Income</option>
-                <option value="expense" data-i18n="expense">Expense</option>
-                <option value="asset" data-i18n="lent">Lent Money</option>
-                <option value="liability" data-i18n="borrowed">Borrowed Money</option>
-                <option value="transfer" data-i18n="transfer">Transfer</option>
+            <div class="form-group"><label>Name</label><input type="text" id="editCategoryName" required></div>
+            <div class="form-group"><label>Type</label><select id="editCategoryType">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+                <option value="asset">Lent Money</option>
+                <option value="liability">Borrowed Money</option>
+                <option value="transfer">Transfer</option>
             </select></div>
             <div style="display:flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="editCategoryModal" data-i18n="cancel">Cancel</button>
-                <button type="button" id="saveCategoryChangesBtn" data-i18n="save">Save</button>
+                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="editCategoryModal">Cancel</button>
+                <button type="button" id="saveCategoryChangesBtn">Save</button>
             </div>
         </div>
     </div>
     
     <div id="editSubcategoryModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2 data-i18n="editSubcategory">Edit Subcategory</h2><span class="close-btn" data-target="editSubcategoryModal">&times;</span></div>
+            <div class="modal-header"><h2>Edit Subcategory</h2><span class="close-btn" data-target="editSubcategoryModal">&times;</span></div>
             <input type="hidden" id="editSubcategoryId">
-            <div class="form-group"><label data-i18n="name">Name</label><input type="text" id="editSubcategoryName" required></div>
+            <div class="form-group"><label>Name</label><input type="text" id="editSubcategoryName" required></div>
             <div style="display:flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="editSubcategoryModal" data-i18n="cancel">Cancel</button>
-                <button type="button" id="saveSubcategoryChangesBtn" data-i18n="save">Save</button>
+                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="editSubcategoryModal">Cancel</button>
+                <button type="button" id="saveSubcategoryChangesBtn">Save</button>
             </div>
         </div>
     </div>
 
     <div id="deleteConfirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2 data-i18n="confirm">Confirm</h2><span class="close-btn" data-target="deleteConfirmModal">&times;</span></div>
+            <div class="modal-header"><h2>Confirm</h2><span class="close-btn" data-target="deleteConfirmModal">&times;</span></div>
             <p id="deleteConfirmMessage" style="font-size: 1rem; color: var(--text-muted); margin-bottom: 20px;">Are you sure?</p>
             <div style="display:flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="deleteConfirmModal" data-i18n="cancel">Cancel</button>
-                <button type="button" id="confirmDeleteBtn" data-i18n="delete">Delete</button>
+                <button type="button" class="danger-btn" style="background: white; color: var(--text-muted); box-shadow: none;" data-target="deleteConfirmModal">Cancel</button>
+                <button type="button" id="confirmDeleteBtn">Delete</button>
             </div>
         </div>
     </div>
@@ -925,64 +789,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec';
-
-            /* --- Language Dictionary --- */
-            const translations = {
-                en: {
-                    dashboard: "Wallets", wallets: "Wallets", period: "Period:", overview: "Overview",
-                    income: "Income", expense: "Expense", netWorth: "Net Worth", savings: "Savings",
-                    lent: "Lent", borrowed: "Borrowed", analytics: "Analytics", newTransaction: "New Transaction",
-                    description: "Description", amount: "Amount (৳)", date: "Date", wallet: "Wallet",
-                    category: "Category", subcategory: "Subcategory", transferTo: "Transfer To",
-                    addTransaction: "Add Transaction", history: "History", filter: "Filter",
-                    allCategories: "All Categories", settings: "Settings", createCategory: "Create Category",
-                    dataManagement: "Data Management", backup: "Backup", listBackups: "List Backups",
-                    selectBackup: "Select Backup:", restore: "Restore", resetAllData: "Reset All Data",
-                    editTransaction: "Edit Transaction", saveChanges: "Save Changes", addSubcategory: "Add Subcategory",
-                    name: "Name", cancel: "Cancel", save: "Save", editCategory: "Edit Category",
-                    type: "Type", editSubcategory: "Edit Subcategory", confirm: "Confirm", delete: "Delete",
-                    transfer: "Transfer", totalSpent: "Total", calendar: "Calendar", calendarHint: "Click a date to see daily transactions."
-                },
-                bn: {
-                    dashboard: "ওয়ালেট", wallets: "ওয়ালেট", period: "সময়কাল:", overview: "সারসংক্ষেপ",
-                    income: "আয়", expense: "খরচ", netWorth: "নীট সম্পদ", savings: "সঞ্চয়",
-                    lent: "ধার দিয়েছি", borrowed: "ধার নিয়েছি", analytics: "বিশ্লেষণ", newTransaction: "নতুন লেনদেন",
-                    description: "বিবরণ", amount: "টাকা (৳)", date: "তারিখ", wallet: "ওয়ালেট",
-                    category: "ক্যাটাগরি", subcategory: "উপ-ক্যাটাগরি", transferTo: "স্থানান্তর করুন",
-                    addTransaction: "লেনদেন যোগ করুন", history: "ইতিহাস", filter: "ফিল্টার",
-                    allCategories: "সব ক্যাটাগরি", settings: "সেটিংস", createCategory: "ক্যাটাগরি তৈরি করুন",
-                    dataManagement: "ডেটা ম্যানেজমেন্ট", backup: "ব্যাকআপ", listBackups: "ব্যাকআপ তালিকা",
-                    selectBackup: "ব্যাকআপ নির্বাচন:", restore: "পুনরুদ্ধার", resetAllData: "সব ডেটা মুছুন",
-                    editTransaction: "লেনদেন সম্পাদনা", saveChanges: "পরিবর্তন সংরক্ষণ", addSubcategory: "উপ-ক্যাটাগরি যোগ",
-                    name: "নাম", cancel: "বাতিল", save: "সংরক্ষণ", editCategory: "ক্যাটাগরি সম্পাদনা",
-                    type: "ধরন", editSubcategory: "উপ-ক্যাটাগরি সম্পাদনা", confirm: "নিশ্চিত করুন", delete: "মুছে ফেলুন",
-                    transfer: "ট্রান্সফার", totalSpent: "মোট", calendar: "ক্যালেন্ডার", calendarHint: "দৈনিক লেনদেন দেখতে একটি তারিখে ক্লিক করুন।"
-                }
-            };
-
-            let currentLang = 'en';
-
-            const setLanguage = (lang) => {
-                currentLang = lang;
-                document.body.classList.toggle('lang-bn', lang === 'bn');
-                const t = translations[lang];
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const key = el.getAttribute('data-i18n');
-                    if (t[key]) el.innerText = t[key];
-                });
-                if(lang === 'bn') {
-                    document.getElementById('description').placeholder = "যেমন: বাজার";
-                    document.getElementById('amount').placeholder = "০.০০";
-                    document.getElementById('newCategoryName').placeholder = "ক্যাটাগরির নাম";
-                    document.getElementById('newSubcategoryName').placeholder = "যেমন: অফিস খরচ";
-                } else {
-                    document.getElementById('description').placeholder = "e.g., Groceries";
-                    document.getElementById('amount').placeholder = "0.00";
-                    document.getElementById('newCategoryName').placeholder = "Category Name";
-                    document.getElementById('newSubcategoryName').placeholder = "e.g., Office Supplies";
-                }
-                renderCalendar(); 
-            };
 
             const showToast = (message, type = 'success') => {
                 const container = document.getElementById('toast-container');
@@ -1001,133 +807,6 @@
 
             const navItems = document.querySelectorAll('.nav-item');
             const viewSections = document.querySelectorAll('.view-section');
-            const mainContent = document.getElementById('mainContent');
-            
-            const switchView = (tid) => {
-                viewSections.forEach(s=>s.classList.remove('active'));
-                navItems.forEach(i=>i.classList.remove('active'));
-                document.getElementById(tid).classList.add('active');
-                document.querySelector(`[data-target="${tid}"]`).classList.add('active');
-                
-                // FIX: Scroll to top when switching views so the title is always visible
-                mainContent.scrollTop = 0;
-
-                if(tid === 'view-calendar') renderCalendar();
-            }
-
-            navItems.forEach(i => i.addEventListener('click', e=>{ e.preventDefault(); switchView(i.dataset.target); }));
-
-            document.getElementById('languageSelect').addEventListener('change', (e) => {
-                setLanguage(e.target.value);
-            });
-
-            // --- Calendar Logic ---
-            let calendarDate = new Date();
-            const calendarGrid = document.getElementById('calendarGrid');
-            const currentMonthLabel = document.getElementById('currentMonthLabel');
-
-            const renderCalendar = () => {
-                const year = calendarDate.getFullYear();
-                const month = calendarDate.getMonth();
-                
-                const monthNames = currentLang === 'bn' 
-                    ? ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর']
-                    : ['January','February','March','April','May','June','July','August','September','October','November','December'];
-                currentMonthLabel.innerText = `${monthNames[month]} ${year}`;
-
-                calendarGrid.innerHTML = '';
-
-                const weekDays = currentLang === 'bn' ? ['র','সো','ম','বু','বৃ','শু','শ'] : ['S','M','T','W','T','F','S'];
-                weekDays.forEach(day => {
-                    const el = document.createElement('div');
-                    el.className = 'weekday';
-                    el.innerText = day;
-                    calendarGrid.appendChild(el);
-                });
-
-                const firstDay = new Date(year, month, 1).getDay();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                const today = new Date();
-
-                for(let i=0; i<firstDay; i++) {
-                    const el = document.createElement('div');
-                    el.className = 'day-cell empty';
-                    calendarGrid.appendChild(el);
-                }
-
-                for(let d=1; d<=daysInMonth; d++) {
-                    const el = document.createElement('div');
-                    el.className = 'day-cell';
-                    el.innerText = d;
-                    
-                    const dateString = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    
-                    if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
-                        el.classList.add('today');
-                    }
-
-                    const hasTrans = transactions.some(t => t.date === dateString);
-                    if(hasTrans) el.classList.add('has-transaction');
-
-                    el.addEventListener('click', () => openDailyHistory(dateString));
-                    calendarGrid.appendChild(el);
-                }
-            };
-
-            document.getElementById('prevMonth').addEventListener('click', () => {
-                calendarDate.setMonth(calendarDate.getMonth() - 1);
-                renderCalendar();
-            });
-            document.getElementById('nextMonth').addEventListener('click', () => {
-                calendarDate.setMonth(calendarDate.getMonth() + 1);
-                renderCalendar();
-            });
-
-            const openDailyHistory = (dateString) => {
-                const dailyTrans = transactions.filter(t => t.date === dateString);
-                const dateObj = new Date(dateString);
-                const dateStr = dateObj.toLocaleDateString(currentLang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                
-                document.getElementById('dailyHistoryDate').innerText = dateStr;
-                const list = document.getElementById('dailyTransactionList');
-                list.innerHTML = '';
-                
-                let total = 0;
-                dailyTrans.forEach(t => {
-                    const w = wallets.find(w=>w.id==t.walletId);
-                    const c = categories.find(c=>c.id==t.categoryId);
-                    const s = subcategories.find(s=>s.id==t.subcategoryId);
-                    const col = getAmountClass(c?c.type:'expense');
-                    const sign = getTransactionSign(c?c.type:'expense');
-                    
-                    total += (c.type === 'expense' || c.type === 'asset' || c.type === 'liability') ? -t.amount : t.amount;
-                    if(c.type === 'transfer') total = 0; 
-
-                    const li = document.createElement('li');
-                    li.className = 'transaction-item';
-                    li.innerHTML = `
-                        <div class="transaction-info" style="flex-grow:1;">
-                            <h4>${t.description}</h4>
-                            <p>${w?w.name:'N/A'} &bull; ${c?c.name:'N/A'}</p>
-                        </div>
-                        <div style="display:flex;align-items:center;">
-                            <span class="transaction-amount ${col}">${sign}${formatCurrency(t.amount)}</span>
-                        </div>`;
-                    list.appendChild(li);
-                });
-
-                if(dailyTrans.length === 0) {
-                    list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">${currentLang==='bn'?'কোন লেনদেন নেই':'No Transactions'}</div>`;
-                }
-
-                document.getElementById('dailyTotalAmount').innerText = formatCurrency(Math.abs(total));
-                document.getElementById('dailyTotalAmount').className = `total ${total < 0 ? 'text-danger' : 'text-success'}`;
-                
-                showModal('dailyHistoryModal');
-            };
-
-            /* --- Original Logic (Modified for Categories) --- */
-            
             const categorySearchSelect = document.getElementById('categorySearch');
             const downloadCsvBtn = document.getElementById('downloadCsvBtn');
             const summaryMonthFilter = document.getElementById('summaryMonthFilter');
@@ -1167,18 +846,18 @@
             const editTransferFields_inForm = document.getElementById('editTransferFields');
 
             const defaultCategories = [
-                { id: 1, name: 'Transfer (ট্রান্সফার)', type: 'transfer' },
-                { id: 2, name: 'Savings / Investments (সঞ্চয় / বিনিয়োগ)', type: 'expense' },
-                { id: 3, name: 'Expense (খরচ)', type: 'expense' },
-                { id: 4, name: 'Income (আয়)', type: 'income' },
-                { id: 5, name: 'Lent Money (ধার দিয়েছি)', type: 'asset' }
+                { id: 1, name: 'Accounts / Wallets', type: 'transfer' },
+                { id: 2, name: 'Savings / Investments', type: 'expense' },
+                { id: 3, name: 'Expense', type: 'expense' },
+                { id: 4, name: 'Income', type: 'income' },
+                { id: 5, name: 'Lending / Borrowing', type: 'asset' }
             ];
             const defaultSubcategories = [
                 { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
                 { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 },
                 { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 },
                 { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance', categoryId: 4 }, { id: 22, name: 'Gifts', categoryId: 4 }, { id: 23, name: 'Other Income', categoryId: 4 },
-                { id: 25, name: 'Lent Money (ধার দিয়েছি)', categoryId: 5 }, { id: 26, name: 'Borrowed Money (ধার নিয়েছি)', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 }
+                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 }
             ];
             
             let wallets = [], categories = [], subcategories = [], transactions = [];
@@ -1235,7 +914,7 @@
                 if (!wallet || categoryType === 'transfer') return;
                 if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') { wallet.balance += amount; return; }
                 if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') { wallet.balance -= amount; return; }
-                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money (ধার নিয়েছি)') { wallet.balance += amount; return; }
+                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') { wallet.balance += amount; return; }
                 if (isSource) {
                     if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
                     if (['income'].includes(categoryType)) wallet.balance += amount;
@@ -1259,7 +938,7 @@
                 } else {
                     if (type === 'asset' && subName === 'Loan Received Back') { wallet.balance -= t.amount; return; }
                     if (type === 'liability' && subName === 'Loan Repaid') { wallet.balance += t.amount; return; }
-                    if (type === 'asset' && subName === 'Borrowed Money (ধার নিয়েছি)') { wallet.balance -= t.amount; return; }
+                    if (type === 'asset' && subName === 'Borrowed Money') { wallet.balance -= t.amount; return; }
                     if (['expense', 'asset', 'liability'].includes(type)) wallet.balance += t.amount;
                     if (['income'].includes(type)) wallet.balance -= t.amount;
                 }
@@ -1299,10 +978,16 @@
                 categories.forEach(c => { categorySelect.add(new Option(c.name, c.id)); editCategorySelect_inForm.add(new Option(c.name, c.id)); categorySearchSelect.add(new Option(c.name, c.id)); });
             };
             
+            // --- FIXED: Added logic to handle categories with no subcategories ---
             const updateSubcategoryDropdown = (catId, target) => {
                 const subs = subcategories.filter(s => s.categoryId == catId);
                 target.innerHTML = '';
-                subs.forEach(s => target.add(new Option(s.name, s.id)));
+                if (subs.length === 0) {
+                    // If no subcategories, add a "General" option so the form can be submitted
+                    target.add(new Option('General (No Subcategory)', 0));
+                } else {
+                    subs.forEach(s => target.add(new Option(s.name, s.id)));
+                }
             };
 
             const populateSummaryFilter = () => {
@@ -1321,8 +1006,8 @@
                     const type = cat.type, subName = sub ? sub.name : '';
                     switch(type){
                         case 'income': inc+=t.amount; break;
-                        case 'expense': exp+=t.amount; if(cat.id===2) sav+=t.amount; break; 
-                        case 'asset': if(subName==='Lent Money (ধার দিয়েছি)') lent+=t.amount; if(subName==='Loan Received Back') lentR+=t.amount; if(subName==='Borrowed Money (ধার নিয়েছি)') bor+=t.amount; if(subName==='Loan Repaid') borR+=t.amount; break;
+                        case 'expense': exp+=t.amount; if(cat.name==='Savings / Investments') sav+=t.amount; break;
+                        case 'asset': if(subName==='Lent Money') lent+=t.amount; if(subName==='Loan Received Back') lentR+=t.amount; if(subName==='Borrowed Money') bor+=t.amount; if(subName==='Loan Repaid') borR+=t.amount; break;
                         case 'liability': if(subName==='Loan Repaid') borR+=t.amount; break;
                     }
                 });
@@ -1354,29 +1039,29 @@
                 if(expensePieChart) expensePieChart.destroy();
                 expensePieChart = new Chart(pieCtx, {
                     type: 'doughnut', data: { labels: Object.keys(expData), datasets: [{ data: Object.values(expData), backgroundColor: palette, borderWidth:0 }] },
-                    options: { responsive:true, cutout:'70%', plugins:{ legend:{position:'right',labels:{usePointStyle:true,font:{family:currentLang==='bn'?'Hind Siliguri':'Plus Jakarta Sans'},boxWidth:8}}, title:{display:true,text:currentLang==='bn'?'খরচের বিবরণ':'Expenses',font:{size:14,family:currentLang==='bn'?'Hind Siliguri':'Plus Jakarta Sans'}}} }
+                    options: { responsive:true, cutout:'70%', plugins:{ legend:{position:'right',labels:{usePointStyle:true,font:{family:'Plus Jakarta Sans'},boxWidth:8}}, title:{display:true,text:'Expenses',font:{size:14,family:'Plus Jakarta Sans'}}} }
                 });
 
                 const barCtx = document.getElementById('incomeExpenseBarChart').getContext('2d');
                 if(incomeExpenseBarChart) incomeExpenseBarChart.destroy();
                 const ms = Object.keys(monData).sort((a,b)=>new Date(a)-new Date(b));
                 incomeExpenseBarChart = new Chart(barCtx, {
-                    type: 'bar', data: { labels: ms, datasets: [{label:currentLang==='bn'?'আয়':'Income',data:ms.map(m=>monData[m].i),backgroundColor:'#22c55e',borderRadius:4},{label:currentLang==='bn'?'খরচ':'Expense',data:ms.map(m=>monData[m].e),backgroundColor:'#f43f5e',borderRadius:4}] },
-                    options: { responsive:true, scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{family:currentLang==='bn'?'Hind Siliguri':'Plus Jakarta Sans'}}},x:{grid:{display:false},ticks:{font:{family:currentLang==='bn'?'Hind Siliguri':'Plus Jakarta Sans'}}}}, plugins:{legend:{position:'top',labels:{usePointStyle:true,font:{family:currentLang==='bn'?'Hind Siliguri':'Plus Jakarta Sans'}}}, title:{display:true,text:currentLang==='bn'?'আয় বনাম খরচ':'Income vs Expense',font:{size:14,family:currentLang==='bn'?'Hind Siliguri':'Plus Jakarta Sans'}}} }
+                    type: 'bar', data: { labels: ms, datasets: [{label:'Income',data:ms.map(m=>monData[m].i),backgroundColor:'#22c55e',borderRadius:4},{label:'Expense',data:ms.map(m=>monData[m].e),backgroundColor:'#f43f5e',borderRadius:4}] },
+                    options: { responsive:true, scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{family:'Plus Jakarta Sans'}}},x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans'}}}}, plugins:{legend:{position:'top',labels:{usePointStyle:true,font:{family:'Plus Jakarta Sans'}}}, title:{display:true,text:'Income vs Expense',font:{size:14,family:'Plus Jakarta Sans'}}} }
                 });
             };
 
             const renderTransactions = (trs = transactions) => {
                 transactionList.innerHTML = '';
                 const sorted = [...trs].sort((a,b) => new Date(b.date) - new Date(a.date));
-                if(sorted.length===0) { transactionList.innerHTML = `<div style="text-align:center;padding:30px;color:#94a3b8;">${currentLang==='bn'?'কোন লেনদেন পাওয়া যায়নি':'No transactions found.'}</div>`; return; }
+                if(sorted.length===0) { transactionList.innerHTML = '<div style="text-align:center;padding:30px;color:#94a3b8;">No transactions found.</div>'; return; }
                 sorted.forEach(t => {
                     const w = wallets.find(w=>w.id==t.walletId);
                     const c = categories.find(c=>c.id==t.categoryId);
                     const s = subcategories.find(s=>s.id==t.subcategoryId);
                     const col = getAmountClass(c?c.type:'expense');
                     const sign = getTransactionSign(c?c.type:'expense');
-                    const d = new Date(t.date).toLocaleDateString(currentLang === 'bn' ? 'bn-BD' : 'en-US', { year:'numeric', month:'short', day:'numeric' });
+                    const d = new Date(t.date).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
                     const li = document.createElement('li'); li.className = 'transaction-item';
                     li.innerHTML = `
                         <div class="transaction-info" style="flex-grow:1;">
@@ -1427,7 +1112,7 @@
                 document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
                 transferFields.style.display='none';
                 switchView('view-history');
-                showToast(currentLang==='bn'?"লেনদেন যোগ করা হয়েছে":"Transaction added");
+                showToast("Transaction added");
             };
             
             const addWallet = async (n) => {
@@ -1535,6 +1220,12 @@
             };
             
             const renderAll = () => { renderWallets(); renderSummary(); renderTransactions(); renderCharts(); populateSummaryFilter(); };
+            const switchView = (tid) => {
+                viewSections.forEach(s=>s.classList.remove('active'));
+                navItems.forEach(i=>i.classList.remove('active'));
+                document.getElementById(tid).classList.add('active');
+                document.querySelector(`[data-target="${tid}"]`).classList.add('active');
+            }
             
             const showModal = (mid) => document.getElementById(mid).classList.add('show');
             const hideModal = (mid) => document.getElementById(mid).classList.remove('show');
@@ -1607,6 +1298,7 @@
             document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
             renderAll(); renderCategories(); populateCategoryDropdowns(); updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
 
+            navItems.forEach(i => i.addEventListener('click', e=>{ e.preventDefault(); switchView(i.dataset.target); }));
             form.addEventListener('submit', addTransaction);
             editForm.addEventListener('submit', updateTransaction);
             document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
