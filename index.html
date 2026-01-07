@@ -132,7 +132,8 @@
         /* --- Component Styles --- */
         h1 { text-align: center; color: var(--dark-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
         h2 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;}
-        .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+        .wallets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        
         .wallet-card { 
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
             padding: 20px;
@@ -141,10 +142,28 @@
             border-left: 5px solid var(--primary-color); 
             box-shadow: var(--shadow-medium);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
         }
+        /* Investment Card Style */
+        .wallet-card.investment {
+            border-left: 5px solid var(--success-color);
+            background: linear-gradient(145deg, #f0fff4, #ffffff);
+        }
+        .wallet-card.investment h4::after { content: ' 📈'; display: block; font-size: 1.2em; margin-top: 5px; }
+        .wallet-card.investment p { color: var(--success-color); }
+
+        /* Credit Card Style */
+        .wallet-card.credit {
+            border-left: 5px solid var(--danger-color);
+            background: linear-gradient(145deg, #fff5f5, #ffffff);
+        }
+        .wallet-card.credit h4::after { content: ' 💳'; display: block; font-size: 1.2em; margin-top: 5px; }
+        .wallet-card.credit p { color: var(--danger-color); }
+
         .wallet-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--shadow-heavy); }
         .wallet-card h4 { margin: 0 0 5px 0; font-size: 1em; }
         .wallet-card p { margin: 0; font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
+        
         .add-wallet-btn { 
             background: linear-gradient(145deg, #f0f0f0, #ffffff);
             border: 2px dashed var(--border-color); 
@@ -490,6 +509,37 @@
         </nav>
     </div>
 
+    <!-- Add Wallet Modal -->
+    <div id="addWalletModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Add New Wallet</h2><span class="close-btn" data-target="addWalletModal">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newWalletName">Wallet Name</label>
+                    <input type="text" id="newWalletName" placeholder="e.g., DBBL Bank">
+                </div>
+                <div class="form-group">
+                    <label for="newWalletType">Wallet Type</label>
+                    <select id="newWalletType">
+                        <option value="bank">Bank Account</option>
+                        <option value="cash">Cash</option>
+                        <option value="credit_card">Credit Card (Liability)</option>
+                        <option value="investment">Investment (Asset)</option>
+                        <option value="mobile">Mobile Money (bKash/Nagad)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="newWalletBalance">Initial Balance (Optional)</label>
+                    <input type="number" id="newWalletBalance" value="0" step="0.01">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="danger-btn" data-target="addWalletModal">Cancel</button>
+                <button type="button" id="saveWalletBtn">Save Wallet</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Transaction Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -644,6 +694,13 @@
             const editToWalletSelect_inForm = document.getElementById('editToWallet');
             const editTransferFields_inForm = document.getElementById('editTransferFields');
 
+            // Add Wallet Modal Elements
+            const addWalletModal = document.getElementById('addWalletModal');
+            const newWalletNameInput = document.getElementById('newWalletName');
+            const newWalletTypeInput = document.getElementById('newWalletType');
+            const newWalletBalanceInput = document.getElementById('newWalletBalance');
+            const saveWalletBtn = document.getElementById('saveWalletBtn');
+
             // --- Data Initialization ---
             const defaultCategories = [
                 { id: 1, name: 'Accounts / Wallets', type: 'transfer' },
@@ -652,41 +709,26 @@
                 { id: 4, name: 'Income', type: 'income' },
                 { id: 5, name: 'Lending / Borrowing', type: 'asset' }
             ];
-            
-            // UPDATED: Added specific subcategories for "Bank -> Investment" and "Bank -> Credit Card"
             const defaultSubcategories = [
-                { id: 1, name: 'Bank → bKash', categoryId: 1 }, 
-                { id: 2, name: 'Bank → Cash', categoryId: 1 }, 
-                { id: 3, name: 'bKash → Nagad', categoryId: 1 }, 
-                { id: 4, name: 'Cash → Bank', categoryId: 1 },
-                { id: 5, name: 'Bank → Investment', categoryId: 1 }, 
-                { id: 6, name: 'Bank → Credit Card', categoryId: 1 }, 
-                { id: 7, name: 'Bank Savings', categoryId: 2 }, 
-                { id: 8, name: 'Cash Savings', categoryId: 2 }, 
-                { id: 9, name: 'DPS / FD', categoryId: 2 }, 
-                { id: 10, name: 'Investments', categoryId: 2 }, 
-                { id: 11, name: 'Emergency Fund', categoryId: 2 }, 
-                { id: 12, name: 'Retirement Fund', categoryId: 2 },
-                { id: 13, name: 'Food & Groceries', categoryId: 3 }, 
-                { id: 14, name: 'Rent / House', categoryId: 3 }, 
-                { id: 15, name: 'Utilities', categoryId: 3 }, 
-                { id: 16, name: 'Transport', categoryId: 3 }, 
-                { id: 17, name: 'Education', categoryId: 3 }, 
-                { id: 18, name: 'Medical & Health', categoryId: 3 }, 
-                { id: 19, name: 'Shopping', categoryId: 3 }, 
-                { id: 20, name: 'Entertainment', categoryId: 3 }, 
-                { id: 21, name: 'Loan Payment', categoryId: 3 },
-                { id: 22, name: 'Salary / Wages', categoryId: 4 }, 
-                { id: 23, name: 'Freelance / Projects', categoryId: 4 }, 
-                { id: 24, name: 'Gifts / Bonus', categoryId: 4 }, 
-                { id: 25, name: 'Investment Income', categoryId: 4 }, 
-                { id: 26, name: 'Other Income', categoryId: 4 },
-                { id: 27, name: 'Lent Money', categoryId: 5 }, 
-                { id: 28, name: 'Borrowed Money', categoryId: 5 }, 
-                { id: 29, name: 'Loan Repaid', categoryId: 5 }, 
-                { id: 30, name: 'Loan Received Back', categoryId: 5 }
+                { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
+                { id: 5, name: 'Bank Savings', categoryId: 2 }, { id: 6, name: 'Cash Savings', categoryId: 2 }, { id: 7, name: 'DPS / FD', categoryId: 2 }, { id: 8, name: 'Investments', categoryId: 2 }, { id: 9, name: 'Emergency Fund', categoryId: 2 }, { id: 10, name: 'Retirement Fund', categoryId: 2 },
+                { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
+                { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
+                { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 },
+                { id: 29, name: 'Bank → Investment', categoryId: 1 }, // New
+                { id: 30, name: 'Bank → Credit Card', categoryId: 1 }  // New
             ];
             
+            // Updated Default Wallets to include types
+            const defaultWallets = [
+                { id: 1, name: 'Cash', balance: 0, type: 'cash' },
+                { id: 2, name: 'Bank', balance: 0, type: 'bank' },
+                { id: 3, name: 'bKash', balance: 0, type: 'mobile' },
+                { id: 4, name: 'Nagad', balance: 0, type: 'mobile' },
+                { id: 5, name: 'Investment Ac', balance: 0, type: 'investment' }, // New
+                { id: 6, name: 'Credit Card', balance: 0, type: 'credit_card' }    // New
+            ];
+
             let wallets = [];
             let categories = [];
             let subcategories = [];
@@ -714,27 +756,20 @@
                     }
                 },
                 loadLocal() {
-                    // UPDATED: Added Investment and Credit Card to default wallets
-                    const loadedWallets = JSON.parse(localStorage.getItem('advTrackerWallets'));
-                    
-                    // Migration: If old wallets exist without 'type', default to 'asset'
-                    let finalWallets = loadedWallets || [
-                        { id: 1, name: 'Cash', balance: 0, type: 'asset' }, 
-                        { id: 2, name: 'Bank', balance: 0, type: 'asset' }, 
-                        { id: 3, name: 'bKash', balance: 0, type: 'asset' }, 
-                        { id: 4, name: 'Nagad', balance: 0, type: 'asset' },
-                        { id: 5, name: 'Investment', balance: 0, type: 'asset' },
-                        { id: 6, name: 'Credit Card', balance: 0, type: 'liability' }
-                    ];
-                    
-                    // Apply type migration if missing
-                    finalWallets = finalWallets.map(w => ({
-                        ...w,
-                        type: w.type || (w.name.toLowerCase().includes('credit') || w.name.toLowerCase().includes('loan') ? 'liability' : 'asset')
-                    }));
+                    const storedWallets = JSON.parse(localStorage.getItem('advTrackerWallets'));
+                    // If older wallets exist without 'type', default them to 'bank' or 'cash'
+                    if (storedWallets && storedWallets.length > 0) {
+                        storedWallets.forEach(w => {
+                            if (!w.type) {
+                                if(w.name.toLowerCase().includes('cash')) w.type = 'cash';
+                                else if(w.name.toLowerCase().includes('bKash') || w.name.toLowerCase().includes('nagad')) w.type = 'mobile';
+                                else w.type = 'bank';
+                            }
+                        });
+                    }
 
                     return {
-                        wallets: finalWallets,
+                        wallets: storedWallets || defaultWallets,
                         categories: JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories,
                         subcategories: JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories,
                         transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || []
@@ -780,53 +815,28 @@
                 }
             };
 
-            // --- UPDATED: MATH LOGIC FOR ASSETS & LIABILITIES ---
-            const updateWalletBalance = (wallet, amount, categoryType, subcategoryName, isSource = true, isTarget = false) => {
-                if (categoryType === 'transfer') {
-                    if (isSource) {
-                        // Source always loses money
-                        wallet.balance -= amount;
-                    } else if (isTarget) {
-                        // Target gains money if Asset, loses money (debt) if Liability
-                        if (wallet.type === 'liability') {
-                            wallet.balance -= amount; // Paying off credit card
-                        } else {
-                            wallet.balance += amount; // Adding to investment/cash
-                        }
-                    }
-                    return;
+            // --- Functions ---
+            const updateWalletBalance = (walletId, amount, categoryType, subcategoryName, isSource = true) => {
+                const wallet = wallets.find(w => w.id === walletId);
+                if (!wallet) return;
+                if (categoryType === 'transfer') return;
+
+                if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') {
+                    wallet.balance += amount; return;
+                }
+                if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
+                    wallet.balance -= amount; return;
+                }
+                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                    wallet.balance += amount; return;
                 }
 
-                // Handle Income/Expense/Asset/Liability Categories
-                // Determine the "Direction" of money relative to the Wallet
-                
-                let isIncome = false;
-                
-                if (categoryType === 'income') isIncome = true;
-                
-                // Special handling for specific subcategories defined in original logic
-                if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') isIncome = true;
-                if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') isIncome = true;
-                
-                // Apply Logic based on Wallet Type
-                if (wallet.type === 'liability') {
-                    // Liability Wallet (Credit Card)
-                    // Income (e.g., Payment) -> Balance Decreases (Debt goes down)
-                    // Expense (e.g., Purchase) -> Balance Increases (Debt goes up)
-                    if (isIncome) {
-                        wallet.balance -= amount;
-                    } else {
-                        wallet.balance += amount;
-                    }
+                if (isSource) {
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
+                    if (['income'].includes(categoryType)) wallet.balance += amount;
                 } else {
-                    // Asset Wallet (Cash, Bank, Investment)
-                    // Income -> Balance Increases
-                    // Expense -> Balance Decreases
-                    if (isIncome) {
-                        wallet.balance += amount;
-                    } else {
-                        wallet.balance -= amount;
-                    }
+                    if (categoryType === 'asset') wallet.balance += amount;
+                    if (categoryType === 'liability') wallet.balance -= amount;
                 }
             };
             
@@ -840,47 +850,38 @@
                 
                 if (categoryType === 'transfer') {
                     const toWallet = wallets.find(w => w.id === transaction.toWalletId);
-                    if (wallet) updateWalletBalance(wallet, transaction.amount, categoryType, subcategoryName, true, false, true); // Reverse Source
-                    if (toWallet) updateWalletBalance(toWallet, transaction.amount, categoryType, subcategoryName, false, true, true); // Reverse Target
+                    if (wallet) wallet.balance += transaction.amount;
+                    if (toWallet) toWallet.balance -= transaction.amount;
                 } else {
-                    // Reverse by calling updateWalletBalance with inverted logic (negating the amount effectively)
-                    // Since updateWalletBalance adds for expense on liability, we just call it with negated amount?
-                    // No, easier to just run the logic in reverse mode.
-                    // However, to keep it simple, let's just invert the sign of the operation.
-                    // But updateWalletBalance is complex. Let's replicate the check but invert the operation.
-                    
-                    let isIncome = false;
-                    if (categoryType === 'income') isIncome = true;
-                    if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') isIncome = true;
-                    if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') isIncome = true;
-
-                    if (wallet.type === 'liability') {
-                        if (isIncome) wallet.balance += transaction.amount;
-                        else wallet.balance -= transaction.amount;
-                    } else {
-                        if (isIncome) wallet.balance -= transaction.amount;
-                        else wallet.balance += transaction.amount;
-                    }
+                    if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') { wallet.balance -= transaction.amount; return; }
+                    if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') { wallet.balance += transaction.amount; return; }
+                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') { wallet.balance -= transaction.amount; return; }
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance += transaction.amount;
+                    if (['income'].includes(categoryType)) wallet.balance -= transaction.amount;
                 }
             };
 
             const renderWallets = () => {
                 walletsGrid.innerHTML = ''; walletSelect.innerHTML = ''; editWalletSelect_inForm.innerHTML = ''; toWalletSelect.innerHTML = ''; editToWalletSelect_inForm.innerHTML = '';
                 wallets.forEach(wallet => {
-                    const card = document.createElement('div'); card.classList.add('wallet-card');
-                    // Visual tweak for Liability (Credit Card) using JS to inject class, keeping CSS same
-                    if (wallet.type === 'liability') {
-                        card.style.borderLeftColor = 'var(--danger-color)';
-                        card.style.background = 'linear-gradient(145deg, #fff5f5, #f0f0f0)';
-                    }
+                    const card = document.createElement('div'); 
+                    card.classList.add('wallet-card');
                     
-                    card.innerHTML = `<h4>${wallet.name}</h4><p>৳${wallet.balance.toFixed(2)}</p>`; walletsGrid.appendChild(card);
+                    // Add specific class based on wallet type
+                    if (wallet.type === 'investment') card.classList.add('investment');
+                    if (wallet.type === 'credit_card') card.classList.add('credit');
+
+                    card.innerHTML = `<h4>${wallet.name}</h4><p>৳${wallet.balance.toFixed(2)}</p>`; 
+                    walletsGrid.appendChild(card);
+                    
                     const option = new Option(wallet.name, wallet.id);
                     walletSelect.add(option.cloneNode(true)); editWalletSelect_inForm.add(option.cloneNode(true));
                     toWalletSelect.add(option.cloneNode(true)); editToWalletSelect_inForm.add(option.cloneNode(true));
                 });
                 const addWalletCard = document.createElement('div'); addWalletCard.classList.add('wallet-card', 'add-wallet-btn');
-                addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; addWalletCard.onclick = () => showAddWalletModal(); walletsGrid.appendChild(addWalletCard);
+                addWalletCard.innerHTML = `<h4>+ Add Wallet</h4>`; 
+                addWalletCard.onclick = () => showModal('addWalletModal'); 
+                walletsGrid.appendChild(addWalletCard);
             };
             
             const renderCategories = () => {
@@ -959,22 +960,30 @@
                             if(subcategoryName === 'Lent Money') totalLent += amount;
                             if(subcategoryName === 'Loan Received Back') lentRepaid += amount;
                             if(subcategoryName === 'Borrowed Money') totalBorrowed += amount;
-                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount; // Fixed: Handle Loan Repaid here
+                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount; 
                             break;
                         case 'liability': 
                             if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount;
                             break;
                     }
                 });
-                
-                // Updated Net Worth Calculation to account for Liability Wallets
-                let totalWalletBalance = 0;
+
+                // Updated Net Worth Logic:
+                // Assets = (Bank + Cash + Investment Balances)
+                // Liabilities = (Credit Card Balances + Outstanding Loans)
+                let totalAssetBalance = 0;
+                let totalCreditCardBalance = 0;
+
                 wallets.forEach(w => {
-                    if(w.type === 'asset') totalWalletBalance += w.balance;
-                    if(w.type === 'liability') totalWalletBalance -= w.balance;
+                    if (w.type === 'credit_card') {
+                        totalCreditCardBalance += w.balance;
+                    } else {
+                        // Includes bank, cash, investment, mobile
+                        totalAssetBalance += w.balance;
+                    }
                 });
 
-                const netWorth = totalWalletBalance - (totalBorrowed - borrowedRepaid);
+                const netWorth = totalAssetBalance - totalCreditCardBalance - (totalBorrowed - borrowedRepaid);
 
                 document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
                 document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
@@ -982,9 +991,6 @@
                 document.getElementById('totalBorrowed').textContent = `৳${(totalBorrowed - borrowedRepaid).toFixed(2)}`;
                 document.getElementById('netWorth').textContent = `৳${netWorth.toFixed(2)}`;
                 document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
-                
-                // Debug log
-                console.log('Total Wallet Balance:', totalWalletBalance, 'Total Borrowed:', totalBorrowed, 'Borrowed Repaid:', borrowedRepaid, 'Net Worth:', netWorth);
             };
 
             const renderCharts = (transactionsToRender = transactions) => {
@@ -1120,18 +1126,13 @@
                     const fromWallet = wallets.find(w => w.id === walletId);
                     const toWallet = wallets.find(w => w.id === toWalletId);
                     
-                    // UPDATED MATH: Use the new updateWalletBalance function
-                    // Source
-                    updateWalletBalance(fromWallet, amount, category.type, subcategory ? subcategory.name : '', true, false);
-                    // Target
-                    updateWalletBalance(toWallet, amount, category.type, subcategory ? subcategory.name : '', false, true);
+                    fromWallet.balance -= amount;
+                    toWallet.balance += amount;
                     
                     await api.save({ wallets, categories, subcategories, transactions });
                     renderWallets();
                 } else {
-                    // UPDATED MATH: Pass wallet object
-                    const wallet = wallets.find(w => w.id === walletId);
-                    updateWalletBalance(wallet, amount, category.type, subcategory ? subcategory.name : '');
+                    updateWalletBalance(walletId, amount, category.type, subcategory ? subcategory.name : '');
                 }
 
                 transactions.push(newTransaction);
@@ -1143,11 +1144,9 @@
                 switchView('view-history');
             };
             
-            const addWallet = async (name) => {
-                // UPDATED MATH: Assign type based on name or default to asset
+            const addWallet = async (name, type, initialBalance) => {
                 if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) {
-                    const type = (name.toLowerCase().includes('credit') || name.toLowerCase().includes('loan')) ? 'liability' : 'asset';
-                    wallets.push({ id: Date.now(), name, balance: 0, type: type });
+                    wallets.push({ id: Date.now(), name, balance: parseFloat(initialBalance) || 0, type: type || 'bank' });
                     await api.save({ wallets, categories, subcategories, transactions });
                     renderWallets();
                 } else if (name) {
@@ -1238,18 +1237,14 @@
                     transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); 
                     const category = categories.find(c => c.id === transaction.categoryId); 
                     const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
-                    
                     if(category.type === 'transfer') { 
                         transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); 
                         const fromWallet = wallets.find(w => w.id === transaction.walletId); 
                         const toWallet = wallets.find(w => w.id === transaction.toWalletId); 
-                        
-                        // UPDATED MATH
-                        updateWalletBalance(fromWallet, transaction.amount, category.type, subcategory ? subcategory.name : '', true, false);
-                        updateWalletBalance(toWallet, transaction.amount, category.type, subcategory ? subcategory.name : '', false, true);
+                        fromWallet.balance -= transaction.amount; 
+                        toWallet.balance += transaction.amount; 
                     } else { 
-                        const wallet = wallets.find(w => w.id === transaction.walletId);
-                        updateWalletBalance(wallet, transaction.amount, category.type, subcategory ? subcategory.name : ''); 
+                        updateWalletBalance(transaction.walletId, transaction.amount, category.type, subcategory ? subcategory.name : ''); 
                     } 
                     await api.save({ wallets, categories, subcategories, transactions }); 
                     renderAll(); 
@@ -1275,9 +1270,18 @@
             const showModal = (modalId) => document.getElementById(modalId).classList.add('show');
             const hideModal = (modalId) => document.getElementById(modalId).classList.remove('show');
             
-            const showAddWalletModal = () => {
-                const name = prompt("Enter new wallet name:");
-                if(name) addWallet(name);
+            const handleSaveWallet = () => {
+                const name = newWalletNameInput.value.trim();
+                const type = newWalletTypeInput.value;
+                const balance = newWalletBalanceInput.value;
+                if(name) {
+                    addWallet(name, type, balance);
+                    hideModal('addWalletModal');
+                    newWalletNameInput.value = '';
+                    newWalletBalanceInput.value = '0';
+                } else {
+                    alert('Please enter a wallet name');
+                }
             };
             
             const showAddSubcategoryModal = (categoryId) => {
@@ -1409,15 +1413,7 @@
                 localStorage.removeItem('advTrackerCategories');
                 localStorage.removeItem('advTrackerSubcategories');
                 localStorage.removeItem('advTrackerTransactions');
-                // Reset to new defaults
-                wallets = [
-                    { id: 1, name: 'Cash', balance: 0, type: 'asset' }, 
-                    { id: 2, name: 'Bank', balance: 0, type: 'asset' }, 
-                    { id: 3, name: 'bKash', balance: 0, type: 'asset' }, 
-                    { id: 4, name: 'Nagad', balance: 0, type: 'asset' },
-                    { id: 5, name: 'Investment', balance: 0, type: 'asset' },
-                    { id: 6, name: 'Credit Card', balance: 0, type: 'liability' }
-                ];
+                wallets = JSON.parse(JSON.stringify(defaultWallets)); // Deep copy
                 categories = defaultCategories;
                 subcategories = defaultSubcategories;
                 transactions = [];
@@ -1489,7 +1485,8 @@
             saveCategoryChangesBtn.addEventListener('click', handleEditCategory);
             saveSubcategoryChangesBtn_inList.addEventListener('click', handleEditSubcategory);
             confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
-            
+            saveWalletBtn.addEventListener('click', handleSaveWallet);
+
             // Backup/Restore Listeners
             backupBtn.addEventListener('click', handleBackup);
             listBackupsBtn.addEventListener('click', handleListBackups);
