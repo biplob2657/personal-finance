@@ -939,6 +939,7 @@
                 });
             };
 
+            // MODIFIED renderSummary Logic
             const renderSummary = (transactionsToRender = transactions) => {
                 let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0, totalSavings = 0;
                 let lentRepaid = 0, borrowedRepaid = 0;
@@ -968,22 +969,40 @@
                     }
                 });
 
-                // Updated Net Worth Logic:
-                // Assets = (Bank + Cash + Investment Balances)
-                // Liabilities = (Credit Card Balances + Outstanding Loans)
-                let totalAssetBalance = 0;
-                let totalCreditCardBalance = 0;
+                // 1. Calculate Liquid Assets (Bank, Cash, Investment, Mobile)
+                let liquidAssets = 0;
+
+                // 2. Calculate Liabilities from Credit Cards
+                // Credit card balances are usually negative (money owed). We need the absolute value.
+                let creditCardLiability = 0;
 
                 wallets.forEach(w => {
                     if (w.type === 'credit_card') {
-                        totalCreditCardBalance += w.balance;
+                        // If CC balance is -9817, liability is 9817.
+                        // If CC balance is positive (overpaid), it acts as a positive asset, but usually treated as 0 liability here.
+                        if (w.balance < 0) {
+                            creditCardLiability += Math.abs(w.balance);
+                        } else {
+                            // Positive balance on CC means bank owes you, it's an asset
+                            liquidAssets += w.balance;
+                        }
                     } else {
-                        // Includes bank, cash, investment, mobile
-                        totalAssetBalance += w.balance;
+                        // Standard Wallets (Bank, Cash, Investment)
+                        liquidAssets += w.balance;
                     }
                 });
 
-                const netWorth = totalAssetBalance - totalCreditCardBalance - (totalBorrowed - borrowedRepaid);
+                // 3. Calculate Outstanding Loan Transactions
+                // Lent Money is money owed TO you (Asset)
+                const outstandingLent = totalLent - lentRepaid;
+                // Borrowed Money is money owed BY you (Liability)
+                const outstandingBorrowed = totalBorrowed - borrowedRepaid;
+
+                // 4. Final Net Worth Formula
+                const totalAssets = liquidAssets + outstandingLent;
+                const totalLiabilities = creditCardLiability + outstandingBorrowed;
+                
+                const netWorth = totalAssets - totalLiabilities;
 
                 document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
                 document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
