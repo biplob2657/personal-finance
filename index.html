@@ -1050,6 +1050,24 @@
         .clear-person-btn:hover {
             color: var(--danger-color);
         }
+
+        /* Missing person warning */
+        .missing-person-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid var(--warning-color);
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .missing-person-warning::before {
+            content: '⚠️';
+        }
     </style>
 <base target="_blank">
 </head>
@@ -1332,7 +1350,7 @@
                 <div class="form-group"><label for="editCategory" data-icon="📂">Category</label><select id="editCategory" required></select></div>
                 <div class="form-group"><label for="editSubcategory" data-icon="🏷️">Subcategory</label><select id="editSubcategory" required></select></div>
                 
-                <!-- Edit Loan Person with Auto-suggest -->
+                <!-- Edit Loan Person with Auto-suggest - ALWAYS VISIBLE for loan categories -->
                 <div id="editLoanPersonGroup" class="form-group person-select-group">
                     <label for="editLoanPerson" data-icon="👤">Person Name</label>
                     <div class="person-input-container">
@@ -1341,6 +1359,9 @@
                             <button type="button" class="clear-person-btn" id="editClearPersonBtn">×</button>
                         </div>
                         <div id="editPersonSuggestions" class="person-suggestions"></div>
+                    </div>
+                    <div id="editPersonWarning" class="missing-person-warning" style="display: none;">
+                        This loan transaction has no person assigned. Please add a person name to track this loan properly.
                     </div>
                 </div>
                 
@@ -1470,6 +1491,7 @@
             const editLoanPersonInput = document.getElementById('editLoanPerson');
             const editPersonSuggestions = document.getElementById('editPersonSuggestions');
             const editClearPersonBtn = document.getElementById('editClearPersonBtn');
+            const editPersonWarning = document.getElementById('editPersonWarning');
 
             // Budget Rule Elements
             const budgetStatus = document.getElementById('budgetStatus');
@@ -1925,7 +1947,7 @@
                 loanList.innerHTML = '';
                 
                 if (filteredLoans.length === 0) {
-                    loanList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No loans found.</p>';
+                    loanList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No loans found. Add person names to your loan transactions to see them here.</p>';
                     return;
                 }
 
@@ -2241,7 +2263,7 @@
             const renderSummary = (transactionsToRender = transactions) => {
                 let totalIncome = 0, totalExpense = 0, totalSavings = 0;
                 
-                // Calculate loan totals from loans array instead of transactions
+                // Calculate from loans array (new system)
                 let totalLentOutstanding = 0;
                 let totalBorrowedOutstanding = 0;
                 
@@ -2252,10 +2274,35 @@
                         totalBorrowedOutstanding += loan.remainingAmount;
                     }
                 });
+                
+                // FALLBACK: Calculate from transactions (old system) if loans array is empty
+                // This ensures old records still show in summary
+                if (totalLentOutstanding === 0 && totalBorrowedOutstanding === 0) {
+                    transactionsToRender.forEach(t => {
+                        const category = categories.find(c => c.id === t.categoryId);
+                        const subcategory = subcategories.find(s => s.id === t.subcategoryId);
+                        if (!category || !subcategory) return;
+                        
+                        const subName = subcategory.name.toLowerCase();
+                        
+                        if (subName === 'lent money') {
+                            totalLentOutstanding += t.amount;
+                        } else if (subName === 'loan received back') {
+                            totalLentOutstanding -= t.amount;
+                        } else if (subName === 'borrowed money') {
+                            totalBorrowedOutstanding += t.amount;
+                        } else if (subName === 'loan repaid') {
+                            totalBorrowedOutstanding -= t.amount;
+                        }
+                    });
+                    
+                    // Ensure not negative (data inconsistency protection)
+                    if (totalLentOutstanding < 0) totalLentOutstanding = 0;
+                    if (totalBorrowedOutstanding < 0) totalBorrowedOutstanding = 0;
+                }
 
                 transactionsToRender.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
-                    const subcategory = subcategories.find(s => s.id === t.subcategoryId);
                     if (!category) return;
                     const amount = t.amount;
 
@@ -2392,6 +2439,13 @@
                         personTag = `<span class="person-tag">${t.person}</span>`;
                     }
                     
+                    // Show warning if loan transaction has no person
+                    let missingPersonWarning = '';
+                    const loanType = getLoanType(subcategory ? subcategory.name : '');
+                    if (loanType && !t.person) {
+                        missingPersonWarning = `<div style="color: var(--warning-color); font-size: 0.8em; margin-top: 5px;">⚠️ Missing person name - Edit to add</div>`;
+                    }
+                    
                     const li = document.createElement('li'); 
                     li.classList.add('transaction-item');
                     li.style.animationDelay = `${index * 0.05}s`; // Staggered animation
@@ -2400,6 +2454,7 @@
                             <div class="transaction-details">
                                 <span class="transaction-description">${t.description} ${personTag}</span>
                                 <span class="transaction-meta">${formattedDate} &bull; ${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}</span>
+                                ${missingPersonWarning}
                             </div>
                             <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
                         </div>
@@ -2573,15 +2628,25 @@
                     updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect_inForm); 
                     document.getElementById('editSubcategory').value = transaction.subcategoryId;
                     
-                    // Handle loan person in edit
-                    const loanType = getLoanType(transaction.subcategoryName);
-                    if (loanType === 'lent' || loanType === 'borrowed') {
+                    // Handle loan person in edit - ALWAYS show for loan categories
+                    const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
+                    const loanType = getLoanType(subcategory ? subcategory.name : '');
+                    
+                    if (loanType === 'lent' || loanType === 'borrowed' || loanType === 'received' || loanType === 'repaid') {
                         editLoanPersonGroup.classList.add('visible');
                         editLoanPersonInput.value = transaction.person || '';
                         updateClearButton(editLoanPersonInput, editClearPersonBtn);
+                        
+                        // Show warning if no person
+                        if (!transaction.person) {
+                            editPersonWarning.style.display = 'flex';
+                        } else {
+                            editPersonWarning.style.display = 'none';
+                        }
                     } else {
                         editLoanPersonGroup.classList.remove('visible');
                         editLoanPersonInput.value = '';
+                        editPersonWarning.style.display = 'none';
                     }
                     
                     const category = categories.find(c => c.id === transaction.categoryId); 
@@ -2607,14 +2672,35 @@
                     transaction.categoryId = parseInt(document.getElementById('editCategory').value); 
                     transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value);
                     
-                    const loanType = getLoanType(transaction.subcategoryName);
-                    if (loanType === 'lent' || loanType === 'borrowed') {
-                        transaction.person = editLoanPersonInput.value.trim() || null;
-                        if (transaction.person) addPerson(transaction.person);
+                    const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
+                    const loanType = getLoanType(subcategory ? subcategory.name : '');
+                    
+                    // Always save person if it's a loan transaction
+                    if (loanType) {
+                        const newPerson = editLoanPersonInput.value.trim();
+                        const oldPerson = transaction.person;
+                        
+                        transaction.person = newPerson || null;
+                        
+                        // If person was added or changed, update loans
+                        if (newPerson && newPerson !== oldPerson) {
+                            addPerson(newPerson);
+                            
+                            // If this was a new loan (lent/borrowed), create loan record
+                            if (loanType === 'lent' || loanType === 'borrowed') {
+                                // Check if loan already exists for this transaction
+                                const existingLoan = loans.find(l => l.transactionId === transaction.id);
+                                if (!existingLoan) {
+                                    createLoan(transaction);
+                                } else {
+                                    // Update existing loan person
+                                    existingLoan.person = newPerson;
+                                }
+                            }
+                        }
                     }
                     
                     const category = categories.find(c => c.id === transaction.categoryId); 
-                    const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
                     transaction.subcategoryName = subcategory ? subcategory.name : '';
                     
                     if(category.type === 'transfer') { 
