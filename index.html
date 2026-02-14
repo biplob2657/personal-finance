@@ -24,8 +24,6 @@
             --needs-color: #6f42c1;
             --wants-color: #fd7e14;
             --savings-color: #20c997;
-            --lent-color: #e74c3c;
-            --borrowed-color: #3498db;
         }
 
         * { box-sizing: border-box; }
@@ -66,16 +64,6 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
         }
 
         .app-container {
@@ -291,8 +279,8 @@
         }
         .summary-card.income { border-left: 5px solid var(--success-color); }
         .summary-card.expense { border-left: 5px solid var(--danger-color); }
-        .summary-card.lent { border-left: 5px solid var(--lent-color); }
-        .summary-card.borrowed { border-left: 5px solid var(--borrowed-color); }
+        .summary-card.lent { border-left: 5px solid var(--warning-color); }
+        .summary-card.borrowed { border-left: 5px solid var(--info-color); }
         .summary-card.net-worth { border-left: 5px solid #6f42c1; }
         .summary-card.total-savings { border-left: 5px solid #20c997; }
         .summary-card h3 { margin: 0 0 5px 0; font-size: 0.9em; color: #6c757d; }
@@ -684,9 +672,8 @@
         .amount-income { color: var(--success-color); }
         .amount-expense { color: var(--danger-color); }
         .amount-transfer { color: var(--info-color); }
-        .amount-lent { color: var(--lent-color); }
-        .amount-borrowed { color: var(--borrowed-color); }
-        .amount-repayment { color: #9b59b6; }
+        .amount-asset { color: var(--warning-color); }
+        .amount-liability { color: var(--primary-color); }
 
         /* --- Modal Animations --- */
         .modal { 
@@ -748,249 +735,36 @@
             transform: rotate(90deg);
         }
 
-        /* Loan Tracker Styles */
-        .loan-tracker-container {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: var(--shadow-heavy);
-            border: 1px solid var(--border-color);
-            animation: fadeIn 0.6s ease-out;
+        /* --- New Loan Status Panel --- */
+        #loanStatusPanel {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            animation: fadeIn 0.3s ease;
         }
-
-        .loan-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .loan-tab {
-            padding: 10px 20px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-weight: bold;
-            color: #6c757d;
-            transition: all 0.3s;
-        }
-
-        .loan-tab.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
-
-        .loan-tab:hover {
-            color: var(--primary-color);
-        }
-
-        .loan-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .loan-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: var(--shadow-light);
-            border-left: 5px solid;
-            transition: all 0.3s;
-        }
-
-        .loan-item.lent {
-            border-left-color: var(--lent-color);
-        }
-
-        .loan-item.borrowed {
-            border-left-color: var(--borrowed-color);
-        }
-
-        .loan-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .loan-header {
+        .loan-status-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
         }
-
-        .loan-person {
-            font-size: 1.2em;
+        .loan-status-total {
             font-weight: bold;
-            color: var(--dark-color);
+            font-size: 1.1em;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            color: var(--primary-color);
         }
-
-        .loan-status {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
+        .loan-status-total.due {
+            color: var(--danger-color);
         }
-
-        .loan-status.active {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--lent-color);
-        }
-
-        .loan-status.settled {
-            background: rgba(40, 167, 69, 0.1);
+        .loan-status-total.paid {
             color: var(--success-color);
         }
-
-        .loan-amounts {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .loan-amount-box {
-            text-align: center;
-            padding: 10px;
-            background: rgba(0,0,0,0.02);
-            border-radius: 8px;
-        }
-
-        .loan-amount-box label {
-            display: block;
-            font-size: 0.8em;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-
-        .loan-amount-box value {
-            display: block;
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-
-        .loan-amount-box.total value { color: var(--dark-color); }
-        .loan-amount-box.paid value { color: var(--success-color); }
-        .loan-amount-box.due value { color: var(--danger-color); }
-
-        .loan-progress {
-            background: #e9ecef;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .loan-progress-bar {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-
-        .loan-progress-bar.lent { background: linear-gradient(90deg, var(--lent-color), #c0392b); }
-        .loan-progress-bar.borrowed { background: linear-gradient(90deg, var(--borrowed-color), #2980b9); }
-
-        .loan-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .loan-actions button {
-            flex: 1;
-            padding: 8px;
-            font-size: 0.9em;
-        }
-
-        .person-select-group {
-            display: none;
-        }
-
-        .person-select-group.visible {
-            display: block;
-        }
-
-        .person-tag {
-            display: inline-block;
-            background: var(--primary-color);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .person-tag:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .person-tag.selected {
-            background: var(--success-color);
-        }
-
-        .person-input {
-            margin-top: 10px;
-        }
-
-        .loan-summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .loan-summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: var(--shadow-light);
-            border-top: 4px solid;
-        }
-
-        .loan-summary-card.lent { border-top-color: var(--lent-color); }
-        .loan-summary-card.borrowed { border-top-color: var(--borrowed-color); }
-        .loan-summary-card.net { border-top-color: var(--success-color); }
-
-        .loan-summary-card h4 {
-            margin: 0 0 10px 0;
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-
-        .loan-summary-card p {
-            margin: 0;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-
-        .loan-summary-card.lent p { color: var(--lent-color); }
-        .loan-summary-card.borrowed p { color: var(--borrowed-color); }
-        .loan-summary-card.net p { color: var(--success-color); }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-
-        .empty-state-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-
-        @media (max-width: 600px) {
-            .loan-amounts {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -1013,8 +787,8 @@
                 <div class="summary-grid">
                     <div class="summary-card income"><h3>Total Income</h3><p id="totalIncome">৳0.00</p></div>
                     <div class="summary-card expense"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
-                    <div class="summary-card lent"><h3>Outstanding Lent</h3><p id="totalLent">৳0.00</p></div>
-                    <div class="summary-card borrowed"><h3>Outstanding Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
+                    <div class="summary-card lent"><h3>Total Lent</h3><p id="totalLent">৳0.00</p></div>
+                    <div class="summary-card borrowed"><h3>Total Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
                     <div class="summary-card net-worth"><h3>Net Worth</h3><p id="netWorth">৳0.00</p></div>
                     <div class="summary-card total-savings"><h3>Total Savings</h3><p id="totalSavings">৳0.00</p></div>
                 </div>
@@ -1098,40 +872,6 @@
                     </div>
                 </div>
 
-                <!-- Loan Tracker Section -->
-                <div class="loan-tracker-container">
-                    <div class="budget-rule-header">
-                        <h2>📊 Loan Tracker</h2>
-                    </div>
-                    
-                    <div class="loan-summary-cards">
-                        <div class="loan-summary-card lent">
-                            <h4>Total Lent Out</h4>
-                            <p id="totalLentOut">৳0</p>
-                        </div>
-                        <div class="loan-summary-card borrowed">
-                            <h4>Total Borrowed</h4>
-                            <p id="totalBorrowedIn">৳0</p>
-                        </div>
-                        <div class="loan-summary-card net">
-                            <h4>Net Position</h4>
-                            <p id="netLoanPosition">৳0</p>
-                        </div>
-                    </div>
-
-                    <div class="loan-tabs">
-                        <button class="loan-tab active" data-tab="lent">Money Lent Out</button>
-                        <button class="loan-tab" data-tab="borrowed">Money Borrowed</button>
-                    </div>
-
-                    <div id="lentLoansList" class="loan-list">
-                        <!-- Lent loans will be rendered here -->
-                    </div>
-                    <div id="borrowedLoansList" class="loan-list" style="display: none;">
-                        <!-- Borrowed loans will be rendered here -->
-                    </div>
-                </div>
-
                 <h2>Analytics</h2>
                 <div class="charts-container">
                     <div class="chart-card"><canvas id="expensePieChart"></canvas></div>
@@ -1144,18 +884,43 @@
                 <h1>Add Transaction</h1>
                 <form id="trackerForm" class="tracker-form premium-form">
                     <div class="form-group"><label for="description" data-icon="📝">Description</label><input type="text" id="description" placeholder="e.g., Weekly Groceries" required></div>
+                    
+                    <!-- NEW: Person / Reference Name Field -->
+                    <div class="form-group" id="personNameGroup" style="display:none;">
+                        <label for="personName" data-icon="👤">Person / Reference Name (Required for Loans)</label>
+                        <input type="text" id="personName" placeholder="e.g. John Doe, Sarah, Office">
+                        <small style="color: #6c757d; display:block; margin-top:5px;">Enter the exact name of the person to track loan history.</small>
+                    </div>
+
                     <div class="form-group"><label for="amount" data-icon="💵">Amount (৳)</label><input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required></div>
                     <div class="form-group"><label for="transactionDate" data-icon="📅">Date</label><input type="date" id="transactionDate" required></div>
                     <div class="form-group"><label for="wallet" data-icon="💳">Wallet</label><select id="wallet" required></select></div>
                     <div class="form-group"><label for="category" data-icon="📂">Category</label><select id="category" required></select></div>
                     <div class="form-group"><label for="subcategory" data-icon="🏷️">Subcategory</label><select id="subcategory" required></select></div>
                     
-                    <!-- Person selection for loan transactions -->
-                    <div id="personSelectGroup" class="form-group person-select-group">
-                        <label for="personName" data-icon="👤">Person Name</label>
-                        <input type="text" id="personName" placeholder="e.g., John Doe">
-                        <small style="color: #6c757d; display: block; margin-top: 5px;">Select an existing person or type a new name</small>
-                        <div id="existingPersons" style="margin-top: 10px;"></div>
+                    <!-- Loan Status Panel -->
+                    <div id="loanStatusPanel" style="display:none;">
+                        <strong>📊 Loan Status for <span id="loanPersonNameDisplay"></span></strong>
+                        <div class="loan-status-row">
+                            <span>Total Lent:</span>
+                            <span id="statusTotalLent">৳0</span>
+                        </div>
+                        <div class="loan-status-row">
+                            <span>Total Received Back:</span>
+                            <span id="statusTotalReceived">৳0</span>
+                        </div>
+                        <div class="loan-status-row" id="dueStatusRow">
+                            <span>Balance Due:</span>
+                            <span id="statusBalanceDue" class="loan-status-total due">৳0</span>
+                        </div>
+                        <div class="loan-status-row" id="paidStatusRow" style="display:none;">
+                            <span>Status:</span>
+                            <span class="loan-status-total paid">Fully Paid</span>
+                        </div>
+                        <div class="loan-status-row" id="overpaidStatusRow" style="display:none;">
+                            <span>Status:</span>
+                            <span class="loan-status-total paid">Overpaid</span>
+                        </div>
                     </div>
 
                     <div id="transferFields" style="display:none;">
@@ -1190,8 +955,8 @@
                         <select id="newCategoryType" class="premium-input">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
-                            <option value="lent">Lent Money</option>
-                            <option value="borrowed">Borrowed Money</option>
+                            <option value="asset">Lent Money (Asset)</option>
+                            <option value="liability">Borrowed Money (Liability)</option>
                             <option value="transfer">Transfer</option>
                         </select>
                     </div>
@@ -1275,17 +1040,18 @@
             <form id="editForm" class="tracker-form premium-form">
                 <input type="hidden" id="editId">
                 <div class="form-group"><label for="editDescription" data-icon="📝">Description</label><input type="text" id="editDescription" required></div>
+                
+                <!-- Edit Person Name -->
+                <div class="form-group" id="editPersonNameGroup" style="display:none;">
+                    <label for="editPersonName" data-icon="👤">Person / Reference Name</label>
+                    <input type="text" id="editPersonName" placeholder="e.g. John Doe">
+                </div>
+
                 <div class="form-group"><label for="editAmount" data-icon="💵">Amount (৳)</label><input type="number" id="editAmount" step="0.01" min="0.01" required></div>
                 <div class="form-group"><label for="editTransactionDate" data-icon="📅">Date</label><input type="date" id="editTransactionDate" required></div>
                 <div class="form-group"><label for="editWallet" data-icon="💳">Wallet</label><select id="editWallet" required></select></div>
                 <div class="form-group"><label for="editCategory" data-icon="📂">Category</label><select id="editCategory" required></select></div>
                 <div class="form-group"><label for="editSubcategory" data-icon="🏷️">Subcategory</label><select id="editSubcategory" required></select></div>
-                
-                <div id="editPersonSelectGroup" class="form-group person-select-group">
-                    <label for="editPersonName" data-icon="👤">Person Name</label>
-                    <input type="text" id="editPersonName" placeholder="e.g., John Doe">
-                </div>
-
                 <div id="editTransferFields" style="display:none;">
                     <div class="form-group"><label for="editToWallet" data-icon="➡️">To Wallet</label><select id="editToWallet"></select></div>
                 </div>
@@ -1326,8 +1092,8 @@
                     <select id="editCategoryType">
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
-                        <option value="lent">Lent Money</option>
-                        <option value="borrowed">Borrowed Money</option>
+                        <option value="asset">Lent Money (Asset)</option>
+                        <option value="liability">Borrowed Money (Liability)</option>
                         <option value="transfer">Transfer</option>
                     </select>
                 </div>
@@ -1371,48 +1137,10 @@
         </div>
     </div>
 
-    <!-- Loan Repayment Modal -->
-    <div id="loanRepaymentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="repaymentModalTitle">Record Repayment</h2>
-                <span class="close-btn" data-target="loanRepaymentModal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="repaymentLoanId">
-                <input type="hidden" id="repaymentType">
-                <div class="form-group">
-                    <label>Person</label>
-                    <p id="repaymentPersonName" style="font-weight: bold; margin: 5px 0;"></p>
-                </div>
-                <div class="form-group">
-                    <label>Current Outstanding</label>
-                    <p id="repaymentOutstanding" style="font-weight: bold; color: var(--danger-color); margin: 5px 0;"></p>
-                </div>
-                <div class="form-group">
-                    <label for="repaymentAmount">Repayment Amount (৳)</label>
-                    <input type="number" id="repaymentAmount" step="0.01" min="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="repaymentDate">Date</label>
-                    <input type="date" id="repaymentDate" required>
-                </div>
-                <div class="form-group">
-                    <label for="repaymentWallet">Receive Payment In (Wallet)</label>
-                    <select id="repaymentWallet" required></select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="danger-btn" data-target="loanRepaymentModal">Cancel</button>
-                <button type="button" id="confirmRepaymentBtn" class="success-btn">Confirm Repayment</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CONFIGURATION ---
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec   ';
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec  ';
 
             // --- DOM Elements ---
             const navItems = document.querySelectorAll('.nav-item');
@@ -1431,17 +1159,25 @@
             const walletSelect = document.getElementById('wallet');
             const toWalletSelect = document.getElementById('toWallet');
             const transferFields = document.getElementById('transferFields');
-            const personSelectGroup = document.getElementById('personSelectGroup');
+            
+            // New Loan Tracker Elements
+            const personNameGroup = document.getElementById('personNameGroup');
             const personNameInput = document.getElementById('personName');
-            const existingPersonsDiv = document.getElementById('existingPersons');
+            const loanStatusPanel = document.getElementById('loanStatusPanel');
+            const loanPersonNameDisplay = document.getElementById('loanPersonNameDisplay');
+            const statusTotalLent = document.getElementById('statusTotalLent');
+            const statusTotalReceived = document.getElementById('statusTotalReceived');
+            const statusBalanceDue = document.getElementById('statusBalanceDue');
+            const dueStatusRow = document.getElementById('dueStatusRow');
+            const paidStatusRow = document.getElementById('paidStatusRow');
+            const overpaidStatusRow = document.getElementById('overpaidStatusRow');
+
+            // Edit Modal New Elements
+            const editPersonNameGroup = document.getElementById('editPersonNameGroup');
+            const editPersonNameInput = document.getElementById('editPersonName');
             
             // Budget Rule Elements
             const budgetStatus = document.getElementById('budgetStatus');
-
-            // Loan Tracker Elements
-            const loanTabs = document.querySelectorAll('.loan-tab');
-            const lentLoansList = document.getElementById('lentLoansList');
-            const borrowedLoansList = document.getElementById('borrowedLoansList');
 
             // Backup/Restore Elements
             const backupBtn = document.getElementById('backupBtn');
@@ -1475,8 +1211,6 @@
             const editWalletSelect_inForm = document.getElementById('editWallet');
             const editToWalletSelect_inForm = document.getElementById('editToWallet');
             const editTransferFields_inForm = document.getElementById('editTransferFields');
-            const editPersonSelectGroup = document.getElementById('editPersonSelectGroup');
-            const editPersonNameInput = document.getElementById('editPersonName');
 
             // Add Wallet Modal Elements
             const addWalletModal = document.getElementById('addWalletModal');
@@ -1485,24 +1219,13 @@
             const newWalletBalanceInput = document.getElementById('newWalletBalance');
             const saveWalletBtn = document.getElementById('saveWalletBtn');
 
-            // Loan Repayment Modal Elements
-            const loanRepaymentModal = document.getElementById('loanRepaymentModal');
-            const repaymentLoanIdInput = document.getElementById('repaymentLoanId');
-            const repaymentTypeInput = document.getElementById('repaymentType');
-            const repaymentPersonName = document.getElementById('repaymentPersonName');
-            const repaymentOutstanding = document.getElementById('repaymentOutstanding');
-            const repaymentAmountInput = document.getElementById('repaymentAmount');
-            const repaymentDateInput = document.getElementById('repaymentDate');
-            const repaymentWalletSelect = document.getElementById('repaymentWallet');
-            const confirmRepaymentBtn = document.getElementById('confirmRepaymentBtn');
-
             // --- Data Initialization ---
             const defaultCategories = [
                 { id: 1, name: 'Accounts / Wallets', type: 'transfer' },
                 { id: 2, name: 'Savings / Investments', type: 'expense' },
                 { id: 3, name: 'Expense', type: 'expense' },
                 { id: 4, name: 'Income', type: 'income' },
-                { id: 5, name: 'Lending / Borrowing', type: 'lent' }
+                { id: 5, name: 'Lending / Borrowing', type: 'asset' }
             ];
             const defaultSubcategories = [
                 { id: 1, name: 'Bank → bKash', categoryId: 1 }, { id: 2, name: 'Bank → Cash', categoryId: 1 }, { id: 3, name: 'bKash → Nagad', categoryId: 1 }, { id: 4, name: 'Cash → Bank', categoryId: 1 },
@@ -1510,8 +1233,8 @@
                 { id: 11, name: 'Food & Groceries', categoryId: 3 }, { id: 12, name: 'Rent / House', categoryId: 3 }, { id: 13, name: 'Utilities', categoryId: 3 }, { id: 14, name: 'Transport', categoryId: 3 }, { id: 15, name: 'Education', categoryId: 3 }, { id: 16, name: 'Medical & Health', categoryId: 3 }, { id: 17, name: 'Shopping', categoryId: 3 }, { id: 18, name: 'Entertainment', categoryId: 3 }, { id: 19, name: 'Loan Payment', categoryId: 3 },
                 { id: 20, name: 'Salary / Wages', categoryId: 4 }, { id: 21, name: 'Freelance / Projects', categoryId: 4 }, { id: 22, name: 'Gifts / Bonus', categoryId: 4 }, { id: 23, name: 'Investment Income', categoryId: 4 }, { id: 24, name: 'Other Income', categoryId: 4 },
                 { id: 25, name: 'Lent Money', categoryId: 5 }, { id: 26, name: 'Borrowed Money', categoryId: 5 }, { id: 27, name: 'Loan Repaid', categoryId: 5 }, { id: 28, name: 'Loan Received Back', categoryId: 5 },
-                { id: 29, name: 'Bank → Investment', categoryId: 1 },
-                { id: 30, name: 'Bank → Credit Card', categoryId: 1 }
+                { id: 29, name: 'Bank → Investment', categoryId: 1 }, 
+                { id: 30, name: 'Bank → Credit Card', categoryId: 1 }  
             ];
             
             // Updated Default Wallets to include types
@@ -1520,19 +1243,98 @@
                 { id: 2, name: 'Bank', balance: 0, type: 'bank' },
                 { id: 3, name: 'bKash', balance: 0, type: 'mobile' },
                 { id: 4, name: 'Nagad', balance: 0, type: 'mobile' },
-                { id: 5, name: 'Investment Ac', balance: 0, type: 'investment' },
-                { id: 6, name: 'Credit Card', balance: 0, type: 'credit_card' }
+                { id: 5, name: 'Investment Ac', balance: 0, type: 'investment' }, 
+                { id: 6, name: 'Credit Card', balance: 0, type: 'credit_card' }    
             ];
 
             let wallets = [];
             let categories = [];
             let subcategories = [];
             let transactions = [];
-            let loans = []; // New: Track loans separately
             let currentCategoryIdForSubcategory = null;
             let deleteCallback = null;
             let expensePieChart = null;
             let incomeExpenseBarChart = null;
+
+            // --- Loan Calculation Helper ---
+            const getLoanStatus = (personName) => {
+                // Normalize name for comparison (case insensitive, trim)
+                const normalizedInput = (personName || '').toLowerCase().trim();
+                if (!normalizedInput) return { lent: 0, received: 0, due: 0 };
+
+                let lent = 0;
+                let received = 0;
+
+                transactions.forEach(t => {
+                    if (!t.personName) return;
+                    const tPerson = t.personName.toLowerCase().trim();
+                    if (tPerson === normalizedInput) {
+                        // Check subcategory by name to support custom names too
+                        const sub = subcategories.find(s => s.id == t.subcategoryId);
+                        if (sub) {
+                            if (sub.name === 'Lent Money') lent += t.amount;
+                            if (sub.name === 'Loan Received Back') received += t.amount;
+                        }
+                    }
+                });
+
+                return {
+                    lent: lent,
+                    received: received,
+                    due: lent - received
+                };
+            };
+
+            const updateLoanStatusUI = () => {
+                const person = personNameInput.value;
+                const catId = parseInt(categorySelect.value);
+                const subId = parseInt(subcategorySelect.value);
+                
+                const category = categories.find(c => c.id === catId);
+                const subcategory = subcategories.find(s => s.id === subId);
+
+                // Show Person Input if category is Lending/Borrowing
+                if (category && (category.type === 'asset' || category.type === 'liability')) {
+                    personNameGroup.style.display = 'block';
+                } else {
+                    personNameGroup.style.display = 'none';
+                    loanStatusPanel.style.display = 'none';
+                    return;
+                }
+
+                // Show Status Panel only if we are receiving money back and have a name
+                if (subcategory && subcategory.name === 'Loan Received Back' && person.trim() !== '') {
+                    loanStatusPanel.style.display = 'block';
+                    loanPersonNameDisplay.textContent = person;
+                    
+                    const status = getLoanStatus(person);
+                    statusTotalLent.textContent = `৳${status.lent.toFixed(2)}`;
+                    statusTotalReceived.textContent = `৳${status.received.toFixed(2)}`;
+                    
+                    // Reset rows
+                    dueStatusRow.style.display = 'flex';
+                    paidStatusRow.style.display = 'none';
+                    overpaidStatusRow.style.display = 'none';
+
+                    if (status.due > 0) {
+                        statusBalanceDue.textContent = `৳${status.due.toFixed(2)} (Due)`;
+                        statusBalanceDue.className = 'loan-status-total due';
+                    } else if (status.due < 0) {
+                        // Overpaid
+                        statusBalanceDue.textContent = `৳${Math.abs(status.due).toFixed(2)} (Overpaid)`;
+                        statusBalanceDue.className = 'loan-status-total paid';
+                        dueStatusRow.style.display = 'none';
+                        overpaidStatusRow.style.display = 'flex';
+                    } else {
+                        // Exact match (0)
+                        statusBalanceDue.textContent = `৳0.00`;
+                        dueStatusRow.style.display = 'none';
+                        paidStatusRow.style.display = 'flex';
+                    }
+                } else {
+                    loanStatusPanel.style.display = 'none';
+                }
+            };
 
             // Budget Rule Mapping
             const getBudgetBucket = (categoryId, subcategoryId, categoryName, subcategoryName) => {
@@ -1581,7 +1383,7 @@
                         storedWallets.forEach(w => {
                             if (!w.type) {
                                 if(w.name.toLowerCase().includes('cash')) w.type = 'cash';
-                                else if(w.name.toLowerCase().includes('bkash') || w.name.toLowerCase().includes('nagad')) w.type = 'mobile';
+                                else if(w.name.toLowerCase().includes('bKash') || w.name.toLowerCase().includes('nagad')) w.type = 'mobile';
                                 else w.type = 'bank';
                             }
                         });
@@ -1591,8 +1393,7 @@
                         wallets: storedWallets || defaultWallets,
                         categories: JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories,
                         subcategories: JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories,
-                        transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || [],
-                        loans: JSON.parse(localStorage.getItem('advTrackerLoans')) || []
+                        transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || []
                     };
                 },
                 async save(data) {
@@ -1618,7 +1419,6 @@
                     localStorage.setItem('advTrackerCategories', JSON.stringify(data.categories));
                     localStorage.setItem('advTrackerSubcategories', JSON.stringify(data.subcategories));
                     localStorage.setItem('advTrackerTransactions', JSON.stringify(data.transactions));
-                    localStorage.setItem('advTrackerLoans', JSON.stringify(data.loans));
                 },
                 async callScript(action, params = {}) {
                     if (!GOOGLE_SCRIPT_URL) return { status: "error", message: "Google Script URL not configured." };
@@ -1636,313 +1436,28 @@
                 }
             };
 
-            // --- Loan Management Functions ---
-            const getOrCreateLoan = (personName, type) => {
-                let loan = loans.find(l => l.personName.toLowerCase() === personName.toLowerCase() && l.type === type && l.status === 'active');
-                if (!loan) {
-                    loan = {
-                        id: Date.now() + Math.random(),
-                        personName: personName,
-                        type: type, // 'lent' or 'borrowed'
-                        totalAmount: 0,
-                        repaidAmount: 0,
-                        status: 'active',
-                        createdAt: new Date().toISOString(),
-                        transactions: []
-                    };
-                    loans.push(loan);
-                }
-                return loan;
-            };
-
-            const updateLoanBalance = (loanId, amount, isRepayment = false) => {
-                const loan = loans.find(l => l.id === loanId);
-                if (loan) {
-                    if (isRepayment) {
-                        loan.repaidAmount += amount;
-                    } else {
-                        loan.totalAmount += amount;
-                    }
-                    
-                    // Check if fully repaid
-                    if (loan.repaidAmount >= loan.totalAmount) {
-                        loan.status = 'settled';
-                    } else {
-                        loan.status = 'active';
-                    }
-                }
-            };
-
-            const getLoanSummary = () => {
-                const summary = {
-                    lent: { total: 0, repaid: 0, outstanding: 0, persons: {} },
-                    borrowed: { total: 0, repaid: 0, outstanding: 0, persons: {} }
-                };
-
-                loans.forEach(loan => {
-                    const outstanding = loan.totalAmount - loan.repaidAmount;
-                    if (loan.type === 'lent') {
-                        summary.lent.total += loan.totalAmount;
-                        summary.lent.repaid += loan.repaidAmount;
-                        summary.lent.outstanding += outstanding;
-                        
-                        if (!summary.lent.persons[loan.personName]) {
-                            summary.lent.persons[loan.personName] = { ...loan };
-                        }
-                    } else {
-                        summary.borrowed.total += loan.totalAmount;
-                        summary.borrowed.repaid += loan.repaidAmount;
-                        summary.borrowed.outstanding += outstanding;
-                        
-                        if (!summary.borrowed.persons[loan.personName]) {
-                            summary.borrowed.persons[loan.personName] = { ...loan };
-                        }
-                    }
-                });
-
-                return summary;
-            };
-
-            const renderLoanTracker = () => {
-                const summary = getLoanSummary();
-                
-                // Update summary cards
-                document.getElementById('totalLentOut').textContent = `৳${summary.lent.total.toFixed(2)}`;
-                document.getElementById('totalBorrowedIn').textContent = `৳${summary.borrowed.total.toFixed(2)}`;
-                const netPosition = summary.lent.outstanding - summary.borrowed.outstanding;
-                const netElement = document.getElementById('netLoanPosition');
-                netElement.textContent = `৳${Math.abs(netPosition).toFixed(2)}`;
-                netElement.style.color = netPosition >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
-
-                // Render lent loans
-                lentLoansList.innerHTML = '';
-                const activeLentLoans = loans.filter(l => l.type === 'lent' && l.status === 'active');
-                
-                if (activeLentLoans.length === 0) {
-                    lentLoansList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💰</div>
-                            <p>No active lent loans</p>
-                        </div>
-                    `;
-                } else {
-                    activeLentLoans.forEach(loan => {
-                        const outstanding = loan.totalAmount - loan.repaidAmount;
-                        const progressPercent = loan.totalAmount > 0 ? (loan.repaidAmount / loan.totalAmount * 100) : 0;
-                        
-                        const loanItem = document.createElement('div');
-                        loanItem.className = 'loan-item lent';
-                        loanItem.innerHTML = `
-                            <div class="loan-header">
-                                <span class="loan-person">${loan.personName}</span>
-                                <span class="loan-status active">Active</span>
-                            </div>
-                            <div class="loan-amounts">
-                                <div class="loan-amount-box total">
-                                    <label>Total Lent</label>
-                                    <value>৳${loan.totalAmount.toFixed(2)}</value>
-                                </div>
-                                <div class="loan-amount-box paid">
-                                    <label>Received Back</label>
-                                    <value>৳${loan.repaidAmount.toFixed(2)}</value>
-                                </div>
-                                <div class="loan-amount-box due">
-                                    <label>Outstanding</label>
-                                    <value>৳${outstanding.toFixed(2)}</value>
-                                </div>
-                            </div>
-                            <div class="loan-progress">
-                                <div class="loan-progress-bar lent" style="width: ${progressPercent}%"></div>
-                            </div>
-                            <div class="loan-actions">
-                                <button class="success-btn" onclick="recordRepayment('${loan.id}', 'lent')">💵 Receive Payment</button>
-                                <button class="danger-btn" onclick="viewLoanHistory('${loan.id}')">📜 History</button>
-                            </div>
-                        `;
-                        lentLoansList.appendChild(loanItem);
-                    });
-                }
-
-                // Render borrowed loans
-                borrowedLoansList.innerHTML = '';
-                const activeBorrowedLoans = loans.filter(l => l.type === 'borrowed' && l.status === 'active');
-                
-                if (activeBorrowedLoans.length === 0) {
-                    borrowedLoansList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💳</div>
-                            <p>No active borrowed loans</p>
-                        </div>
-                    `;
-                } else {
-                    activeBorrowedLoans.forEach(loan => {
-                        const outstanding = loan.totalAmount - loan.repaidAmount;
-                        const progressPercent = loan.totalAmount > 0 ? (loan.repaidAmount / loan.totalAmount * 100) : 0;
-                        
-                        const loanItem = document.createElement('div');
-                        loanItem.className = 'loan-item borrowed';
-                        loanItem.innerHTML = `
-                            <div class="loan-header">
-                                <span class="loan-person">${loan.personName}</span>
-                                <span class="loan-status active">Active</span>
-                            </div>
-                            <div class="loan-amounts">
-                                <div class="loan-amount-box total">
-                                    <label>Total Borrowed</label>
-                                    <value>৳${loan.totalAmount.toFixed(2)}</value>
-                                </div>
-                                <div class="loan-amount-box paid">
-                                    <label>Repaid</label>
-                                    <value>৳${loan.repaidAmount.toFixed(2)}</value>
-                                </div>
-                                <div class="loan-amount-box due">
-                                    <label>Due</label>
-                                    <value>৳${outstanding.toFixed(2)}</value>
-                                </div>
-                            </div>
-                            <div class="loan-progress">
-                                <div class="loan-progress-bar borrowed" style="width: ${progressPercent}%"></div>
-                            </div>
-                            <div class="loan-actions">
-                                <button class="success-btn" onclick="recordRepayment('${loan.id}', 'borrowed')">💸 Make Payment</button>
-                                <button class="danger-btn" onclick="viewLoanHistory('${loan.id}')">📜 History</button>
-                            </div>
-                        `;
-                        borrowedLoansList.appendChild(loanItem);
-                    });
-                }
-            };
-
-            // Expose function to global scope for onclick handlers
-            window.recordRepayment = (loanId, type) => {
-                const loan = loans.find(l => l.id == loanId);
-                if (!loan) return;
-
-                const outstanding = loan.totalAmount - loan.repaidAmount;
-                
-                repaymentLoanIdInput.value = loanId;
-                repaymentTypeInput.value = type;
-                repaymentPersonName.textContent = loan.personName;
-                repaymentOutstanding.textContent = `৳${outstanding.toFixed(2)}`;
-                repaymentAmountInput.value = outstanding.toFixed(2);
-                repaymentAmountInput.max = outstanding;
-                repaymentDateInput.value = new Date().toISOString().split('T')[0];
-                
-                // Populate wallet dropdown
-                repaymentWalletSelect.innerHTML = '';
-                wallets.forEach(wallet => {
-                    repaymentWalletSelect.add(new Option(wallet.name, wallet.id));
-                });
-
-                document.getElementById('repaymentModalTitle').textContent = type === 'lent' ? 'Receive Loan Repayment' : 'Make Loan Repayment';
-                
-                showModal('loanRepaymentModal');
-            };
-
-            window.viewLoanHistory = (loanId) => {
-                const loan = loans.find(l => l.id == loanId);
-                if (!loan) return;
-                
-                // Filter transactions for this loan
-                const loanTransactions = transactions.filter(t => t.loanId == loanId);
-                
-                let historyHtml = `<h3>Loan History - ${loan.personName}</h3>`;
-                historyHtml += `<p>Total: ৳${loan.totalAmount.toFixed(2)} | Repaid: ৳${loan.repaidAmount.toFixed(2)} | Outstanding: ৳${(loan.totalAmount - loan.repaidAmount).toFixed(2)}</p>`;
-                historyHtml += `<ul style="list-style: none; padding: 0;">`;
-                
-                loanTransactions.forEach(t => {
-                    const isRepayment = t.subcategoryId === 27 || t.subcategoryId === 28;
-                    historyHtml += `
-                        <li style="padding: 10px; border-bottom: 1px solid #eee;">
-                            <strong>${new Date(t.date).toLocaleDateString()}</strong> - 
-                            ${t.description} - 
-                            ৳${t.amount.toFixed(2)} 
-                            ${isRepayment ? '(Repayment)' : '(Principal)'}
-                        </li>
-                    `;
-                });
-                
-                historyHtml += `</ul>`;
-                
-                alert(historyHtml.replace(/<[^>]*>/g, '')); // Simple alert for now, can be enhanced with a modal
-            };
-
-            const handleConfirmRepayment = async () => {
-                const loanId = repaymentLoanIdInput.value;
-                const type = repaymentTypeInput.value;
-                const amount = parseFloat(repaymentAmountInput.value);
-                const date = repaymentDateInput.value;
-                const walletId = parseInt(repaymentWalletSelect.value);
-                
-                if (!amount || amount <= 0) {
-                    alert('Please enter a valid amount');
-                    return;
-                }
-
-                const loan = loans.find(l => l.id == loanId);
-                if (!loan) return;
-
-                const outstanding = loan.totalAmount - loan.repaidAmount;
-                if (amount > outstanding) {
-                    alert(`Amount cannot exceed outstanding balance of ৳${outstanding.toFixed(2)}`);
-                    return;
-                }
-
-                // Create repayment transaction
-                const repaymentTransaction = {
-                    id: Date.now(),
-                    description: `${type === 'lent' ? 'Received from' : 'Repaid to'} ${loan.personName}`,
-                    amount: amount,
-                    date: date,
-                    walletId: walletId,
-                    categoryId: 5, // Lending / Borrowing
-                    subcategoryId: type === 'lent' ? 28 : 27, // Loan Received Back : Loan Repaid
-                    loanId: loanId,
-                    personName: loan.personName
-                };
-
-                // Update wallet balance
-                const wallet = wallets.find(w => w.id === walletId);
-                if (type === 'lent') {
-                    wallet.balance += amount; // Receiving money back
-                } else {
-                    wallet.balance -= amount; // Paying back
-                }
-
-                // Update loan
-                updateLoanBalance(loanId, amount, true);
-
-                // Add transaction
-                transactions.push(repaymentTransaction);
-                
-                await api.save({ wallets, categories, subcategories, transactions, loans });
-                renderAll();
-                hideModal('loanRepaymentModal');
-                
-                alert(`Successfully recorded repayment of ৳${amount.toFixed(2)}`);
-            };
-
             // --- Functions ---
             const updateWalletBalance = (walletId, amount, categoryType, subcategoryName, isSource = true) => {
                 const wallet = wallets.find(w => w.id === walletId);
                 if (!wallet) return;
                 if (categoryType === 'transfer') return;
 
-                if (categoryType === 'lent') {
-                    wallet.balance -= amount; // Money going out
-                    return;
+                if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') {
+                    wallet.balance += amount; return;
                 }
-                if (categoryType === 'borrowed') {
-                    wallet.balance += amount; // Money coming in
-                    return;
+                if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') {
+                    wallet.balance -= amount; return;
                 }
-                if (categoryType === 'income') {
-                    wallet.balance += amount;
-                    return;
+                if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') {
+                    wallet.balance += amount; return;
                 }
-                if (categoryType === 'expense') {
-                    wallet.balance -= amount;
-                    return;
+
+                if (isSource) {
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance -= amount;
+                    if (['income'].includes(categoryType)) wallet.balance += amount;
+                } else {
+                    if (categoryType === 'asset') wallet.balance += amount;
+                    if (categoryType === 'liability') wallet.balance -= amount;
                 }
             };
             
@@ -1952,33 +1467,18 @@
                 const category = categories.find(c => c.id === transaction.categoryId);
                 const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
                 const categoryType = category ? category.type : 'expense';
+                const subcategoryName = subcategory ? subcategory.name : '';
                 
                 if (categoryType === 'transfer') {
                     const toWallet = wallets.find(w => w.id === transaction.toWalletId);
                     if (wallet) wallet.balance += transaction.amount;
                     if (toWallet) toWallet.balance -= transaction.amount;
-                } else if (categoryType === 'lent') {
-                    wallet.balance += transaction.amount; // Reverse: money comes back
-                } else if (categoryType === 'borrowed') {
-                    wallet.balance -= transaction.amount; // Reverse: money goes out
-                } else if (categoryType === 'income') {
-                    wallet.balance -= transaction.amount;
-                } else if (categoryType === 'expense') {
-                    wallet.balance += transaction.amount;
-                }
-
-                // Reverse loan balance if applicable
-                if (transaction.loanId) {
-                    const loan = loans.find(l => l.id === transaction.loanId);
-                    if (loan) {
-                        const isRepayment = transaction.subcategoryId === 27 || transaction.subcategoryId === 28;
-                        if (isRepayment) {
-                            loan.repaidAmount -= transaction.amount;
-                        } else {
-                            loan.totalAmount -= transaction.amount;
-                        }
-                        loan.status = loan.repaidAmount >= loan.totalAmount ? 'settled' : 'active';
-                    }
+                } else {
+                    if (categoryType === 'asset' && subcategoryName === 'Loan Received Back') { wallet.balance -= transaction.amount; return; }
+                    if (categoryType === 'liability' && subcategoryName === 'Loan Repaid') { wallet.balance += transaction.amount; return; }
+                    if (categoryType === 'asset' && subcategoryName === 'Borrowed Money') { wallet.balance -= transaction.amount; return; }
+                    if (['expense', 'asset', 'liability'].includes(categoryType)) wallet.balance += transaction.amount;
+                    if (['income'].includes(categoryType)) wallet.balance -= transaction.amount;
                 }
             };
 
@@ -2043,22 +1543,6 @@
                 const subcats = subcategories.filter(sub => sub.categoryId == categoryId);
                 targetSelect.innerHTML = '';
                 subcats.forEach(sub => targetSelect.add(new Option(sub.name, sub.id)));
-            };
-
-            const populateExistingPersons = () => {
-                const persons = [...new Set(loans.map(l => l.personName))];
-                existingPersonsDiv.innerHTML = '';
-                persons.forEach(person => {
-                    const tag = document.createElement('span');
-                    tag.className = 'person-tag';
-                    tag.textContent = person;
-                    tag.onclick = () => {
-                        personNameInput.value = person;
-                        document.querySelectorAll('.person-tag').forEach(t => t.classList.remove('selected'));
-                        tag.classList.add('selected');
-                    };
-                    existingPersonsDiv.appendChild(tag);
-                });
             };
 
             const populateSummaryFilter = () => {
@@ -2170,13 +1654,14 @@
 
             const renderSummary = (transactionsToRender = transactions) => {
                 let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0, totalSavings = 0;
+                let lentRepaid = 0, borrowedRepaid = 0;
 
-                // Calculate from transactions
                 transactionsToRender.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
                     const subcategory = subcategories.find(s => s.id === t.subcategoryId);
                     if (!category) return;
                     const amount = t.amount;
+                    const subcategoryName = subcategory ? subcategory.name : '';
 
                     switch(category.type) {
                         case 'income': totalIncome += amount; break;
@@ -2184,21 +1669,17 @@
                             totalExpense += amount;
                             if(category.name === 'Savings / Investments') totalSavings += amount;
                             break;
-                        case 'lent': 
-                            // Only count principal, not repayments
-                            if (subcategory && subcategory.name === 'Lent Money') totalLent += amount;
+                        case 'asset': 
+                            if(subcategoryName === 'Lent Money') totalLent += amount;
+                            if(subcategoryName === 'Loan Received Back') lentRepaid += amount;
+                            if(subcategoryName === 'Borrowed Money') totalBorrowed += amount;
+                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount; 
                             break;
-                        case 'borrowed': 
-                            // Only count principal, not repayments
-                            if (subcategory && subcategory.name === 'Borrowed Money') totalBorrowed += amount;
+                        case 'liability': 
+                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount;
                             break;
                     }
                 });
-
-                // Calculate outstanding from loans
-                const summary = getLoanSummary();
-                const outstandingLent = summary.lent.outstanding;
-                const outstandingBorrowed = summary.borrowed.outstanding;
 
                 let liquidAssets = 0;
                 let creditCardLiability = 0;
@@ -2215,6 +1696,9 @@
                     }
                 });
 
+                const outstandingLent = totalLent - lentRepaid;
+                const outstandingBorrowed = totalBorrowed - borrowedRepaid;
+
                 const totalAssets = liquidAssets + outstandingLent;
                 const totalLiabilities = creditCardLiability + outstandingBorrowed;
                 
@@ -2222,8 +1706,8 @@
 
                 document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
                 document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
-                document.getElementById('totalLent').textContent = `৳${outstandingLent.toFixed(2)}`;
-                document.getElementById('totalBorrowed').textContent = `৳${outstandingBorrowed.toFixed(2)}`;
+                document.getElementById('totalLent').textContent = `৳${(totalLent - lentRepaid).toFixed(2)}`;
+                document.getElementById('totalBorrowed').textContent = `৳${(totalBorrowed - borrowedRepaid).toFixed(2)}`;
                 document.getElementById('netWorth').textContent = `৳${netWorth.toFixed(2)}`;
                 document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
             };
@@ -2314,34 +1798,21 @@
                     const wallet = wallets.find(w => w.id == t.walletId);
                     const category = categories.find(c => c.id == t.categoryId);
                     const subcategory = subcategories.find(s => s.id == t.subcategoryId);
-                    
-                    let amountClass = 'amount-expense';
-                    let sign = '-';
-                    
-                    if (category) {
-                        if (category.type === 'income') { amountClass = 'amount-income'; sign = '+'; }
-                        else if (category.type === 'transfer') { amountClass = 'amount-transfer'; sign = '↔'; }
-                        else if (category.type === 'lent') { amountClass = 'amount-lent'; sign = '-'; }
-                        else if (category.type === 'borrowed') { amountClass = 'amount-borrowed'; sign = '+'; }
-                        
-                        // Check if it's a repayment
-                        if (subcategory && (subcategory.name === 'Loan Repaid' || subcategory.name === 'Loan Received Back')) {
-                            amountClass = 'amount-repayment';
-                            sign = subcategory.name === 'Loan Repaid' ? '-' : '+';
-                        }
-                    }
-                    
+                    const amountClass = getAmountClass(category ? category.type : 'expense');
+                    const sign = getTransactionSign(category ? category.type : 'expense');
                     const formattedDate = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                    const personDisplay = t.personName ? ` • ${t.personName}` : '';
                     
+                    // Append Person Name to meta if exists
+                    const personMeta = t.personName ? ` • Person: <strong>${t.personName}</strong>` : '';
+
                     const li = document.createElement('li'); 
                     li.classList.add('transaction-item');
-                    li.style.animationDelay = `${index * 0.05}s`;
+                    li.style.animationDelay = `${index * 0.05}s`; // Staggered animation
                     li.innerHTML = `
                         <div class="transaction-top-row">
                             <div class="transaction-details">
-                                <span class="transaction-description">${t.description}${personDisplay}</span>
-                                <span class="transaction-meta">${formattedDate} • ${wallet ? wallet.name : 'N/A'} • ${category ? category.name : 'N/A'} → ${subcategory ? subcategory.name : 'N/A'}</span>
+                                <span class="transaction-description">${t.description}</span>
+                                <span class="transaction-meta">${formattedDate} &bull; ${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}${personMeta}</span>
                             </div>
                             <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
                         </div>
@@ -2354,6 +1825,9 @@
                 });
             };
             
+            const getTransactionSign = (type) => { if (type === 'transfer') return '↔️'; return ['expense', 'asset', 'liability'].includes(type) ? '-' : '+'; };
+            const getAmountClass = (type) => { if (type === 'transfer') return 'amount-transfer'; if (type === 'income') return 'amount-income'; if (type === 'expense') return 'amount-expense'; if (type === 'asset') return 'amount-asset'; if (type === 'liability') return 'amount-liability'; return ''; };
+
             const addTransaction = async (e) => {
                 e.preventDefault();
                 const description = document.getElementById('description').value;
@@ -2362,20 +1836,11 @@
                 const walletId = parseInt(document.getElementById('wallet').value);
                 const categoryId = parseInt(document.getElementById('category').value);
                 const subcategoryId = parseInt(document.getElementById('subcategory').value);
+                const personName = document.getElementById('personName').value; // Capture Person Name
                 const category = categories.find(c => c.id === categoryId);
                 const subcategory = subcategories.find(s => s.id === subcategoryId);
-                const personName = personNameInput.value.trim();
                 
-                let newTransaction = { 
-                    id: Date.now(), 
-                    description, 
-                    amount, 
-                    date, 
-                    walletId, 
-                    categoryId, 
-                    subcategoryId,
-                    personName: personName || null
-                };
+                let newTransaction = { id: Date.now(), description, amount, date, walletId, categoryId, subcategoryId, personName };
 
                 if (category.type === 'transfer') {
                     const toWalletId = parseInt(document.getElementById('toWallet').value);
@@ -2386,93 +1851,68 @@
                     
                     fromWallet.balance -= amount;
                     toWallet.balance += amount;
-                } else if (category.type === 'lent' || category.type === 'borrowed') {
-                    if (!personName) {
-                        alert('Please enter a person name for loan transactions');
-                        return;
-                    }
                     
-                    // Get or create loan
-                    const loanType = subcategory.name === 'Lent Money' ? 'lent' : 'borrowed';
-                    const loan = getOrCreateLoan(personName, loanType);
-                    
-                    newTransaction.loanId = loan.id;
-                    updateLoanBalance(loan.id, amount, false);
-                    updateWalletBalance(walletId, amount, category.type);
+                    await api.save({ wallets, categories, subcategories, transactions });
+                    renderWallets();
                 } else {
-                    updateWalletBalance(walletId, amount, category.type);
+                    updateWalletBalance(walletId, amount, category.type, subcategory ? subcategory.name : '');
                 }
 
                 transactions.push(newTransaction);
-                await api.save({ wallets, categories, subcategories, transactions, loans });
+                await api.save({ wallets, categories, subcategories, transactions });
                 renderAll();
                 form.reset();
                 document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
                 transferFields.style.display = 'none';
-                personSelectGroup.classList.remove('visible');
+                loanStatusPanel.style.display = 'none';
+                personNameGroup.style.display = 'none';
                 switchView('view-history');
             };
             
             const addWallet = async (name, type, initialBalance) => {
                 if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) {
                     wallets.push({ id: Date.now(), name, balance: parseFloat(initialBalance) || 0, type: type || 'bank' });
-                    await api.save({ wallets, categories, subcategories, transactions, loans });
+                    await api.save({ wallets, categories, subcategories, transactions });
                     renderWallets();
                 } else if (name) {
                     alert("A wallet with this name already exists.");
                 }
             };
-            
-            const addCategory = async () => { 
-                const name = document.getElementById('newCategoryName').value; 
-                const type = document.getElementById('newCategoryType').value; 
-                if (name) { 
-                    categories.push({ id: Date.now(), name, type }); 
-                    await api.save({ wallets, categories, subcategories, transactions, loans }); 
-                    renderCategories(); 
-                    populateCategoryDropdowns(); 
-                    document.getElementById('newCategoryName').value = ''; 
-                } 
-            };
-            
+            const addCategory = async () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); await api.save({ wallets, categories, subcategories, transactions }); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
             const addSubcategory = async (categoryId, name) => {
                 if (name) {
                     subcategories.push({ id: Date.now(), name, categoryId });
-                    await api.save({ wallets, categories, subcategories, transactions, loans });
+                    await api.save({ wallets, categories, subcategories, transactions });
                     renderCategories();
                 }
             };
-            
             const deleteCategory = async (id) => {
                 subcategories = subcategories.filter(s => s.categoryId !== id);
                 categories = categories.filter(c => c.id !== id);
-                await api.save({ wallets, categories, subcategories, transactions, loans });
+                await api.save({ wallets, categories, subcategories, transactions });
                 renderCategories();
                 populateCategoryDropdowns();
             };
-            
             const deleteSubcategory = async (id) => {
                 subcategories = subcategories.filter(s => s.id !== id);
-                await api.save({ wallets, categories, subcategories, transactions, loans });
+                await api.save({ wallets, categories, subcategories, transactions });
                 renderCategories();
             };
-            
             const editCategory = async (id, name, type) => {
                 const category = categories.find(c => c.id === id);
                 if(category) {
                     category.name = name;
                     category.type = type;
-                    await api.save({ wallets, categories, subcategories, transactions, loans });
+                    await api.save({ wallets, categories, subcategories, transactions });
                     renderCategories();
                     populateCategoryDropdowns();
                 }
             };
-            
             const editSubcategory = async (id, name) => {
                 const subcategory = subcategories.find(s => s.id === id);
                 if(subcategory) {
                     subcategory.name = name;
-                    await api.save({ wallets, categories, subcategories, transactions, loans });
+                    await api.save({ wallets, categories, subcategories, transactions });
                     renderCategories();
                     populateCategoryDropdowns();
                 }
@@ -2483,11 +1923,10 @@
                 if (transaction) {
                     reverseWalletBalance(transaction);
                     transactions = transactions.filter(t => t.id !== id);
-                    await api.save({ wallets, categories, subcategories, transactions, loans });
+                    await api.save({ wallets, categories, subcategories, transactions });
                     renderAll();
                 }
             };
-            
             const showEditModal = (id) => { 
                 const transaction = transactions.find(t => t.id === id); 
                 if (transaction) { 
@@ -2497,19 +1936,20 @@
                     document.getElementById('editTransactionDate').value = transaction.date;
                     document.getElementById('editWallet').value = transaction.walletId; 
                     document.getElementById('editCategory').value = transaction.categoryId; 
-                    updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect_inForm); 
-                    document.getElementById('editSubcategory').value = transaction.subcategoryId; 
                     
+                    // Handle Edit Person Name Logic
                     const category = categories.find(c => c.id === transaction.categoryId);
-                    
-                    // Handle person name for loans
-                    if (category && (category.type === 'lent' || category.type === 'borrowed')) {
-                        editPersonSelectGroup.classList.add('visible');
+                    if (category && (category.type === 'asset' || category.type === 'liability')) {
+                        editPersonNameGroup.style.display = 'block';
                         editPersonNameInput.value = transaction.personName || '';
                     } else {
-                        editPersonSelectGroup.classList.remove('visible');
+                        editPersonNameGroup.style.display = 'none';
+                        editPersonNameInput.value = '';
                     }
-                    
+
+                    updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect_inForm); 
+                    document.getElementById('editSubcategory').value = transaction.subcategoryId; 
+                    const category = categories.find(c => c.id === transaction.categoryId); 
                     if(category.type === 'transfer') { 
                         editTransferFields_inForm.style.display = 'block'; 
                         document.getElementById('editToWallet').value = transaction.toWalletId; 
@@ -2519,7 +1959,6 @@
                     showModal('editModal'); 
                 } 
             };
-            
             const updateTransaction = async (e) => { 
                 e.preventDefault(); 
                 const id = parseInt(document.getElementById('editId').value); 
@@ -2531,15 +1970,17 @@
                     transaction.date = document.getElementById('editTransactionDate').value;
                     transaction.walletId = parseInt(document.getElementById('editWallet').value); 
                     transaction.categoryId = parseInt(document.getElementById('editCategory').value); 
-                    transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); 
+                    transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value);
                     
+                    // Save Person Name
                     const category = categories.find(c => c.id === transaction.categoryId);
-                    
-                    // Update person name if it's a loan
-                    if (category && (category.type === 'lent' || category.type === 'borrowed')) {
-                        transaction.personName = editPersonNameInput.value;
+                    if (category && (category.type === 'asset' || category.type === 'liability')) {
+                        transaction.personName = document.getElementById('editPersonName').value;
+                    } else {
+                        transaction.personName = '';
                     }
                     
+                    const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
                     if(category.type === 'transfer') { 
                         transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); 
                         const fromWallet = wallets.find(w => w.id === transaction.walletId); 
@@ -2547,9 +1988,9 @@
                         fromWallet.balance -= transaction.amount; 
                         toWallet.balance += transaction.amount; 
                     } else { 
-                        updateWalletBalance(transaction.walletId, transaction.amount, category.type); 
+                        updateWalletBalance(transaction.walletId, transaction.amount, category.type, subcategory ? subcategory.name : ''); 
                     } 
-                    await api.save({ wallets, categories, subcategories, transactions, loans }); 
+                    await api.save({ wallets, categories, subcategories, transactions }); 
                     renderAll(); 
                     hideModal('editModal'); 
                 } 
@@ -2561,16 +2002,16 @@
                 renderBudgetRule();
                 renderTransactions(); 
                 renderCharts(); 
-                renderLoanTracker();
-                populateExistingPersons();
                 populateSummaryFilter();
             };
 
+            // Enhanced switchView with animation reset
             const switchView = (targetId) => {
                 viewSections.forEach(section => {
                     section.classList.remove('active');
+                    // Reset animation
                     section.style.animation = 'none';
-                    section.offsetHeight;
+                    section.offsetHeight; /* trigger reflow */
                     section.style.animation = null; 
                 });
                 navItems.forEach(item => item.classList.remove('active'));
@@ -2578,9 +2019,11 @@
                 document.querySelector(`[data-target="${targetId}"]`).classList.add('active');
             }
             
+            // --- Modal Management with Animation ---
             const showModal = (modalId) => {
                 const modal = document.getElementById(modalId);
                 modal.classList.add('show');
+                // Trigger animation
                 modal.style.opacity = '0';
                 requestAnimationFrame(() => {
                     modal.style.opacity = '1';
@@ -2612,7 +2055,6 @@
                 newSubcategoryNameInput.value = '';
                 showModal('addSubcategoryModal');
             };
-            
             const handleAddSubcategory = () => {
                 const name = newSubcategoryNameInput.value.trim();
                 if (name) {
@@ -2630,7 +2072,6 @@
                     showModal('editCategoryModal');
                 }
             };
-            
             const handleEditCategory = () => {
                 const id = parseInt(editCategoryIdInput.value);
                 const name = editCategoryNameInput.value.trim();
@@ -2649,7 +2090,6 @@
                     showModal('editSubcategoryModal_inList');
                 }
             };
-            
             const handleEditSubcategory = () => {
                 const id = parseInt(editSubcategoryIdInput.value);
                 const name = editSubcategoryNameInput.value.trim();
@@ -2664,7 +2104,6 @@
                 deleteCallback = callback;
                 showModal('deleteConfirmModal');
             };
-            
             const handleConfirmDelete = () => {
                 if (deleteCallback) {
                     deleteCallback();
@@ -2672,6 +2111,7 @@
                 hideModal('deleteConfirmModal');
             };
 
+            // --- Backup / Restore Functions ---
             const handleBackup = async () => {
                 backupBtn.disabled = true;
                 backupBtn.textContent = 'Creating Backup...';
@@ -2723,7 +2163,6 @@
                     categories = data.categories;
                     subcategories = data.subcategories;
                     transactions = data.transactions;
-                    loans = data.loans || [];
                     renderAll();
                     renderCategories();
                     populateCategoryDropdowns();
@@ -2734,18 +2173,17 @@
                 restoreBtn.textContent = '⬇️ Restore Selected';
             };
 
+            // --- Reset All Data Function ---
             const handleResetAllData = async () => {
                 localStorage.removeItem('advTrackerWallets');
                 localStorage.removeItem('advTrackerCategories');
                 localStorage.removeItem('advTrackerSubcategories');
                 localStorage.removeItem('advTrackerTransactions');
-                localStorage.removeItem('advTrackerLoans');
                 wallets = JSON.parse(JSON.stringify(defaultWallets));
                 categories = defaultCategories;
                 subcategories = defaultSubcategories;
                 transactions = [];
-                loans = [];
-                await api.save({ wallets, categories, subcategories, transactions, loans });
+                await api.save({ wallets, categories, subcategories, transactions });
                 renderAll();
                 renderCategories();
                 populateCategoryDropdowns();
@@ -2790,7 +2228,6 @@
             categories = data.categories;
             subcategories = data.subcategories;
             transactions = data.transactions;
-            loans = data.loans || [];
 
             document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
 
@@ -2808,23 +2245,6 @@
                 });
             });
 
-            // Loan tab switching
-            loanTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    loanTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    const tabName = tab.getAttribute('data-tab');
-                    if (tabName === 'lent') {
-                        lentLoansList.style.display = 'block';
-                        borrowedLoansList.style.display = 'none';
-                    } else {
-                        lentLoansList.style.display = 'none';
-                        borrowedLoansList.style.display = 'block';
-                    }
-                });
-            });
-
             form.addEventListener('submit', addTransaction);
             editForm.addEventListener('submit', updateTransaction);
             document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
@@ -2833,7 +2253,6 @@
             saveSubcategoryChangesBtn_inList.addEventListener('click', handleEditSubcategory);
             confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
             saveWalletBtn.addEventListener('click', handleSaveWallet);
-            confirmRepaymentBtn.addEventListener('click', handleConfirmRepayment);
 
             // Backup/Restore Listeners
             backupBtn.addEventListener('click', handleBackup);
@@ -2846,7 +2265,7 @@
             // Reset Data Listener
             resetAllDataBtn.addEventListener('click', () => {
                 showDeleteConfirmation(
-                    "WARNING: This will permanently delete ALL your data (wallets, transactions, categories, loans). This action cannot be undone. Are you absolutely sure?",
+                    "WARNING: This will permanently delete ALL your data (wallets, transactions, categories). This action cannot be undone. Are you absolutely sure?",
                     handleResetAllData
                 );
             });
@@ -2912,40 +2331,29 @@
                 }
             });
 
+            // --- Loan Tracker Listeners ---
             categorySelect.addEventListener('change', () => {
                 const selectedCategory = categories.find(c => c.id == categorySelect.value);
-                if (selectedCategory) {
-                    if (selectedCategory.type === 'transfer') { 
-                        transferFields.style.display = 'block'; 
-                    } else { 
-                        transferFields.style.display = 'none'; 
-                    }
-                    
-                    if (selectedCategory.type === 'lent' || selectedCategory.type === 'borrowed') {
-                        personSelectGroup.classList.add('visible');
-                        populateExistingPersons();
-                    } else {
-                        personSelectGroup.classList.remove('visible');
-                    }
-                }
+                if (selectedCategory && selectedCategory.type === 'transfer') { transferFields.style.display = 'block'; } else { transferFields.style.display = 'none'; }
                 updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
+                updateLoanStatusUI();
             });
-            
+
+            subcategorySelect.addEventListener('change', updateLoanStatusUI);
+            personNameInput.addEventListener('input', updateLoanStatusUI);
+
+            // Edit Form Category Change
             editCategorySelect_inForm.addEventListener('change', () => {
                 const selectedCategory = categories.find(c => c.id == editCategorySelect_inForm.value);
-                if (selectedCategory) {
-                    if (selectedCategory.type === 'transfer') { 
-                        editTransferFields_inForm.style.display = 'block'; 
-                    } else { 
-                        editTransferFields_inForm.style.display = 'none'; 
-                    }
-                    
-                    if (selectedCategory.type === 'lent' || selectedCategory.type === 'borrowed') {
-                        editPersonSelectGroup.classList.add('visible');
-                    } else {
-                        editPersonSelectGroup.classList.remove('visible');
-                    }
+                if (selectedCategory && selectedCategory.type === 'transfer') { editTransferFields_inForm.style.display = 'block'; } else { editTransferFields_inForm.style.display = 'none'; }
+                
+                // Show/hide Person Name in Edit
+                if (selectedCategory && (selectedCategory.type === 'asset' || selectedCategory.type === 'liability')) {
+                    editPersonNameGroup.style.display = 'block';
+                } else {
+                    editPersonNameGroup.style.display = 'none';
                 }
+
                 updateSubcategoryDropdown(editCategorySelect_inForm.value, editSubcategorySelect_inForm);
             });
 
@@ -2962,5 +2370,4 @@
         });
     </script>
 </body>
-</html>'''
-print(html_code)"} 
+</html>
