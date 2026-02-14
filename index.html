@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Finance</title>
     <!-- Chart.js Library -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
     <style>
         /* --- Basic Reset & Mobile-First Styling --- */
         :root {
@@ -744,6 +744,312 @@
             background: rgba(220, 53, 69, 0.1);
             transform: rotate(90deg);
         }
+
+        /* Loan Tracking Styles */
+        .loan-section {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .loan-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .loan-tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: bold;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .loan-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .loan-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .loan-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .loan-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-light);
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+            animation: slideInLeft 0.4s ease-out;
+        }
+
+        .loan-item.lent {
+            border-left-color: var(--warning-color);
+        }
+
+        .loan-item.borrowed {
+            border-left-color: var(--info-color);
+        }
+
+        .loan-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .loan-person {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .loan-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .loan-status.paid {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .loan-status.due {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .loan-status.partial {
+            background: rgba(255, 193, 7, 0.1);
+            color: #856404;
+        }
+
+        .loan-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+        }
+
+        .loan-detail-item {
+            text-align: center;
+        }
+
+        .loan-detail-label {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .loan-detail-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .loan-detail-value.positive {
+            color: var(--success-color);
+        }
+
+        .loan-detail-value.negative {
+            color: var(--danger-color);
+        }
+
+        .loan-progress {
+            margin: 15px 0;
+        }
+
+        .loan-progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .loan-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), #3dd598);
+            transition: width 0.5s ease;
+        }
+
+        .loan-progress-fill.danger {
+            background: linear-gradient(90deg, var(--danger-color), #ff6b6b);
+        }
+
+        .loan-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .repayment-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+        }
+
+        .repayment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .repayment-item:last-child {
+            border-bottom: none;
+        }
+
+        .repayment-date {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .repayment-amount {
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .toggle-repayments {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 5px 0;
+            text-decoration: underline;
+        }
+
+        .person-select-group {
+            display: none;
+        }
+
+        .person-select-group.visible {
+            display: block;
+        }
+
+        .person-tag {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-left: 5px;
+        }
+
+        /* Person Auto-suggest Styles */
+        .person-input-container {
+            position: relative;
+        }
+
+        .person-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow-medium);
+            display: none;
+        }
+
+        .person-suggestions.show {
+            display: block;
+        }
+
+        .person-suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .person-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .person-suggestion-item:hover {
+            background: rgba(23, 162, 184, 0.1);
+        }
+
+        .person-suggestion-item.selected {
+            background: rgba(23, 162, 184, 0.2);
+            font-weight: bold;
+        }
+
+        .person-suggestion-highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .add-new-person {
+            color: var(--success-color);
+            font-style: italic;
+        }
+
+        .person-input-wrapper {
+            position: relative;
+        }
+
+        .clear-person-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-person-btn.show {
+            display: flex;
+        }
+
+        .clear-person-btn:hover {
+            color: var(--danger-color);
+        }
     </style>
 <base target="_blank">
 </head>
@@ -767,10 +1073,22 @@
                 <div class="summary-grid">
                     <div class="summary-card income"><h3>Total Income</h3><p id="totalIncome">৳0.00</p></div>
                     <div class="summary-card expense"><h3>Total Expense</h3><p id="totalExpense">৳0.00</p></div>
-                    <div class="summary-card lent"><h3>Total Lent</h3><p id="totalLent">৳0.00</p></div>
-                    <div class="summary-card borrowed"><h3>Total Borrowed</h3><p id="totalBorrowed">৳0.00</p></div>
+                    <div class="summary-card lent"><h3>Total Lent (Due)</h3><p id="totalLent">৳0.00</p></div>
+                    <div class="summary-card borrowed"><h3>Total Borrowed (Due)</h3><p id="totalBorrowed">৳0.00</p></div>
                     <div class="summary-card net-worth"><h3>Net Worth</h3><p id="netWorth">৳0.00</p></div>
                     <div class="summary-card total-savings"><h3>Total Savings</h3><p id="totalSavings">৳0.00</p></div>
+                </div>
+
+                <!-- Loan Tracking Section -->
+                <div class="loan-section">
+                    <div class="budget-rule-header">
+                        <h2>📊 Loan Tracker</h2>
+                    </div>
+                    <div class="loan-tabs">
+                        <button class="loan-tab active" data-tab="lent">Money Lent Out</button>
+                        <button class="loan-tab" data-tab="borrowed">Money Borrowed</button>
+                    </div>
+                    <div id="loanList" class="loan-list"></div>
                 </div>
 
                 <!-- 50/30/20 Budget Rule Section -->
@@ -869,6 +1187,28 @@
                     <div class="form-group"><label for="wallet" data-icon="💳">Wallet</label><select id="wallet" required></select></div>
                     <div class="form-group"><label for="category" data-icon="📂">Category</label><select id="category" required></select></div>
                     <div class="form-group"><label for="subcategory" data-icon="🏷️">Subcategory</label><select id="subcategory" required></select></div>
+                    
+                    <!-- Loan Person Selection with Auto-suggest -->
+                    <div id="loanPersonGroup" class="form-group person-select-group">
+                        <label for="loanPerson" data-icon="👤">Person Name</label>
+                        <div class="person-input-container">
+                            <div class="person-input-wrapper">
+                                <input type="text" id="loanPerson" placeholder="Type or select person..." autocomplete="off">
+                                <button type="button" class="clear-person-btn" id="clearPersonBtn">×</button>
+                            </div>
+                            <div id="personSuggestions" class="person-suggestions"></div>
+                        </div>
+                        <small style="color: #6c757d; font-size: 0.85em;">Type to search or add new person</small>
+                    </div>
+                    
+                    <!-- Loan Link Selection (for repayments) -->
+                    <div id="loanLinkGroup" class="form-group person-select-group">
+                        <label for="loanLink" data-icon="🔗">Link to Original Loan</label>
+                        <select id="loanLink">
+                            <option value="">-- Select Original Loan --</option>
+                        </select>
+                    </div>
+                    
                     <div id="transferFields" style="display:none;">
                         <div class="form-group"><label for="toWallet" data-icon="➡️">To Wallet</label><select id="toWallet"></select></div>
                     </div>
@@ -991,6 +1331,19 @@
                 <div class="form-group"><label for="editWallet" data-icon="💳">Wallet</label><select id="editWallet" required></select></div>
                 <div class="form-group"><label for="editCategory" data-icon="📂">Category</label><select id="editCategory" required></select></div>
                 <div class="form-group"><label for="editSubcategory" data-icon="🏷️">Subcategory</label><select id="editSubcategory" required></select></div>
+                
+                <!-- Edit Loan Person with Auto-suggest -->
+                <div id="editLoanPersonGroup" class="form-group person-select-group">
+                    <label for="editLoanPerson" data-icon="👤">Person Name</label>
+                    <div class="person-input-container">
+                        <div class="person-input-wrapper">
+                            <input type="text" id="editLoanPerson" placeholder="Type or select person..." autocomplete="off">
+                            <button type="button" class="clear-person-btn" id="editClearPersonBtn">×</button>
+                        </div>
+                        <div id="editPersonSuggestions" class="person-suggestions"></div>
+                    </div>
+                </div>
+                
                 <div id="editTransferFields" style="display:none;">
                     <div class="form-group"><label for="editToWallet" data-icon="➡️">To Wallet</label><select id="editToWallet"></select></div>
                 </div>
@@ -1079,7 +1432,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CONFIGURATION ---
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec  ';
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec    ';
 
             // --- DOM Elements ---
             const navItems = document.querySelectorAll('.nav-item');
@@ -1099,6 +1452,25 @@
             const toWalletSelect = document.getElementById('toWallet');
             const transferFields = document.getElementById('transferFields');
             
+            // Loan Tracking Elements
+            const loanPersonGroup = document.getElementById('loanPersonGroup');
+            const loanLinkGroup = document.getElementById('loanLinkGroup');
+            const loanPersonInput = document.getElementById('loanPerson');
+            const loanLinkSelect = document.getElementById('loanLink');
+            const loanList = document.getElementById('loanList');
+            const loanTabs = document.querySelectorAll('.loan-tab');
+            let currentLoanTab = 'lent';
+            
+            // Person Auto-suggest Elements
+            const personSuggestions = document.getElementById('personSuggestions');
+            const clearPersonBtn = document.getElementById('clearPersonBtn');
+            
+            // Edit Person Auto-suggest Elements
+            const editLoanPersonGroup = document.getElementById('editLoanPersonGroup');
+            const editLoanPersonInput = document.getElementById('editLoanPerson');
+            const editPersonSuggestions = document.getElementById('editPersonSuggestions');
+            const editClearPersonBtn = document.getElementById('editClearPersonBtn');
+
             // Budget Rule Elements
             const budgetStatus = document.getElementById('budgetStatus');
 
@@ -1174,6 +1546,8 @@
             let categories = [];
             let subcategories = [];
             let transactions = [];
+            let loans = []; // Track loans separately
+            let people = []; // Track unique people names
             let currentCategoryIdForSubcategory = null;
             let deleteCallback = null;
             let expensePieChart = null;
@@ -1236,7 +1610,9 @@
                         wallets: storedWallets || defaultWallets,
                         categories: JSON.parse(localStorage.getItem('advTrackerCategories')) || defaultCategories,
                         subcategories: JSON.parse(localStorage.getItem('advTrackerSubcategories')) || defaultSubcategories,
-                        transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || []
+                        transactions: JSON.parse(localStorage.getItem('advTrackerTransactions')) || [],
+                        loans: JSON.parse(localStorage.getItem('advTrackerLoans')) || [], // Load loans
+                        people: JSON.parse(localStorage.getItem('advTrackerPeople')) || [] // Load people
                     };
                 },
                 async save(data) {
@@ -1262,6 +1638,8 @@
                     localStorage.setItem('advTrackerCategories', JSON.stringify(data.categories));
                     localStorage.setItem('advTrackerSubcategories', JSON.stringify(data.subcategories));
                     localStorage.setItem('advTrackerTransactions', JSON.stringify(data.transactions));
+                    localStorage.setItem('advTrackerLoans', JSON.stringify(data.loans || [])); // Save loans
+                    localStorage.setItem('advTrackerPeople', JSON.stringify(data.people || [])); // Save people
                 },
                 async callScript(action, params = {}) {
                     if (!GOOGLE_SCRIPT_URL) return { status: "error", message: "Google Script URL not configured." };
@@ -1277,6 +1655,344 @@
                         return { status: "error", message: error.toString() };
                     }
                 }
+            };
+
+            // --- Person Auto-suggest Functions ---
+            const getPeopleList = () => {
+                // Get unique people from loans and transactions
+                const peopleSet = new Set(people);
+                
+                // Also extract from existing loans
+                loans.forEach(loan => {
+                    if (loan.person) peopleSet.add(loan.person);
+                });
+                
+                // Extract from existing transactions
+                transactions.forEach(t => {
+                    if (t.person) peopleSet.add(t.person);
+                });
+                
+                return Array.from(peopleSet).sort();
+            };
+
+            const addPerson = (name) => {
+                if (!name) return;
+                const normalizedName = name.trim();
+                if (!normalizedName) return;
+                
+                if (!people.includes(normalizedName)) {
+                    people.push(normalizedName);
+                    // Save immediately
+                    api.save({ wallets, categories, subcategories, transactions, loans, people });
+                }
+            };
+
+            const highlightMatch = (text, query) => {
+                if (!query) return text;
+                const regex = new RegExp(`(${query})`, 'gi');
+                return text.replace(regex, '<span class="person-suggestion-highlight">$1</span>');
+            };
+
+            const showPersonSuggestions = (input, suggestionsContainer, query) => {
+                const peopleList = getPeopleList();
+                const filtered = peopleList.filter(p => 
+                    p.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                suggestionsContainer.innerHTML = '';
+                
+                if (filtered.length === 0 && query.trim()) {
+                    // Show "Add new" option
+                    const div = document.createElement('div');
+                    div.className = 'person-suggestion-item add-new-person';
+                    div.innerHTML = `+ Add "${query}" as new person`;
+                    div.onclick = () => {
+                        input.value = query;
+                        suggestionsContainer.classList.remove('show');
+                        updateClearButton(input, suggestionsContainer.closest('.person-input-container').querySelector('.clear-person-btn'));
+                    };
+                    suggestionsContainer.appendChild(div);
+                } else {
+                    filtered.forEach(person => {
+                        const div = document.createElement('div');
+                        div.className = 'person-suggestion-item';
+                        div.innerHTML = highlightMatch(person, query);
+                        div.onclick = () => {
+                            input.value = person;
+                            suggestionsContainer.classList.remove('show');
+                            updateClearButton(input, suggestionsContainer.closest('.person-input-container').querySelector('.clear-person-btn'));
+                        };
+                        suggestionsContainer.appendChild(div);
+                    });
+                    
+                    // Add "Add new" at bottom if query doesn't match exactly
+                    if (query.trim() && !filtered.some(p => p.toLowerCase() === query.toLowerCase())) {
+                        const div = document.createElement('div');
+                        div.className = 'person-suggestion-item add-new-person';
+                        div.style.borderTop = '2px solid var(--border-color)';
+                        div.innerHTML = `+ Add "${query}" as new person`;
+                        div.onclick = () => {
+                            input.value = query;
+                            suggestionsContainer.classList.remove('show');
+                            updateClearButton(input, suggestionsContainer.closest('.person-input-container').querySelector('.clear-person-btn'));
+                        };
+                        suggestionsContainer.appendChild(div);
+                    }
+                }
+                
+                if (filtered.length > 0 || query.trim()) {
+                    suggestionsContainer.classList.add('show');
+                } else {
+                    suggestionsContainer.classList.remove('show');
+                }
+            };
+
+            const updateClearButton = (input, btn) => {
+                if (input.value.trim()) {
+                    btn.classList.add('show');
+                } else {
+                    btn.classList.remove('show');
+                }
+            };
+
+            const setupPersonAutoSuggest = (input, suggestionsContainer, clearBtn) => {
+                // Input event for filtering
+                input.addEventListener('input', (e) => {
+                    showPersonSuggestions(input, suggestionsContainer, e.target.value);
+                    updateClearButton(input, clearBtn);
+                });
+                
+                // Focus event - show all people
+                input.addEventListener('focus', () => {
+                    showPersonSuggestions(input, suggestionsContainer, input.value);
+                });
+                
+                // Click outside to close
+                document.addEventListener('click', (e) => {
+                    if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                        suggestionsContainer.classList.remove('show');
+                    }
+                });
+                
+                // Keyboard navigation
+                input.addEventListener('keydown', (e) => {
+                    const items = suggestionsContainer.querySelectorAll('.person-suggestion-item');
+                    const selected = suggestionsContainer.querySelector('.person-suggestion-item.selected');
+                    let index = Array.from(items).indexOf(selected);
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (selected) selected.classList.remove('selected');
+                        index = (index + 1) % items.length;
+                        if (items[index]) items[index].classList.add('selected');
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (selected) selected.classList.remove('selected');
+                        index = (index - 1 + items.length) % items.length;
+                        if (items[index]) items[index].classList.add('selected');
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (selected) {
+                            selected.click();
+                        } else if (input.value.trim()) {
+                            // Add as new person
+                            suggestionsContainer.classList.remove('show');
+                        }
+                    } else if (e.key === 'Escape') {
+                        suggestionsContainer.classList.remove('show');
+                    }
+                });
+                
+                // Clear button
+                clearBtn.addEventListener('click', () => {
+                    input.value = '';
+                    suggestionsContainer.classList.remove('show');
+                    clearBtn.classList.remove('show');
+                    input.focus();
+                });
+            };
+
+            // --- Loan Tracking Functions ---
+            const getLoanType = (subcategoryName) => {
+                if (!subcategoryName) return null;
+                const name = subcategoryName.toLowerCase();
+                if (name === 'lent money') return 'lent';
+                if (name === 'borrowed money') return 'borrowed';
+                if (name === 'loan repaid') return 'repaid';
+                if (name === 'loan received back') return 'received';
+                return null;
+            };
+
+            const isLoanTransaction = (subcategoryName) => {
+                return getLoanType(subcategoryName) !== null;
+            };
+
+            const createLoan = (transaction) => {
+                const loanType = getLoanType(transaction.subcategoryName);
+                const isLent = loanType === 'lent';
+                
+                const loan = {
+                    id: Date.now() + Math.random(),
+                    person: transaction.person || 'Unknown',
+                    originalAmount: transaction.amount,
+                    remainingAmount: transaction.amount,
+                    type: isLent ? 'lent' : 'borrowed',
+                    status: 'active',
+                    createdDate: transaction.date,
+                    transactionId: transaction.id,
+                    repayments: []
+                };
+                
+                loans.push(loan);
+                
+                // Add person to people list
+                addPerson(transaction.person);
+                
+                return loan;
+            };
+
+            const findLoanByPerson = (person, type) => {
+                return loans.find(l => 
+                    l.person.toLowerCase() === person.toLowerCase() && 
+                    l.type === type && 
+                    l.status === 'active'
+                );
+            };
+
+            const processRepayment = (transaction, linkedLoanId) => {
+                const loanType = getLoanType(transaction.subcategoryName);
+                const isReceivedBack = loanType === 'received'; // Someone paid me back
+                const isRepaid = loanType === 'repaid'; // I paid back someone
+                
+                let loan = null;
+                
+                if (linkedLoanId) {
+                    loan = loans.find(l => l.id == linkedLoanId);
+                } else if (transaction.person) {
+                    // Auto-find by person
+                    const searchType = isReceivedBack ? 'lent' : 'borrowed';
+                    loan = findLoanByPerson(transaction.person, searchType);
+                }
+                
+                if (loan) {
+                    loan.remainingAmount -= transaction.amount;
+                    loan.repayments.push({
+                        date: transaction.date,
+                        amount: transaction.amount,
+                        transactionId: transaction.id
+                    });
+                    
+                    if (loan.remainingAmount <= 0) {
+                        loan.status = 'paid';
+                        loan.remainingAmount = 0;
+                    } else {
+                        loan.status = 'partial';
+                    }
+                    
+                    transaction.linkedLoanId = loan.id;
+                    return loan;
+                }
+                
+                return null;
+            };
+
+            const updateLoanLinkOptions = () => {
+                const subcategory = subcategories.find(s => s.id == subcategorySelect.value);
+                const loanType = getLoanType(subcategory ? subcategory.name : '');
+                
+                loanLinkSelect.innerHTML = '<option value="">-- Select Original Loan --</option>';
+                
+                if (loanType === 'received' || loanType === 'repaid') {
+                    const searchType = loanType === 'received' ? 'lent' : 'borrowed';
+                    const activeLoans = loans.filter(l => l.type === searchType && l.status !== 'paid');
+                    
+                    activeLoans.forEach(loan => {
+                        const option = new Option(
+                            `${loan.person} - ৳${loan.remainingAmount.toFixed(2)} remaining`, 
+                            loan.id
+                        );
+                        loanLinkSelect.add(option);
+                    });
+                }
+            };
+
+            const renderLoans = () => {
+                const filteredLoans = loans.filter(l => {
+                    if (currentLoanTab === 'lent') return l.type === 'lent';
+                    return l.type === 'borrowed';
+                });
+
+                loanList.innerHTML = '';
+                
+                if (filteredLoans.length === 0) {
+                    loanList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No loans found.</p>';
+                    return;
+                }
+
+                filteredLoans.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+
+                filteredLoans.forEach((loan, index) => {
+                    const li = document.createElement('div');
+                    li.className = `loan-item ${loan.type}`;
+                    li.style.animationDelay = `${index * 0.1}s`;
+                    
+                    const progressPercent = loan.originalAmount > 0 
+                        ? ((loan.originalAmount - loan.remainingAmount) / loan.originalAmount * 100).toFixed(1)
+                        : 100;
+                    
+                    const statusClass = loan.status === 'paid' ? 'paid' : (loan.status === 'partial' ? 'partial' : 'due');
+                    const statusText = loan.status === 'paid' ? '✓ Fully Paid' : (loan.status === 'partial' ? '⚠ Partially Paid' : '⏳ Payment Due');
+                    
+                    const repaymentsHtml = loan.repayments.length > 0 
+                        ? loan.repayments.map(r => `
+                            <div class="repayment-item">
+                                <span class="repayment-date">${new Date(r.date).toLocaleDateString()}</span>
+                                <span class="repayment-amount">+৳${r.amount.toFixed(2)}</span>
+                            </div>
+                        `).join('')
+                        : '<p style="color: #6c757d; font-style: italic;">No repayments yet</p>';
+                    
+                    li.innerHTML = `
+                        <div class="loan-header">
+                            <span class="loan-person">${loan.person}</span>
+                            <span class="loan-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="loan-details">
+                            <div class="loan-detail-item">
+                                <div class="loan-detail-label">Original Amount</div>
+                                <div class="loan-detail-value">৳${loan.originalAmount.toFixed(2)}</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="loan-detail-label">Paid Back</div>
+                                <div class="loan-detail-value positive">৳${(loan.originalAmount - loan.remainingAmount).toFixed(2)}</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="loan-detail-label">Remaining</div>
+                                <div class="loan-detail-value ${loan.remainingAmount > 0 ? 'negative' : 'positive'}">৳${loan.remainingAmount.toFixed(2)}</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="loan-detail-label">Date</div>
+                                <div class="loan-detail-value">${new Date(loan.createdDate).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div class="loan-progress">
+                            <div class="loan-progress-bar">
+                                <div class="loan-progress-fill ${loan.status !== 'paid' ? 'danger' : ''}" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 5px; font-size: 0.85em; color: #6c757d;">
+                                ${progressPercent}% repaid
+                            </div>
+                        </div>
+                        <button class="toggle-repayments" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                            Show/Hide Repayment History (${loan.repayments.length})
+                        </button>
+                        <div class="repayment-list" style="display: none;">
+                            ${repaymentsHtml}
+                        </div>
+                    `;
+                    
+                    loanList.appendChild(li);
+                });
             };
 
             // --- Functions ---
@@ -1386,6 +2102,33 @@
                 const subcats = subcategories.filter(sub => sub.categoryId == categoryId);
                 targetSelect.innerHTML = '';
                 subcats.forEach(sub => targetSelect.add(new Option(sub.name, sub.id)));
+                
+                // Check if loan-related
+                const selectedSub = subcats[0];
+                if (selectedSub) {
+                    handleLoanFields(selectedSub.name);
+                }
+            };
+
+            const handleLoanFields = (subcategoryName) => {
+                const loanType = getLoanType(subcategoryName);
+                
+                if (loanType === 'lent' || loanType === 'borrowed') {
+                    loanPersonGroup.classList.add('visible');
+                    loanLinkGroup.classList.remove('visible');
+                    loanPersonInput.required = true;
+                    // Show suggestions
+                    showPersonSuggestions(loanPersonInput, personSuggestions, '');
+                } else if (loanType === 'received' || loanType === 'repaid') {
+                    loanPersonGroup.classList.remove('visible');
+                    loanLinkGroup.classList.add('visible');
+                    loanPersonInput.required = false;
+                    updateLoanLinkOptions();
+                } else {
+                    loanPersonGroup.classList.remove('visible');
+                    loanLinkGroup.classList.remove('visible');
+                    loanPersonInput.required = false;
+                }
             };
 
             const populateSummaryFilter = () => {
@@ -1496,30 +2239,31 @@
             };
 
             const renderSummary = (transactionsToRender = transactions) => {
-                let totalIncome = 0, totalExpense = 0, totalLent = 0, totalBorrowed = 0, totalSavings = 0;
-                let lentRepaid = 0, borrowedRepaid = 0;
+                let totalIncome = 0, totalExpense = 0, totalSavings = 0;
+                
+                // Calculate loan totals from loans array instead of transactions
+                let totalLentOutstanding = 0;
+                let totalBorrowedOutstanding = 0;
+                
+                loans.forEach(loan => {
+                    if (loan.type === 'lent' && loan.status !== 'paid') {
+                        totalLentOutstanding += loan.remainingAmount;
+                    } else if (loan.type === 'borrowed' && loan.status !== 'paid') {
+                        totalBorrowedOutstanding += loan.remainingAmount;
+                    }
+                });
 
                 transactionsToRender.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
                     const subcategory = subcategories.find(s => s.id === t.subcategoryId);
                     if (!category) return;
                     const amount = t.amount;
-                    const subcategoryName = subcategory ? subcategory.name : '';
 
                     switch(category.type) {
                         case 'income': totalIncome += amount; break;
                         case 'expense': 
                             totalExpense += amount;
                             if(category.name === 'Savings / Investments') totalSavings += amount;
-                            break;
-                        case 'asset': 
-                            if(subcategoryName === 'Lent Money') totalLent += amount;
-                            if(subcategoryName === 'Loan Received Back') lentRepaid += amount;
-                            if(subcategoryName === 'Borrowed Money') totalBorrowed += amount;
-                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount; 
-                            break;
-                        case 'liability': 
-                            if(subcategoryName === 'Loan Repaid') borrowedRepaid += amount;
                             break;
                     }
                 });
@@ -1539,18 +2283,15 @@
                     }
                 });
 
-                const outstandingLent = totalLent - lentRepaid;
-                const outstandingBorrowed = totalBorrowed - borrowedRepaid;
-
-                const totalAssets = liquidAssets + outstandingLent;
-                const totalLiabilities = creditCardLiability + outstandingBorrowed;
+                const totalAssets = liquidAssets + totalLentOutstanding;
+                const totalLiabilities = creditCardLiability + totalBorrowedOutstanding;
                 
                 const netWorth = totalAssets - totalLiabilities;
 
                 document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(2)}`;
                 document.getElementById('totalExpense').textContent = `৳${totalExpense.toFixed(2)}`;
-                document.getElementById('totalLent').textContent = `৳${(totalLent - lentRepaid).toFixed(2)}`;
-                document.getElementById('totalBorrowed').textContent = `৳${(totalBorrowed - borrowedRepaid).toFixed(2)}`;
+                document.getElementById('totalLent').textContent = `৳${totalLentOutstanding.toFixed(2)}`;
+                document.getElementById('totalBorrowed').textContent = `৳${totalBorrowedOutstanding.toFixed(2)}`;
                 document.getElementById('netWorth').textContent = `৳${netWorth.toFixed(2)}`;
                 document.getElementById('totalSavings').textContent = `৳${totalSavings.toFixed(2)}`;
             };
@@ -1645,13 +2386,19 @@
                     const sign = getTransactionSign(category ? category.type : 'expense');
                     const formattedDate = new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                     
+                    // Add person tag if loan transaction
+                    let personTag = '';
+                    if (t.person) {
+                        personTag = `<span class="person-tag">${t.person}</span>`;
+                    }
+                    
                     const li = document.createElement('li'); 
                     li.classList.add('transaction-item');
                     li.style.animationDelay = `${index * 0.05}s`; // Staggered animation
                     li.innerHTML = `
                         <div class="transaction-top-row">
                             <div class="transaction-details">
-                                <span class="transaction-description">${t.description}</span>
+                                <span class="transaction-description">${t.description} ${personTag}</span>
                                 <span class="transaction-meta">${formattedDate} &bull; ${wallet.name} &bull; ${category ? category.name : 'N/A'} -> ${subcategory ? subcategory.name : 'N/A'}</span>
                             </div>
                             <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
@@ -1678,8 +2425,33 @@
                 const subcategoryId = parseInt(document.getElementById('subcategory').value);
                 const category = categories.find(c => c.id === categoryId);
                 const subcategory = subcategories.find(s => s.id === subcategoryId);
+                const person = loanPersonInput.value.trim();
+                const linkedLoanId = loanLinkSelect.value;
                 
-                let newTransaction = { id: Date.now(), description, amount, date, walletId, categoryId, subcategoryId };
+                let newTransaction = { 
+                    id: Date.now(), 
+                    description, 
+                    amount, 
+                    date, 
+                    walletId, 
+                    categoryId, 
+                    subcategoryId,
+                    person: person || null,
+                    linkedLoanId: linkedLoanId || null,
+                    subcategoryName: subcategory ? subcategory.name : ''
+                };
+
+                // Process loan logic
+                const loanType = getLoanType(subcategory ? subcategory.name : '');
+                if (loanType === 'lent' || loanType === 'borrowed') {
+                    if (!person) {
+                        alert('Please enter a person name for loan transactions');
+                        return;
+                    }
+                    createLoan(newTransaction);
+                } else if (loanType === 'received' || loanType === 'repaid') {
+                    processRepayment(newTransaction, linkedLoanId);
+                }
 
                 if (category.type === 'transfer') {
                     const toWalletId = parseInt(document.getElementById('toWallet').value);
@@ -1691,48 +2463,52 @@
                     fromWallet.balance -= amount;
                     toWallet.balance += amount;
                     
-                    await api.save({ wallets, categories, subcategories, transactions });
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people });
                     renderWallets();
                 } else {
                     updateWalletBalance(walletId, amount, category.type, subcategory ? subcategory.name : '');
                 }
 
                 transactions.push(newTransaction);
-                await api.save({ wallets, categories, subcategories, transactions });
+                await api.save({ wallets, categories, subcategories, transactions, loans, people });
                 renderAll();
                 form.reset();
                 document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
                 transferFields.style.display = 'none';
+                loanPersonGroup.classList.remove('visible');
+                loanLinkGroup.classList.remove('visible');
+                personSuggestions.classList.remove('show');
+                clearPersonBtn.classList.remove('show');
                 switchView('view-history');
             };
             
             const addWallet = async (name, type, initialBalance) => {
                 if (name && !wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) {
                     wallets.push({ id: Date.now(), name, balance: parseFloat(initialBalance) || 0, type: type || 'bank' });
-                    await api.save({ wallets, categories, subcategories, transactions });
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people });
                     renderWallets();
                 } else if (name) {
                     alert("A wallet with this name already exists.");
                 }
             };
-            const addCategory = async () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); await api.save({ wallets, categories, subcategories, transactions }); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
+            const addCategory = async () => { const name = document.getElementById('newCategoryName').value; const type = document.getElementById('newCategoryType').value; if (name) { categories.push({ id: Date.now(), name, type }); await api.save({ wallets, categories, subcategories, transactions, loans, people }); renderCategories(); populateCategoryDropdowns(); document.getElementById('newCategoryName').value = ''; } };
             const addSubcategory = async (categoryId, name) => {
                 if (name) {
                     subcategories.push({ id: Date.now(), name, categoryId });
-                    await api.save({ wallets, categories, subcategories, transactions });
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people });
                     renderCategories();
                 }
             };
             const deleteCategory = async (id) => {
                 subcategories = subcategories.filter(s => s.categoryId !== id);
                 categories = categories.filter(c => c.id !== id);
-                await api.save({ wallets, categories, subcategories, transactions });
+                await api.save({ wallets, categories, subcategories, transactions, loans, people });
                 renderCategories();
                 populateCategoryDropdowns();
             };
             const deleteSubcategory = async (id) => {
                 subcategories = subcategories.filter(s => s.id !== id);
-                await api.save({ wallets, categories, subcategories, transactions });
+                await api.save({ wallets, categories, subcategories, transactions, loans, people });
                 renderCategories();
             };
             const editCategory = async (id, name, type) => {
@@ -1740,7 +2516,7 @@
                 if(category) {
                     category.name = name;
                     category.type = type;
-                    await api.save({ wallets, categories, subcategories, transactions });
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people });
                     renderCategories();
                     populateCategoryDropdowns();
                 }
@@ -1749,7 +2525,7 @@
                 const subcategory = subcategories.find(s => s.id === id);
                 if(subcategory) {
                     subcategory.name = name;
-                    await api.save({ wallets, categories, subcategories, transactions });
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people });
                     renderCategories();
                     populateCategoryDropdowns();
                 }
@@ -1758,9 +2534,30 @@
             const deleteTransaction = async (id) => {
                 const transaction = transactions.find(t => t.id === id);
                 if (transaction) {
+                    // Reverse loan effects if applicable
+                    const loanType = getLoanType(transaction.subcategoryName);
+                    if (loanType) {
+                        const loan = loans.find(l => l.id === transaction.linkedLoanId || l.transactionId === transaction.id);
+                        if (loan) {
+                            if (loanType === 'lent' || loanType === 'borrowed') {
+                                // Remove the loan entirely
+                                loans = loans.filter(l => l.id !== loan.id);
+                            } else {
+                                // Remove repayment from loan
+                                const repaymentIndex = loan.repayments.findIndex(r => r.transactionId === transaction.id);
+                                if (repaymentIndex > -1) {
+                                    const repayment = loan.repayments[repaymentIndex];
+                                    loan.remainingAmount += repayment.amount;
+                                    loan.repayments.splice(repaymentIndex, 1);
+                                    loan.status = loan.remainingAmount >= loan.originalAmount ? 'active' : (loan.remainingAmount > 0 ? 'partial' : 'paid');
+                                }
+                            }
+                        }
+                    }
+                    
                     reverseWalletBalance(transaction);
                     transactions = transactions.filter(t => t.id !== id);
-                    await api.save({ wallets, categories, subcategories, transactions });
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people });
                     renderAll();
                 }
             };
@@ -1774,7 +2571,19 @@
                     document.getElementById('editWallet').value = transaction.walletId; 
                     document.getElementById('editCategory').value = transaction.categoryId; 
                     updateSubcategoryDropdown(transaction.categoryId, editSubcategorySelect_inForm); 
-                    document.getElementById('editSubcategory').value = transaction.subcategoryId; 
+                    document.getElementById('editSubcategory').value = transaction.subcategoryId;
+                    
+                    // Handle loan person in edit
+                    const loanType = getLoanType(transaction.subcategoryName);
+                    if (loanType === 'lent' || loanType === 'borrowed') {
+                        editLoanPersonGroup.classList.add('visible');
+                        editLoanPersonInput.value = transaction.person || '';
+                        updateClearButton(editLoanPersonInput, editClearPersonBtn);
+                    } else {
+                        editLoanPersonGroup.classList.remove('visible');
+                        editLoanPersonInput.value = '';
+                    }
+                    
                     const category = categories.find(c => c.id === transaction.categoryId); 
                     if(category.type === 'transfer') { 
                         editTransferFields_inForm.style.display = 'block'; 
@@ -1796,9 +2605,18 @@
                     transaction.date = document.getElementById('editTransactionDate').value;
                     transaction.walletId = parseInt(document.getElementById('editWallet').value); 
                     transaction.categoryId = parseInt(document.getElementById('editCategory').value); 
-                    transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value); 
+                    transaction.subcategoryId = parseInt(document.getElementById('editSubcategory').value);
+                    
+                    const loanType = getLoanType(transaction.subcategoryName);
+                    if (loanType === 'lent' || loanType === 'borrowed') {
+                        transaction.person = editLoanPersonInput.value.trim() || null;
+                        if (transaction.person) addPerson(transaction.person);
+                    }
+                    
                     const category = categories.find(c => c.id === transaction.categoryId); 
                     const subcategory = subcategories.find(s => s.id === transaction.subcategoryId);
+                    transaction.subcategoryName = subcategory ? subcategory.name : '';
+                    
                     if(category.type === 'transfer') { 
                         transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); 
                         const fromWallet = wallets.find(w => w.id === transaction.walletId); 
@@ -1808,7 +2626,7 @@
                     } else { 
                         updateWalletBalance(transaction.walletId, transaction.amount, category.type, subcategory ? subcategory.name : ''); 
                     } 
-                    await api.save({ wallets, categories, subcategories, transactions }); 
+                    await api.save({ wallets, categories, subcategories, transactions, loans, people }); 
                     renderAll(); 
                     hideModal('editModal'); 
                 } 
@@ -1820,6 +2638,7 @@
                 renderBudgetRule();
                 renderTransactions(); 
                 renderCharts(); 
+                renderLoans();
                 populateSummaryFilter();
             };
 
@@ -1981,6 +2800,8 @@
                     categories = data.categories;
                     subcategories = data.subcategories;
                     transactions = data.transactions;
+                    loans = data.loans || [];
+                    people = data.people || [];
                     renderAll();
                     renderCategories();
                     populateCategoryDropdowns();
@@ -1997,11 +2818,15 @@
                 localStorage.removeItem('advTrackerCategories');
                 localStorage.removeItem('advTrackerSubcategories');
                 localStorage.removeItem('advTrackerTransactions');
+                localStorage.removeItem('advTrackerLoans');
+                localStorage.removeItem('advTrackerPeople');
                 wallets = JSON.parse(JSON.stringify(defaultWallets));
                 categories = defaultCategories;
                 subcategories = defaultSubcategories;
                 transactions = [];
-                await api.save({ wallets, categories, subcategories, transactions });
+                loans = [];
+                people = [];
+                await api.save({ wallets, categories, subcategories, transactions, loans, people });
                 renderAll();
                 renderCategories();
                 populateCategoryDropdowns();
@@ -2010,7 +2835,7 @@
             };
 
             const downloadCSV = (transactionsToDownload) => {
-                const headers = ['Date', 'Description', 'Amount', 'Wallet', 'Category', 'Subcategory'];
+                const headers = ['Date', 'Description', 'Amount', 'Wallet', 'Category', 'Subcategory', 'Person'];
                 const csvContent = [
                     headers.join(','),
                     ...transactionsToDownload.map(t => {
@@ -2023,7 +2848,8 @@
                             t.amount,
                             `"${wallet ? wallet.name : 'N/A'}"`,
                             `"${category ? category.name : 'N/A'}"`,
-                            `"${subcategory ? subcategory.name : 'N/A'}"`
+                            `"${subcategory ? subcategory.name : 'N/A'}"`,
+                            `"${t.person || ''}"`
                         ].join(',');
                     })
                 ].join('\n');
@@ -2045,6 +2871,8 @@
             categories = data.categories;
             subcategories = data.subcategories;
             transactions = data.transactions;
+            loans = data.loans || [];
+            people = data.people || [];
 
             document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
 
@@ -2053,12 +2881,26 @@
             populateCategoryDropdowns();
             updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
 
+            // Setup person auto-suggest
+            setupPersonAutoSuggest(loanPersonInput, personSuggestions, clearPersonBtn);
+            setupPersonAutoSuggest(editLoanPersonInput, editPersonSuggestions, editClearPersonBtn);
+
             // --- Event Listeners ---
             navItems.forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetId = item.getAttribute('data-target');
                     switchView(targetId);
+                });
+            });
+
+            // Loan Tab Switching
+            loanTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    loanTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentLoanTab = tab.dataset.tab;
+                    renderLoans();
                 });
             });
 
@@ -2082,7 +2924,7 @@
             // Reset Data Listener
             resetAllDataBtn.addEventListener('click', () => {
                 showDeleteConfirmation(
-                    "WARNING: This will permanently delete ALL your data (wallets, transactions, categories). This action cannot be undone. Are you absolutely sure?",
+                    "WARNING: This will permanently delete ALL your data (wallets, transactions, categories, loans, people). This action cannot be undone. Are you absolutely sure?",
                     handleResetAllData
                 );
             });
@@ -2153,6 +2995,14 @@
                 if (selectedCategory && selectedCategory.type === 'transfer') { transferFields.style.display = 'block'; } else { transferFields.style.display = 'none'; }
                 updateSubcategoryDropdown(categorySelect.value, subcategorySelect);
             });
+            
+            subcategorySelect.addEventListener('change', () => {
+                const subcategory = subcategories.find(s => s.id == subcategorySelect.value);
+                if (subcategory) {
+                    handleLoanFields(subcategory.name);
+                }
+            });
+            
             editCategorySelect_inForm.addEventListener('change', () => {
                 const selectedCategory = categories.find(c => c.id == editCategorySelect_inForm.value);
                 if (selectedCategory && selectedCategory.type === 'transfer') { editTransferFields_inForm.style.display = 'block'; } else { editTransferFields_inForm.style.display = 'none'; }
