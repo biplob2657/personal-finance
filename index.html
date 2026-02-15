@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Finance</title>
     <!-- Chart.js Library -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* --- Basic Reset & Mobile-First Styling --- */
         :root {
@@ -1453,7 +1453,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CONFIGURATION ---
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec    ';
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWPsjs0tYMKTp6CMZ8XhKboYRvqROTvBDLn8cTaOgqxsW-5rev-CSajbrIYpVKLJU/exec     ';
 
             // --- DOM Elements ---
             const navItems = document.querySelectorAll('.nav-item');
@@ -2260,47 +2260,63 @@
                 document.getElementById('savingsBar').className = `budget-bar savings ${savingsActual < (savingsTarget * 0.8) ? 'over-budget' : ''}`;
             };
 
+            // FIXED: Updated renderSummary function to properly calculate loan totals
             const renderSummary = (transactionsToRender = transactions) => {
                 let totalIncome = 0, totalExpense = 0, totalSavings = 0;
                 
-                // Calculate from loans array (new system)
+                // Calculate loan totals from transactions (primary method)
                 let totalLentOutstanding = 0;
                 let totalBorrowedOutstanding = 0;
                 
-                loans.forEach(loan => {
-                    if (loan.type === 'lent' && loan.status !== 'paid') {
-                        totalLentOutstanding += loan.remainingAmount;
-                    } else if (loan.type === 'borrowed' && loan.status !== 'paid') {
-                        totalBorrowedOutstanding += loan.remainingAmount;
+                // Process all transactions to calculate loan balances
+                transactionsToRender.forEach(t => {
+                    const category = categories.find(c => c.id === t.categoryId);
+                    const subcategory = subcategories.find(s => s.id === t.subcategoryId);
+                    if (!category || !subcategory) return;
+                    
+                    const subName = subcategory.name.toLowerCase();
+                    const amount = t.amount;
+                    
+                    // Lent Money: You gave money to someone (Asset - they owe you)
+                    if (subName === 'lent money') {
+                        totalLentOutstanding += amount;
+                    } 
+                    // Loan Received Back: Someone paid you back (reduces what they owe you)
+                    else if (subName === 'loan received back') {
+                        totalLentOutstanding -= amount;
+                    } 
+                    // Borrowed Money: You received money from someone (Liability - you owe them)
+                    else if (subName === 'borrowed money') {
+                        totalBorrowedOutstanding += amount;
+                    } 
+                    // Loan Repaid: You paid back money you borrowed (reduces what you owe)
+                    else if (subName === 'loan repaid') {
+                        totalBorrowedOutstanding -= amount;
                     }
                 });
                 
-                // FALLBACK: Calculate from transactions (old system) if loans array is empty
-                // This ensures old records still show in summary
-                if (totalLentOutstanding === 0 && totalBorrowedOutstanding === 0) {
-                    transactionsToRender.forEach(t => {
-                        const category = categories.find(c => c.id === t.categoryId);
-                        const subcategory = subcategories.find(s => s.id === t.subcategoryId);
-                        if (!category || !subcategory) return;
-                        
-                        const subName = subcategory.name.toLowerCase();
-                        
-                        if (subName === 'lent money') {
-                            totalLentOutstanding += t.amount;
-                        } else if (subName === 'loan received back') {
-                            totalLentOutstanding -= t.amount;
-                        } else if (subName === 'borrowed money') {
-                            totalBorrowedOutstanding += t.amount;
-                        } else if (subName === 'loan repaid') {
-                            totalBorrowedOutstanding -= t.amount;
+                // Also check the loans array for any additional tracking (supplementary)
+                // This ensures compatibility with both old and new loan records
+                loans.forEach(loan => {
+                    if (loan.type === 'lent' && loan.status !== 'paid') {
+                        // Only add if not already counted (avoid double counting)
+                        const loanTransaction = transactionsToRender.find(t => t.id === loan.transactionId);
+                        if (!loanTransaction) {
+                            totalLentOutstanding += loan.remainingAmount;
                         }
-                    });
-                    
-                    // Ensure not negative (data inconsistency protection)
-                    if (totalLentOutstanding < 0) totalLentOutstanding = 0;
-                    if (totalBorrowedOutstanding < 0) totalBorrowedOutstanding = 0;
-                }
+                    } else if (loan.type === 'borrowed' && loan.status !== 'paid') {
+                        const loanTransaction = transactionsToRender.find(t => t.id === loan.transactionId);
+                        if (!loanTransaction) {
+                            totalBorrowedOutstanding += loan.remainingAmount;
+                        }
+                    }
+                });
+                
+                // Ensure values don't go negative (data consistency protection)
+                totalLentOutstanding = Math.max(0, totalLentOutstanding);
+                totalBorrowedOutstanding = Math.max(0, totalBorrowedOutstanding);
 
+                // Calculate income, expense, and savings
                 transactionsToRender.forEach(t => {
                     const category = categories.find(c => c.id === t.categoryId);
                     if (!category) return;
