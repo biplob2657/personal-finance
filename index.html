@@ -1068,6 +1068,18 @@
         .missing-person-warning::before {
             content: '⚠️';
         }
+
+        /* Debug info */
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 0.85em;
+            color: #6c757d;
+        }
     </style>
 <base target="_blank">
 </head>
@@ -1106,6 +1118,7 @@
                         <button class="loan-tab active" data-tab="lent">Money Lent Out</button>
                         <button class="loan-tab" data-tab="borrowed">Money Borrowed</button>
                     </div>
+                    <div id="debugLoanInfo" class="debug-info" style="display: none;"></div>
                     <div id="loanList" class="loan-list"></div>
                 </div>
 
@@ -1480,6 +1493,7 @@
             const loanLinkSelect = document.getElementById('loanLink');
             const loanList = document.getElementById('loanList');
             const loanTabs = document.querySelectorAll('.loan-tab');
+            const debugLoanInfo = document.getElementById('debugLoanInfo');
             let currentLoanTab = 'lent';
             
             // Person Auto-suggest Elements
@@ -1837,7 +1851,7 @@
             // --- Loan Tracking Functions ---
             const getLoanType = (subcategoryName) => {
                 if (!subcategoryName) return null;
-                const name = subcategoryName.toLowerCase();
+                const name = subcategoryName.toLowerCase().trim();
                 if (name === 'lent money') return 'lent';
                 if (name === 'borrowed money') return 'borrowed';
                 if (name === 'loan repaid') return 'repaid';
@@ -1850,7 +1864,17 @@
             };
 
             const createLoan = (transaction) => {
+                // Debug log
+                console.log('Creating loan for transaction:', transaction);
+                
                 const loanType = getLoanType(transaction.subcategoryName);
+                console.log('Detected loan type:', loanType);
+                
+                if (!loanType || (loanType !== 'lent' && loanType !== 'borrowed')) {
+                    console.log('Not a loan creation type, skipping');
+                    return null;
+                }
+                
                 const isLent = loanType === 'lent';
                 
                 const loan = {
@@ -1865,19 +1889,23 @@
                     repayments: []
                 };
                 
+                console.log('Created loan:', loan);
                 loans.push(loan);
                 
                 // Add person to people list
-                addPerson(transaction.person);
+                if (transaction.person) {
+                    addPerson(transaction.person);
+                }
                 
                 return loan;
             };
 
             const findLoanByPerson = (person, type) => {
+                if (!person) return null;
                 return loans.find(l => 
                     l.person.toLowerCase() === person.toLowerCase() && 
                     l.type === type && 
-                    l.status === 'active'
+                    l.status !== 'paid'
                 );
             };
 
@@ -1886,14 +1914,18 @@
                 const isReceivedBack = loanType === 'received'; // Someone paid me back
                 const isRepaid = loanType === 'repaid'; // I paid back someone
                 
+                console.log('Processing repayment:', { loanType, isReceivedBack, isRepaid, linkedLoanId });
+                
                 let loan = null;
                 
                 if (linkedLoanId) {
                     loan = loans.find(l => l.id == linkedLoanId);
+                    console.log('Found loan by ID:', loan);
                 } else if (transaction.person) {
                     // Auto-find by person
                     const searchType = isReceivedBack ? 'lent' : 'borrowed';
                     loan = findLoanByPerson(transaction.person, searchType);
+                    console.log('Found loan by person:', loan);
                 }
                 
                 if (loan) {
@@ -1912,7 +1944,10 @@
                     }
                     
                     transaction.linkedLoanId = loan.id;
+                    console.log('Updated loan after repayment:', loan);
                     return loan;
+                } else {
+                    console.warn('No loan found for repayment');
                 }
                 
                 return null;
@@ -1939,15 +1974,27 @@
             };
 
             const renderLoans = () => {
+                console.log('Rendering loans. Current tab:', currentLoanTab);
+                console.log('All loans:', loans);
+                
+                // Show debug info
+                const lentCount = loans.filter(l => l.type === 'lent').length;
+                const borrowedCount = loans.filter(l => l.type === 'borrowed').length;
+                debugLoanInfo.style.display = 'block';
+                debugLoanInfo.innerHTML = `Total: ${loans.length} loans | Lent: ${lentCount} | Borrowed: ${borrowedCount} | Current view: ${currentLoanTab}`;
+                
                 const filteredLoans = loans.filter(l => {
                     if (currentLoanTab === 'lent') return l.type === 'lent';
-                    return l.type === 'borrowed';
+                    if (currentLoanTab === 'borrowed') return l.type === 'borrowed';
+                    return false;
                 });
+
+                console.log('Filtered loans:', filteredLoans);
 
                 loanList.innerHTML = '';
                 
                 if (filteredLoans.length === 0) {
-                    loanList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No loans found. Add person names to your loan transactions to see them here.</p>';
+                    loanList.innerHTML = `<p style="text-align: center; color: #6c757d; padding: 20px;">No ${currentLoanTab} loans found. Add person names to your loan transactions to see them here.</p>`;
                     return;
                 }
 
@@ -2499,6 +2546,8 @@
                 const person = loanPersonInput.value.trim();
                 const linkedLoanId = loanLinkSelect.value;
                 
+                console.log('Adding transaction:', { description, amount, subcategory: subcategory?.name, person, linkedLoanId });
+                
                 let newTransaction = { 
                     id: Date.now(), 
                     description, 
@@ -2514,6 +2563,8 @@
 
                 // Process loan logic
                 const loanType = getLoanType(subcategory ? subcategory.name : '');
+                console.log('Loan type detected:', loanType);
+                
                 if (loanType === 'lent' || loanType === 'borrowed') {
                     if (!person) {
                         alert('Please enter a person name for loan transactions');
@@ -2697,19 +2748,22 @@
                         const oldPerson = transaction.person;
                         
                         transaction.person = newPerson || null;
+                        transaction.subcategoryName = subcategory ? subcategory.name : '';
                         
                         // If person was added or changed, update loans
-                        if (newPerson && newPerson !== oldPerson) {
+                        if (newPerson && (newPerson !== oldPerson || !oldPerson)) {
                             addPerson(newPerson);
                             
-                            // If this was a new loan (lent/borrowed), create loan record
+                            // Check if this is a lent or borrowed transaction
                             if (loanType === 'lent' || loanType === 'borrowed') {
                                 // Check if loan already exists for this transaction
                                 const existingLoan = loans.find(l => l.transactionId === transaction.id);
                                 if (!existingLoan) {
+                                    console.log('Creating new loan from edit');
                                     createLoan(transaction);
                                 } else {
                                     // Update existing loan person
+                                    console.log('Updating existing loan person');
                                     existingLoan.person = newPerson;
                                 }
                             }
@@ -2717,7 +2771,6 @@
                     }
                     
                     const category = categories.find(c => c.id === transaction.categoryId); 
-                    transaction.subcategoryName = subcategory ? subcategory.name : '';
                     
                     if(category.type === 'transfer') { 
                         transaction.toWalletId = parseInt(document.getElementById('editToWallet').value); 
@@ -2976,6 +3029,9 @@
             loans = data.loans || [];
             people = data.people || [];
 
+            console.log('Initial load - Loans:', loans);
+            console.log('Initial load - Transactions:', transactions);
+
             document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
 
             renderAll();
@@ -2996,12 +3052,14 @@
                 });
             });
 
-            // Loan Tab Switching
+            // Loan Tab Switching - FIXED
             loanTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
+                    console.log('Tab clicked:', tab.dataset.tab);
                     loanTabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
                     currentLoanTab = tab.dataset.tab;
+                    console.log('Current loan tab set to:', currentLoanTab);
                     renderLoans();
                 });
             });
