@@ -1122,7 +1122,7 @@ function renderAll(){
 // ============================================================
 function initDashboard(){
   const h=new Date().getHours();
-  const g=h<12?'Good morning':'h<17?'Good afternoon':'Good evening';
+  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   document.getElementById('dashGreeting').textContent=(h<12?'Good morning 🌅':h<17?'Good afternoon ☀️':'Good evening 🌙')+' '+(document.getElementById('userDisplayName').textContent.split(' ')[0]);
   document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
