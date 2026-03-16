@@ -681,7 +681,15 @@ let uid=null;
 async function save(){
   if(!uid)return;
   setSS("busy");
-  try{await window._fb.setDoc(window._fb.doc(window._db,"users",uid),{W,C,SC,TX,LN,PP,GL});setSS("ok");}
+  try{
+      await window._fb.setDoc(window._fb.doc(window._db,"users",uid),{
+        // New keys
+        W,C,SC,TX,LN,PP,GL,
+        // Old keys (for backward compatibility with existing Firebase data)
+        wallets:W,categories:C,subcategories:SC,transactions:TX,loans:LN,people:PP,goals:GL
+      });
+      setSS("ok");
+    }
   catch(e){setSS("err");}
 }
 async function load(id){
@@ -724,7 +732,16 @@ document.addEventListener("fbready",()=>{
       document.getElementById("uav").textContent=n.charAt(0).toUpperCase();
       document.getElementById("semail").textContent=user.email;
       const d=await load(uid);
-      if(d){W=d.W||JSON.parse(JSON.stringify(DW));C=d.C||JSON.parse(JSON.stringify(DC));SC=d.SC||JSON.parse(JSON.stringify(DSC));TX=d.TX||[];LN=d.LN||[];PP=d.PP||[];GL=d.GL||JSON.parse(JSON.stringify(DGL));}
+      if(d){
+        // Try old Firebase keys first (wallets, categories etc), then new keys (W, C etc)
+        W=d.wallets||d.W||JSON.parse(JSON.stringify(DW));
+        C=d.categories||d.C||JSON.parse(JSON.stringify(DC));
+        SC=d.subcategories||d.SC||JSON.parse(JSON.stringify(DSC));
+        TX=d.transactions||d.TX||[];
+        LN=d.loans||d.LN||[];
+        PP=d.people||d.PP||[];
+        GL=d.goals||d.GL||JSON.parse(JSON.stringify(DGL));
+      }
       else{W=JSON.parse(JSON.stringify(DW));C=JSON.parse(JSON.stringify(DC));SC=JSON.parse(JSON.stringify(DSC));TX=[];LN=[];PP=[];GL=JSON.parse(JSON.stringify(DGL));}
       document.getElementById("tt").value=td();
       initDash();
