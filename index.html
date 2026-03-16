@@ -242,7 +242,7 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 .progress-fill.accent{background:linear-gradient(90deg,var(--accent),var(--purple))}
 .progress-label{display:flex;justify-content:space-between;margin-top:6px;font-size:0.75rem;color:var(--text-muted)}
 
-/* Budget 50/30/20 */
+
 .budget-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px}
 .budget-cat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;transition:all var(--transition)}
 .budget-cat-card:hover{box-shadow:var(--shadow-md)}
@@ -496,6 +496,7 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
       <a class="nav-item" data-page="add"><span class="nav-icon">➕</span> Add Transaction</a>
       <a class="nav-item" data-page="history"><span class="nav-icon">📜</span> History</a>
       <a class="nav-item" data-page="loans"><span class="nav-icon">🤝</span> Loan Tracker</a>
+      <a class="nav-item" data-page="loanhistory"><span class="nav-icon">📋</span> Lend/Borrow History</a>
 
       <div class="nav-section-label">Settings</div>
       <a class="nav-item" data-page="categories"><span class="nav-icon">🏷️</span> Categories</a>
@@ -528,35 +529,6 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
           <div class="stat-card lent"><div class="stat-icon">📤</div><div class="stat-label">Lent Out</div><div class="stat-value" id="totalLent">৳0</div></div>
           <div class="stat-card borrowed"><div class="stat-icon">📥</div><div class="stat-label">Borrowed</div><div class="stat-value" id="totalBorrowed">৳0</div></div>
         </div>
-
-        <!-- 50/30/20 Rule -->
-        <div class="card section-gap">
-          <div class="card-pad">
-            <div class="card-header">
-              <span class="card-title">50/30/20 Budget Rule</span>
-              <span id="budgetStatusBadge" class="budget-status-badge ok">✓ On Track</span>
-            </div>
-            <div class="budget-grid">
-              <div class="budget-cat-card">
-                <div class="budget-cat-top"><span class="budget-cat-title">🛡️ Needs (50%)</span><span class="budget-cat-pct text-red" id="needsPercentage">0%</span></div>
-                <div class="progress-bar"><div class="progress-fill red" id="needsBar" style="width:0%"></div></div>
-                <div class="progress-label"><span>৳<span id="needsActual">0</span> spent</span><span>Target: ৳<span id="needsTarget">0</span></span></div>
-                <div class="budget-status-badge ok" id="needsVarianceBadge">৳0 remaining</div>
-              </div>
-              <div class="budget-cat-card">
-                <div class="budget-cat-top"><span class="budget-cat-title">🎯 Wants (30%)</span><span class="budget-cat-pct text-amber" id="wantsPercentage">0%</span></div>
-                <div class="progress-bar"><div class="progress-fill amber" id="wantsBar" style="width:0%"></div></div>
-                <div class="progress-label"><span>৳<span id="wantsActual">0</span> spent</span><span>Target: ৳<span id="wantsTarget">0</span></span></div>
-                <div class="budget-status-badge ok" id="wantsVarianceBadge">৳0 remaining</div>
-              </div>
-              <div class="budget-cat-card">
-                <div class="budget-cat-top"><span class="budget-cat-title">💰 Savings (20%)</span><span class="budget-cat-pct text-green" id="savingsPercentage">0%</span></div>
-                <div class="progress-bar"><div class="progress-fill green" id="savingsBar" style="width:0%"></div></div>
-                <div class="progress-label"><span>৳<span id="savingsActual">0</span> saved</span><span>Target: ৳<span id="savingsTarget">0</span></span></div>
-                <div class="budget-status-badge ok" id="savingsVarianceBadge">৳0 remaining</div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Charts -->
@@ -691,6 +663,54 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
           <button class="loan-tab" data-loan-tab="borrowed">📥 Money Borrowed</button>
         </div>
         <div id="loansList"></div>
+      </div>
+
+
+      <!-- LEND & BORROW HISTORY -->
+      <div class="page" id="page-loanhistory">
+        <div class="page-header">
+          <div class="page-title">Lend &amp; Borrow History 📋</div>
+          <div class="page-subtitle">Complete history of all lending and borrowing transactions</div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px">
+          <div class="stat-card lent">
+            <div class="stat-icon">📤</div>
+            <div class="stat-label">Total Lent</div>
+            <div class="stat-value" id="lhTotalLent">৳0</div>
+          </div>
+          <div class="stat-card borrowed">
+            <div class="stat-icon">📥</div>
+            <div class="stat-label">Total Borrowed</div>
+            <div class="stat-value" id="lhTotalBorrowed">৳0</div>
+          </div>
+          <div class="stat-card income">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Recovered</div>
+            <div class="stat-value" id="lhTotalRecovered">৳0</div>
+          </div>
+          <div class="stat-card expense">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-label">Still Due</div>
+            <div class="stat-value" id="lhTotalDue">৳0</div>
+          </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="loan-tabs" style="margin-bottom:16px">
+          <button class="loan-tab active" data-lh-tab="all">All</button>
+          <button class="loan-tab" data-lh-tab="lent">📤 Lent Out</button>
+          <button class="loan-tab" data-lh-tab="borrowed">📥 Borrowed</button>
+          <button class="loan-tab" data-lh-tab="repaid">✅ Repaid/Returned</button>
+        </div>
+
+        <!-- Person search -->
+        <div style="margin-bottom:16px">
+          <input class="field-input" type="text" id="lhPersonSearch" placeholder="🔍 Search by person name..." oninput="renderLoanHistory()" style="max-width:320px">
+        </div>
+
+        <div id="loanHistoryList"></div>
       </div>
 
       <!-- CATEGORIES -->
@@ -1093,6 +1113,7 @@ function switchPage(id){
   if(id==='dashboard')renderDashboard();
   if(id==='goals')renderGoals();
   if(id==='loans')renderLoans();
+  if(id==='loanhistory')renderLoanHistory();
   if(id==='wallets')renderWallets();
   if(id==='categories')renderCategories();
   document.getElementById('mainContent').scrollTop=0;
@@ -1127,17 +1148,6 @@ const walletById=id=>wallets.find(w=>w.id==id);
 const walletEmoji=type=>({bank:'🏦',cash:'💵',mobile:'📱',investment:'📈',credit_card:'💳'}[type]||'💰');
 
 const getLoanType=name=>{if(!name)return null;const n=name.toLowerCase().trim();if(n==='lent money')return 'lent';if(n==='borrowed money')return 'borrowed';if(n==='loan repaid')return 'repaid';if(n==='loan received back')return 'received';return null;};
-const getBudgetBucket=(catId,subName,catName)=>{
-  const s=(subName||'').toLowerCase(),c=(catName||'').toLowerCase();
-  const savKw=['savings','investment','dps','fd','emergency','retirement'];
-  const needsKw=['rent','house','utilities','food','groceries','medical','health','education','transport','loan payment'];
-  const wantsKw=['shopping','entertainment','dining','travel','hobby'];
-  if(catId===2||savKw.some(k=>s.includes(k)||c.includes(k)))return 'savings';
-  if(needsKw.some(k=>s.includes(k)))return 'needs';
-  if(wantsKw.some(k=>s.includes(k)))return 'wants';
-  if(c.includes('expense'))return 'wants';
-  return null;
-};
 
 // Month filter
 function populateMonthFilter(){
@@ -1207,50 +1217,11 @@ function renderDashboard(){
   document.getElementById('netWorth').textContent=fmt(nw);
   document.getElementById('totalLent').textContent=fmt(lentOut);
   document.getElementById('totalBorrowed').textContent=fmt(borrowed);
-  renderBudgetRule(txs);
   renderCharts(txs);
   renderRecentTx();
 }
 
-function renderBudgetRule(txs){
-  let income=0,n=0,w=0,s=0;
-  txs.forEach(t=>{
-    const cat=catById(t.categoryId),sub=subcatById(t.subcategoryId);
-    if(!cat)return;
-    if(cat.type==='income'){income+=t.amount;return;}
-    if(cat.type!=='expense')return;
-    const bucket=getBudgetBucket(t.categoryId,sub?sub.name:'',cat.name);
-    if(bucket==='needs')n+=t.amount;
-    else if(bucket==='wants')w+=t.amount;
-    else if(bucket==='savings')s+=t.amount;
-  });
-  const nt=income*.5,wt=income*.3,st=income*.2;
-  const np=income>0?(n/income*100).toFixed(1):0;
-  const wp=income>0?(w/income*100).toFixed(1):0;
-  const sp=income>0?(s/income*100).toFixed(1):0;
-  document.getElementById('needsActual').textContent=Math.round(n).toLocaleString();
-  document.getElementById('needsTarget').textContent=Math.round(nt).toLocaleString();
-  document.getElementById('needsPercentage').textContent=np+'%';
-  document.getElementById('needsBar').style.width=Math.min(np,100)+'%';
-  document.getElementById('wantsActual').textContent=Math.round(w).toLocaleString();
-  document.getElementById('wantsTarget').textContent=Math.round(wt).toLocaleString();
-  document.getElementById('wantsPercentage').textContent=wp+'%';
-  document.getElementById('wantsBar').style.width=Math.min(wp,100)+'%';
-  document.getElementById('savingsActual').textContent=Math.round(s).toLocaleString();
-  document.getElementById('savingsTarget').textContent=Math.round(st).toLocaleString();
-  document.getElementById('savingsPercentage').textContent=sp+'%';
-  document.getElementById('savingsBar').style.width=Math.min(sp,100)+'%';
-  const uv=(id,variance)=>{
-    const el=document.getElementById(id);
-    if(variance>=0){el.textContent='৳'+Math.round(Math.abs(variance)).toLocaleString()+' remaining';el.className='budget-status-badge ok';}
-    else{el.textContent='৳'+Math.round(Math.abs(variance)).toLocaleString()+' over';el.className='budget-status-badge over';}
-  };
-  uv('needsVarianceBadge',nt-n);uv('wantsVarianceBadge',wt-w);uv('savingsVarianceBadge',st-s);
-  const over=n>nt||w>wt||s<st*.5;
-  const badge=document.getElementById('budgetStatusBadge');
-  badge.textContent=over?'⚠️ Adjust Needed':'✓ On Track';
-  badge.className='budget-status-badge '+(over?'over':'ok');
-}
+
 
 function renderCharts(txs){
   txs=txs||getFilteredTx();
@@ -1710,6 +1681,139 @@ function confirmReset(){
     transactions=[];loans=[];people=[];goals=JSON.parse(JSON.stringify(defGoals));
     await saveData();renderAll();showToast('Data reset successfully','info');
   });
+}
+
+
+// ============================================================
+//  LEND & BORROW HISTORY
+// ============================================================
+let currentLHTab = 'all';
+document.querySelectorAll('.loan-tab[data-lh-tab]').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.loan-tab[data-lh-tab]').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentLHTab=tab.getAttribute('data-lh-tab');
+    renderLoanHistory();
+  });
+});
+
+function renderLoanHistory(){
+  const search=(document.getElementById('lhPersonSearch')||{value:''}).value.toLowerCase().trim();
+
+  // Calculate summary totals
+  let totalLent=0,totalBorrowed=0,totalRecovered=0,totalDue=0;
+  transactions.forEach(t=>{
+    const sub=subcatById(t.subcategoryId);if(!sub)return;
+    const sn=sub.name.toLowerCase();
+    if(sn==='lent money')totalLent+=t.amount;
+    if(sn==='borrowed money')totalBorrowed+=t.amount;
+    if(sn==='loan received back')totalRecovered+=t.amount;
+    if(sn==='loan repaid')totalRecovered+=t.amount;
+  });
+  loans.forEach(l=>{if(l.status!=='paid')totalDue+=l.remainingAmount;});
+
+  const el=document.getElementById('lhTotalLent');if(el)el.textContent=fmt(totalLent);
+  const el2=document.getElementById('lhTotalBorrowed');if(el2)el2.textContent=fmt(totalBorrowed);
+  const el3=document.getElementById('lhTotalRecovered');if(el3)el3.textContent=fmt(totalRecovered);
+  const el4=document.getElementById('lhTotalDue');if(el4)el4.textContent=fmt(totalDue);
+
+  // Get loan transactions
+  const loanSubNames=['lent money','borrowed money','loan repaid','loan received back'];
+  let loanTxs=transactions.filter(t=>{
+    const sub=subcatById(t.subcategoryId);
+    return sub&&loanSubNames.includes(sub.name.toLowerCase());
+  });
+
+  // Filter by tab
+  if(currentLHTab==='lent') loanTxs=loanTxs.filter(t=>{const sub=subcatById(t.subcategoryId);return sub&&sub.name.toLowerCase()==='lent money';});
+  else if(currentLHTab==='borrowed') loanTxs=loanTxs.filter(t=>{const sub=subcatById(t.subcategoryId);return sub&&sub.name.toLowerCase()==='borrowed money';});
+  else if(currentLHTab==='repaid') loanTxs=loanTxs.filter(t=>{const sub=subcatById(t.subcategoryId);return sub&&(sub.name.toLowerCase()==='loan repaid'||sub.name.toLowerCase()==='loan received back');});
+
+  // Filter by person search
+  if(search) loanTxs=loanTxs.filter(t=>(t.person||'').toLowerCase().includes(search));
+
+  // Sort by date desc
+  loanTxs.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const listEl=document.getElementById('loanHistoryList');
+  if(!listEl)return;
+
+  if(!loanTxs.length){
+    listEl.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No transactions found</div><div class="empty-sub">Lend/borrow transactions will appear here</div></div>`;
+    return;
+  }
+
+  // Group by person
+  const byPerson={};
+  loanTxs.forEach(t=>{
+    const person=t.person||'Unknown';
+    if(!byPerson[person])byPerson[person]=[];
+    byPerson[person].push(t);
+  });
+
+  listEl.innerHTML=Object.entries(byPerson).map(([person,txs])=>{
+    const loan=loans.find(l=>l.person===person&&l.status!=='paid');
+    const totalForPerson=txs.reduce((s,t)=>{
+      const sub=subcatById(t.subcategoryId);
+      const sn=sub?sub.name.toLowerCase():'';
+      if(sn==='lent money'||sn==='borrowed money') return s+t.amount;
+      return s-t.amount;
+    },0);
+
+    const txRows=txs.map(t=>{
+      const sub=subcatById(t.subcategoryId);
+      const sn=sub?sub.name.toLowerCase():'';
+      const isLent=sn==='lent money';
+      const isBorrowed=sn==='borrowed money';
+      const isRecovery=sn==='loan received back';
+      const isRepaid=sn==='loan repaid';
+      const w=walletById(t.walletId);
+      const date=new Date(t.date).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+
+      let typeLabel,typeBg,typeColor,amtColor,amtSign;
+      if(isLent){typeLabel='Lent Out';typeBg='var(--amber-light)';typeColor='var(--amber)';amtColor='var(--red)';amtSign='-';}
+      else if(isBorrowed){typeLabel='Borrowed';typeBg='var(--blue-light)';typeColor='var(--blue)';amtColor='var(--green)';amtSign='+';}
+      else if(isRecovery){typeLabel='Received Back';typeBg='var(--green-light)';typeColor='var(--green)';amtColor='var(--green)';amtSign='+';}
+      else{typeLabel='Repaid';typeBg='var(--teal-light)';typeColor='var(--teal)';amtColor='var(--red)';amtSign='-';}
+
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="width:8px;height:8px;border-radius:50%;background:${typeColor};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:.875rem;font-weight:600;color:var(--text-primary)">${t.description}</span>
+            <span style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);background:${typeBg};color:${typeColor}">${typeLabel}</span>
+          </div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-top:3px">${date} · ${w?w.name:'?'}</div>
+        </div>
+        <div style="font-size:.95rem;font-weight:800;font-family:var(--font-mono);color:${amtColor}">${amtSign}${fmt(t.amount)}</div>
+        <div style="display:flex;gap:4px">
+          <button class="tx-action-btn edit" onclick="openEditTx(${t.id})" title="Edit" style="width:26px;height:26px;font-size:11px">✏️</button>
+          <button class="tx-action-btn del" onclick="deleteTx(${t.id})" title="Delete" style="width:26px;height:26px;font-size:11px">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const loanStatus=loan?`<span style="font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:var(--radius-full);background:var(--red-light);color:var(--red)">⏳ ৳${fmtFull(loan.remainingAmount)} still due</span>`:`<span style="font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:var(--radius-full);background:var(--green-light);color:var(--green)">✅ Settled</span>`;
+
+    return `<div class="card section-gap">
+      <div class="card-pad">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem">${person.charAt(0).toUpperCase()}</div>
+            <div>
+              <div style="font-size:1rem;font-weight:800;color:var(--text-primary)">👤 ${person}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">${txs.length} transaction${txs.length>1?'s':''}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${loanStatus}
+            <span style="font-size:.875rem;font-weight:800;font-family:var(--font-mono);color:${totalForPerson>=0?'var(--green)':'var(--red)'}">${totalForPerson>=0?'+':''}${fmt(Math.abs(totalForPerson))}</span>
+          </div>
+        </div>
+        ${txRows}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ============================================================
