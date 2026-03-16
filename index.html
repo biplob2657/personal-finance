@@ -579,9 +579,12 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 
       <!-- WALLETS -->
       <div class="page" id="page-wallets">
-        <div class="page-header">
-          <div class="page-title">Wallets</div>
-          <div class="page-subtitle">Manage your accounts and balances</div>
+        <div class="page-header flex-between">
+          <div>
+            <div class="page-title">Wallets 💳</div>
+            <div class="page-subtitle">Manage your accounts and balances</div>
+          </div>
+          <button class="btn-sm accent" onclick="openModal(&apos;addWalletModal&apos;)">+ Add Wallet</button>
         </div>
         <div class="wallets-grid" id="walletsGrid"></div>
       </div>
@@ -692,13 +695,64 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 
       <!-- CATEGORIES -->
       <div class="page" id="page-categories">
-        <div class="page-header flex-between">
-          <div>
-            <div class="page-title">Categories</div>
-            <div class="page-subtitle">Manage your transaction categories</div>
-          </div>
-          <button class="btn-sm accent" onclick="openModal('addCatModal')">+ Add Category</button>
+        <div class="page-header">
+          <div class="page-title">Categories &amp; Wallets 🏷️</div>
+          <div class="page-subtitle">Add categories, subcategories and wallets</div>
         </div>
+
+        <!-- Add Wallet inline -->
+        <div class="card section-gap">
+          <div class="card-pad">
+            <div class="card-header"><span class="card-title">➕ Add New Wallet</span></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="flex:1;min-width:140px">
+                <label class="field-label">Wallet Name</label>
+                <input class="field-input" type="text" id="inlineWalletName" placeholder="e.g. DBBL Bank">
+              </div>
+              <div style="flex:1;min-width:140px">
+                <label class="field-label">Type</label>
+                <select class="field-input" id="inlineWalletType">
+                  <option value="bank">🏦 Bank Account</option>
+                  <option value="cash">💵 Cash</option>
+                  <option value="mobile">📱 Mobile (bKash/Nagad)</option>
+                  <option value="investment">📈 Investment</option>
+                  <option value="credit_card">💳 Credit Card</option>
+                </select>
+              </div>
+              <div style="width:130px">
+                <label class="field-label">Initial Balance (৳)</label>
+                <input class="field-input" type="number" id="inlineWalletBalance" value="0" step="0.01">
+              </div>
+              <button class="btn-submit" onclick="saveInlineWallet()" style="padding:11px 20px;font-size:.875rem">+ Add Wallet</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Category inline -->
+        <div class="card section-gap">
+          <div class="card-pad">
+            <div class="card-header"><span class="card-title">➕ Add New Category</span></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="flex:1;min-width:180px">
+                <label class="field-label">Category Name</label>
+                <input class="field-input" type="text" id="newCatName" placeholder="e.g. Business, Travel...">
+              </div>
+              <div style="flex:1;min-width:160px">
+                <label class="field-label">Type</label>
+                <select class="field-input" id="newCatType">
+                  <option value="income">💹 Income</option>
+                  <option value="expense">💸 Expense</option>
+                  <option value="asset">📤 Lent Money (Asset)</option>
+                  <option value="liability">📥 Borrowed Money (Liability)</option>
+                  <option value="transfer">🔄 Transfer</option>
+                </select>
+              </div>
+              <button class="btn-submit" onclick="saveCategory()" style="padding:11px 20px;font-size:.875rem">+ Add Category</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories list -->
         <div id="catList"></div>
       </div>
 
@@ -755,7 +809,7 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
       <button class="mobile-nav-item" data-page="wallets"><span class="mnav-icon">💳</span>Wallets</button>
       <button class="mobile-nav-item" data-page="add"><span class="mnav-icon">➕</span>Add</button>
       <button class="mobile-nav-item" data-page="history"><span class="mnav-icon">📜</span>History</button>
-      <button class="mobile-nav-item" data-page="goals"><span class="mnav-icon">🎯</span>Goals</button>
+      <button class="mobile-nav-item" data-page="categories"><span class="mnav-icon">🏷️</span>Categories</button>
     </div>
   </nav>
 
@@ -1250,6 +1304,18 @@ function renderWalletDropdowns(){
     if(!sel)return;
     sel.innerHTML=wallets.map(w=>`<option value="${w.id}">${walletEmoji(w.type)} ${w.name}</option>`).join('');
   });
+}
+function saveInlineWallet(){
+  const name=document.getElementById('inlineWalletName').value.trim();
+  const type=document.getElementById('inlineWalletType').value;
+  const balance=parseFloat(document.getElementById('inlineWalletBalance').value)||0;
+  if(!name){showToast('Please enter a wallet name','error');return;}
+  if(wallets.some(w=>w.name.toLowerCase()===name.toLowerCase())){showToast('Wallet already exists','error');return;}
+  wallets.push({id:Date.now(),name,type,balance});
+  saveData();renderWallets();renderWalletDropdowns();
+  document.getElementById('inlineWalletName').value='';
+  document.getElementById('inlineWalletBalance').value='0';
+  showToast('Wallet added! 💳','success');
 }
 function saveWallet(){
   const name=document.getElementById('newWalletName').value.trim();
