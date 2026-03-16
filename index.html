@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Personal Finance</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com https://*.firebaseio.com https://*.gstatic.com https://cdn.jsdelivr.net data: blob:;">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{--primary-color:#17a2b8;--success-color:#28a745;--danger-color:#dc3545;--warning-color:#ffc107;--info-color:#17a2b8;--light-color:#f8f9fa;--dark-color:#343a40;--border-color:#dee2e6;--nav-height:60px;--shadow-light:0 2px 5px rgba(0,0,0,0.08);--shadow-medium:0 5px 15px rgba(0,0,0,0.12);--shadow-heavy:0 10px 30px rgba(0,0,0,0.15);--needs-color:#6f42c1;--wants-color:#fd7e14;--savings-color:#20c997}
@@ -392,11 +393,11 @@ button:disabled{background:#6c757d;cursor:not-allowed;transform:none}
 <!-- Firebase SDK -->
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{initializeAuth,browserLocalPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyAPoL5xEQsoqvcKG_T5IcsZDSQAkSYU8wE",authDomain:"personal-finance-4c423.firebaseapp.com",projectId:"personal-finance-4c423",storageBucket:"personal-finance-4c423.firebasestorage.app",messagingSenderId:"554157324802",appId:"1:554157324802:web:d27cbe9e77bbfd3c29451b"};
+const firebaseConfig={apiKey:"AIzaSyBKVlVKz9JwxFm8vAOoQKEDzIUk8x33_IM",authDomain:"personal-finance-4c423.firebaseapp.com",projectId:"personal-finance-4c423",storageBucket:"personal-finance-4c423.firebasestorage.app",messagingSenderId:"554157324802",appId:"1:554157324802:web:d27cbe9e77bbfd3c29451b"};
 const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
+const auth=initializeAuth(app,{persistence:browserLocalPersistence});
 const db=getFirestore(app);
 window._auth=auth;window._db=db;
 window._fbFns={createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,doc,setDoc,getDoc};
