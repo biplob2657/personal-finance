@@ -126,11 +126,11 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 /* ============================================================
    APP LAYOUT
    ============================================================ */
-#appScreen{display:none;height:100vh;overflow:hidden}
-#appScreen.active{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#appScreen{display:none}
+#appScreen.active{display:block}
 
 /* Topbar */
-.topbar{height:var(--topbar-h);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;flex-shrink:0}
+.topbar{height:var(--topbar-h);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:200;flex-shrink:0;position:relative}
 .topbar-left{display:flex;align-items:center;gap:12px}
 .topbar-brand{font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-right{display:flex;align-items:center;gap:10px}
@@ -148,10 +148,10 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 .signout-btn:hover{background:var(--red);color:white}
 
 /* App body */
-.app-body{display:flex;flex:1;overflow:hidden;min-height:0}
+.app-body{display:flex;height:calc(100vh - var(--topbar-h));overflow:hidden}
 
 /* Sidebar */
-.sidebar{width:var(--nav-w);background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;overflow-y:auto}
+.sidebar{width:var(--nav-w);background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;overflow-y:auto;height:100%}
 .nav-section-label{font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);padding:0 8px;margin:16px 0 6px}
 .nav-section-label:first-child{margin-top:4px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);color:var(--text-secondary);font-size:0.875rem;font-weight:500;text-decoration:none;border:1px solid transparent;margin-bottom:2px}
@@ -161,17 +161,17 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 .nav-badge{margin-left:auto;background:var(--accent);color:white;font-size:0.65rem;font-weight:700;padding:2px 6px;border-radius:var(--radius-full)}
 
 /* Main content */
-.main{flex:1;overflow-y:auto;padding:24px;height:100%;position:relative}
-.page{display:none;max-width:1100px;margin:0 auto;animation:fadeUp 0.3s ease-out;width:100%}
-.page.active{display:block}
+.main{flex:1;overflow-y:auto;padding:24px;height:100%}
+.page{display:none;max-width:1100px;margin:0 auto}
+.page.active{display:block;animation:fadeUp 0.3s ease-out}
 .page-header{margin-bottom:24px}
 .page-title{font-size:1.5rem;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary)}
 .page-subtitle{font-size:0.875rem;color:var(--text-secondary);margin-top:4px}
 
 /* Mobile nav */
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,0.08)}
-.mobile-nav-inner{display:flex;justify-content:space-around}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-muted);font-size:0.65rem;font-weight:600;transition:all var(--transition);border:none;background:none;font-family:var(--font-main)}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;width:100%;background:var(--bg-card);border-top:1px solid var(--border);padding:6px 0 8px;z-index:500;box-shadow:0 -2px 10px rgba(0,0,0,0.1)}
+.mobile-nav-inner{display:flex;justify-content:space-around;width:100%}
+.mobile-nav-item{display:flex!important;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;cursor:pointer;color:var(--text-muted);font-size:0.6rem;font-weight:600;transition:all var(--transition);border:none;background:none;font-family:var(--font-main);flex:1}
 .mobile-nav-item.active{color:var(--accent)}
 .mobile-nav-item .mnav-icon{font-size:20px}
 
@@ -385,16 +385,18 @@ body{font-family:var(--font-main);background:var(--bg-base);color:var(--text-pri
 
 /* Responsive */
 @media (max-width: 768px) {
-  .sidebar{display:none}
-  .mobile-nav{display:block}
-  .quick-fab{display:flex}
-  .main{padding:16px;padding-bottom:80px}
+  .sidebar{display:none!important}
+  .mobile-nav{display:block!important}
+  .quick-fab{display:flex!important}
+  .app-body{height:calc(100vh - var(--topbar-h))}
+  .main{padding:16px;padding-bottom:72px;height:100%;overflow-y:auto}
   .charts-grid{grid-template-columns:1fr}
   .form-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .loan-detail-row{grid-template-columns:repeat(2,1fr)}
   .topbar{padding:0 14px}
   .user-name-chip{display:none}
+  .topbar-right .sync-badge{display:none}
 }
 @media (max-width: 480px) {
   .stats-grid{grid-template-columns:1fr 1fr}
@@ -1038,9 +1040,7 @@ async function saveData(){
     await window._fb.setDoc(window._fb.doc(window._db,'users',currentUid),{wallets,categories,subcategories,transactions,loans,people,goals});
     setSyncStatus('synced');
       // Ensure only dashboard is visible on load
-      document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
-      const dash=document.getElementById('page-dashboard');
-      if(dash){dash.classList.add('active');dash.style.display='block';}
+      setTimeout(()=>switchPage('dashboard'), 50);
   }catch(e){setSyncStatus('error');console.error(e);}
 }
 async function loadData(uid){
@@ -1095,9 +1095,7 @@ document.addEventListener('firebase-ready',()=>{
       renderAll();
       setSyncStatus('synced');
       // Ensure only dashboard is visible on load
-      document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
-      const dash=document.getElementById('page-dashboard');
-      if(dash){dash.classList.add('active');dash.style.display='block';}
+      setTimeout(()=>switchPage('dashboard'), 50);
       // Theme toggle label
       const t=document.documentElement.getAttribute('data-theme');
       const ttb=document.getElementById('themeToggleBtn');
@@ -1114,36 +1112,30 @@ document.addEventListener('firebase-ready',()=>{
 //  NAVIGATION
 // ============================================================
 function switchPage(id){
-  // Hide all pages with inline style to override any CSS issues
+  // Hide ALL pages
   document.querySelectorAll('.page').forEach(p=>{
     p.classList.remove('active');
     p.style.display='none';
   });
-  // Show target page
+  // Show only the target page
   const target=document.getElementById('page-'+id);
   if(target){
     target.classList.add('active');
     target.style.display='block';
   }
-  // Update nav active states
-  document.querySelectorAll('.nav-item,.mobile-nav-item').forEach(n=>{
-    n.classList.toggle('active',n.getAttribute('data-page')===id);
+  // Update nav highlights
+  document.querySelectorAll('[data-page]').forEach(n=>{
+    n.classList.toggle('active', n.getAttribute('data-page')===id);
   });
-  // Render page content
-  if(id==='history')renderHistory();
-  else if(id==='dashboard')renderDashboard();
-  else if(id==='goals')renderGoals();
-  else if(id==='loans')renderLoans();
-  else if(id==='loanhistory')renderLoanHistory();
-  else if(id==='wallets')renderWallets();
-  else if(id==='categories')renderCategories();
+  // Render page data
+  const renders={dashboard:renderDashboard,history:renderHistory,goals:renderGoals,loans:renderLoans,loanhistory:renderLoanHistory,wallets:renderWallets,categories:renderCategories};
+  if(renders[id]) renders[id]();
   // Scroll to top
   const mc=document.getElementById('mainContent');
-  if(mc)mc.scrollTop=0;
-  window.scrollTo(0,0);
+  if(mc) mc.scrollTop=0;
 }
-document.querySelectorAll('.nav-item,.mobile-nav-item').forEach(n=>{
-  n.addEventListener('click',e=>{e.preventDefault();switchPage(n.getAttribute('data-page'));});
+document.querySelectorAll('[data-page]').forEach(n=>{
+  n.addEventListener('click',e=>{e.preventDefault();const p=n.getAttribute('data-page');if(p)switchPage(p);});
 });
 
 // ============================================================
