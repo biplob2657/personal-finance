@@ -308,38 +308,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
     <div class="tright">
       <div class="sync"><div class="sdot" id="sdot"></div><span id="stxt">Synced</span></div>
       <button class="ibtn" onclick="toggleTheme()" id="thbtn">🌙</button>
-      <button class="ibtn" onclick="toggleSideMenu()" id="hambtn" style="font-size:18px;font-weight:700">☰</button>
-    </div>
-  </div>
-  <!-- Side menu overlay -->
-  <div id="smoverlay" onclick="closeSideMenu()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:350;backdrop-filter:blur(2px)"></div>
-  <!-- Side menu -->
-  <div id="sidemenu" style="position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);z-index:400;transform:translateX(-260px);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.15)">
-    <!-- User info -->
-    <div style="padding:24px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface2)">
-      <div id="smuav" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:1.1rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">?</div>
-      <div>
-        <div id="smuname" style="font-size:.95rem;font-weight:800;color:var(--t1)">...</div>
-        <div style="font-size:.75rem;color:var(--t3);margin-top:2px">Personal Finance</div>
-      </div>
-    </div>
-    <!-- Nav links -->
-    <div style="flex:1;overflow-y:auto;padding:10px 8px">
-      <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);padding:0 8px;margin:10px 0 4px">Overview</div>
-      <button class="nitem" data-p="dashboard" onclick="closeSideMenu()"><span class="nico">📊</span> Dashboard</button>
-      <button class="nitem" data-p="goals" onclick="closeSideMenu()"><span class="nico">🎯</span> Budget Goals</button>
-      <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);padding:0 8px;margin:10px 0 4px">History</div>
-      <button class="nitem" data-p="history" onclick="closeSideMenu()"><span class="nico">📜</span> History</button>
-      <button class="nitem" data-p="loanhistory" onclick="closeSideMenu()"><span class="nico">📋</span> Lend/Borrow History</button>
-      <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);padding:0 8px;margin:10px 0 4px">Manage</div>
-      <button class="nitem" data-p="categories" onclick="closeSideMenu()"><span class="nico">🏷️</span> Categories</button>
-      <button class="nitem" data-p="settings" onclick="closeSideMenu()"><span class="nico">⚙️</span> Settings</button>
-    </div>
-    <!-- Sign out -->
-    <div style="padding:12px">
-      <button onclick="doOut()" style="width:100%;padding:11px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--r1);color:#ef4444;font-size:.875rem;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s">
-        🚪 Sign Out
-      </button>
+      <div class="uchip"><div class="uav" id="uav">?</div><span class="uname" id="uname">...</span></div>
+      <button class="sbtn" onclick="doOut()">Sign out</button>
     </div>
   </div>
 
@@ -543,13 +513,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
         </div></div>
         <div class="card gap"><div class="cp">
           <div class="ctitle">Account</div>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-            <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:1.2rem;font-weight:800;display:flex;align-items:center;justify-content:center" id="settingsAv">?</div>
-            <div>
-              <div style="font-size:.95rem;font-weight:800;color:var(--t1)" id="settingsName">...</div>
-              <div style="font-size:.8rem;color:var(--t3);margin-top:3px" id="semail">...</div>
-            </div>
-          </div>
+          <div style="font-size:.83rem;color:var(--t2);margin-bottom:3px">Signed in as</div>
+          <div style="font-size:.92rem;font-weight:700" id="semail"></div>
         </div></div>
         <div class="card"><div class="cp">
           <div class="ctitle">Data Management</div>
@@ -565,9 +530,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
   <nav class="mnav">
     <button class="mni on" data-p="dashboard"><span class="mni-ico">📊</span>Home</button>
     <button class="mni" data-p="wallets"><span class="mni-ico">💳</span>Wallets</button>
-    <button class="mni" data-p="add"><span class="mni-ico" style="width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;margin-bottom:1px">➕</span>Add</button>
+    <button class="mni" data-p="add"><span class="mni-ico">➕</span>Add</button>
+    <button class="mni" data-p="history"><span class="mni-ico">📜</span>History</button>
     <button class="mni" data-p="loans"><span class="mni-ico">🤝</span>Loans</button>
-    <button class="mni" id="morebtn" onclick="toggleSideMenu()"><span class="mni-ico">☰</span>More</button>
+    <button class="mni" data-p="categories"><span class="mni-ico">🏷️</span>Manage</button>
   </nav>
 </div>
 
@@ -762,13 +728,9 @@ document.addEventListener("fbready",()=>{
       document.getElementById("auth").style.display="none";
       document.getElementById("app").classList.add("on");
       const n=user.displayName||user.email.split("@")[0];
-      document.getElementById("uname") && (document.getElementById("uname").textContent=n);
-      document.getElementById("uav") && (document.getElementById("uav").textContent=n.charAt(0).toUpperCase());
-      document.getElementById("smuav").textContent=n.charAt(0).toUpperCase();
-      document.getElementById("smuname").textContent=n;
+      document.getElementById("uname").textContent=n;
+      document.getElementById("uav").textContent=n.charAt(0).toUpperCase();
       document.getElementById("semail").textContent=user.email;
-      document.getElementById("settingsAv") && (document.getElementById("settingsAv").textContent=n.charAt(0).toUpperCase());
-      document.getElementById("settingsName") && (document.getElementById("settingsName").textContent=n);
       const d=await load(uid);
       if(d){
         // Try old Firebase keys first (wallets, categories etc), then new keys (W, C etc)
@@ -806,10 +768,6 @@ function go(id){
   const pg=document.getElementById("page-"+id);
   if(pg){pg.classList.add("on");pg.style.display="block";}
   document.querySelectorAll("[data-p]").forEach(n=>n.classList.toggle("on",n.getAttribute("data-p")===id));
-  // keep more btn highlighted if side menu page is active
-  const sidePages=["goals","history","loanhistory","categories","settings"];
-  const moreBtn=document.getElementById("morebtn");
-  if(moreBtn) moreBtn.classList.toggle("on", sidePages.includes(id));
   document.getElementById("content").scrollTop=0;
   const R={dashboard:renderDash,history:renderHistory,goals:renderGoals,loans:renderLoans,loanhistory:renderLH,wallets:renderWallets,categories:renderCats,add:()=>{popCatDrops();renderWallets();document.getElementById('tt').value=td();}};
   if(R[id])R[id]();
@@ -1263,31 +1221,6 @@ function doReset(){
     W=JSON.parse(JSON.stringify(DW));C=JSON.parse(JSON.stringify(DC));SC=JSON.parse(JSON.stringify(DSC));TX=[];LN=[];PP=[];GL=JSON.parse(JSON.stringify(DGL));
     await save();go("dashboard");renderWallets();popCatDrops();renderCats();toast("Data reset","inf");
   });
-}
-
-// ===== SIDE MENU =====
-function toggleSideMenu(){
-  const menu=document.getElementById('sidemenu');
-  const overlay=document.getElementById('smoverlay');
-  const isOpen=menu.style.transform==='translateX(0px)';
-  if(isOpen){
-    menu.style.transform='translateX(-260px)';
-    overlay.style.display='none';
-    // Remove active from more btn
-    document.getElementById('morebtn') && document.getElementById('morebtn').classList.remove('on');
-  }else{
-    menu.style.transform='translateX(0px)';
-    overlay.style.display='block';
-    // Highlight more btn
-    document.getElementById('morebtn') && document.getElementById('morebtn').classList.add('on');
-  }
-}
-function closeSideMenu(){
-  const menu=document.getElementById('sidemenu');
-  const overlay=document.getElementById('smoverlay');
-  menu.style.transform='translateX(-260px)';
-  overlay.style.display='none';
-  document.getElementById('morebtn') && document.getElementById('morebtn').classList.remove('on');
 }
 
 // ===== INITIAL SETUP =====
