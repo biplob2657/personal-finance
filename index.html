@@ -679,13 +679,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
   </div>
 
   <!-- Mobile bottom nav -->
+  <!-- Mobile More Drawer -->
+  <div id="moreOverlay" onclick="closeMoreDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:450;backdrop-filter:blur(2px)"></div>
+  <div id="moreDrawer" style="position:fixed;bottom:-400px;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--border);z-index:460;padding:16px;transition:bottom .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -4px 30px rgba(0,0,0,.2)">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:10px;margin:0 auto 16px"></div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding:0 4px">More Pages</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="nitem" data-p="goals" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">🎯</span> Budget Goals</button>
+      <button class="nitem" data-p="loanhistory" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">📋</span> Lend/Borrow</button>
+      <button class="nitem" data-p="settings" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">⚙️</span> Settings</button>
+      <button class="nitem" data-p="categories" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">🏷️</span> Categories</button>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+
   <nav class="mnav">
     <button class="mni on" data-p="dashboard"><span class="mni-ico">📊</span>Home</button>
     <button class="mni" data-p="wallets"><span class="mni-ico">💳</span>Wallets</button>
     <button class="mni" data-p="add"><span class="mni-ico">➕</span>Add</button>
-    <button class="mni" data-p="history"><span class="mni-ico">📜</span>History</button>
     <button class="mni" data-p="loans"><span class="mni-ico">🤝</span>Loans</button>
-    <button class="mni" data-p="categories"><span class="mni-ico">🏷️</span>Manage</button>
+    <button class="mni" id="moreNavBtn" onclick="openMoreDrawer()"><span class="mni-ico">☰</span>More</button>
   </nav>
 </div>
 
@@ -1025,6 +1038,13 @@ function go(id){
   if(pg){pg.classList.add("on");pg.style.display="block";}
   document.querySelectorAll("[data-p]").forEach(n=>n.classList.toggle("on",n.getAttribute("data-p")===id));
   document.getElementById("content").scrollTop=0;
+  // Close more drawer if open
+  if(document.getElementById("moreDrawer"))document.getElementById("moreDrawer").style.bottom="-400px";
+  if(document.getElementById("moreOverlay"))document.getElementById("moreOverlay").style.display="none";
+  // Highlight more btn if page is in drawer
+  const drawerPages=["goals","loanhistory","settings","categories"];
+  const mb=document.getElementById("moreNavBtn");
+  if(mb)mb.classList.toggle("on",drawerPages.includes(id)&&!["dashboard","wallets","add","loans"].includes(id));
   const R={dashboard:renderDash,history:renderHistory,goals:renderGoals,loans:renderLoans,loanhistory:renderLH,wallets:renderWallets,categories:renderCats,add:()=>{popCatDrops();renderWallets();document.getElementById('tt').value=td();}};
   if(R[id])R[id]();
 }
@@ -1477,6 +1497,18 @@ function doReset(){
     W=JSON.parse(JSON.stringify(DW));C=JSON.parse(JSON.stringify(DC));SC=JSON.parse(JSON.stringify(DSC));TX=[];LN=[];PP=[];GL=JSON.parse(JSON.stringify(DGL));
     await save();go("dashboard");renderWallets();popCatDrops();renderCats();toast("Data reset","inf");
   });
+}
+
+// ===== MORE DRAWER =====
+function openMoreDrawer(){
+  document.getElementById("moreDrawer").style.bottom="0";
+  document.getElementById("moreOverlay").style.display="block";
+  document.getElementById("moreNavBtn").classList.add("on");
+}
+function closeMoreDrawer(){
+  document.getElementById("moreDrawer").style.bottom="-400px";
+  document.getElementById("moreOverlay").style.display="none";
+  document.getElementById("moreNavBtn").classList.remove("on");
 }
 
 // ===== INITIAL SETUP =====
