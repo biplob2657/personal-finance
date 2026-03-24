@@ -266,17 +266,150 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
 @keyframes slideup{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ===== SPLASH SCREEN ===== */
+#splash{position:fixed;inset:0;background:#0a0c14;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease,transform .6s ease}
+#splash.hide{opacity:0;transform:scale(1.04);pointer-events:none}
+.sp-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none}
+.sp-orb1{width:400px;height:400px;background:rgba(99,102,241,.28);top:-100px;right:-80px;animation:spFloat 6s ease-in-out infinite}
+.sp-orb2{width:300px;height:300px;background:rgba(139,92,246,.18);bottom:-80px;left:-60px;animation:spFloat 7s 1s ease-in-out infinite}
+.sp-orb3{width:200px;height:200px;background:rgba(20,184,166,.15);bottom:100px;right:60px;animation:spFloat 5s 2s ease-in-out infinite}
+.sp-grid{position:absolute;inset:0;background-image:radial-gradient(rgba(99,102,241,.12) 1px,transparent 1px);background-size:28px 28px;pointer-events:none}
+.sp-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+.sp-logo-wrap{position:relative;margin-bottom:24px}
+.sp-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(99,102,241,.25);animation:spRing 2.5s ease-out infinite}
+.sp-ring1{inset:-14px;animation-delay:0s}
+.sp-ring2{inset:-28px;animation-delay:.4s}
+.sp-icon{width:88px;height:88px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:26px;display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 0 50px rgba(99,102,241,.5);animation:spIconIn .8s .2s cubic-bezier(.34,1.56,.64,1) both}
+.sp-brand{font-size:3rem;font-weight:900;letter-spacing:-.04em;background:linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#818cf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:spUp .7s .6s ease-out both}
+.sp-tag{font-size:.85rem;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;margin-top:6px;animation:spUp .7s .75s ease-out both}
+.sp-pills{display:flex;gap:8px;margin-top:20px;animation:spUp .6s .9s ease-out both}
+.sp-pill{padding:5px 12px;border-radius:50px;font-size:.72rem;font-weight:700;border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);background:rgba(255,255,255,.03)}
+.sp-loader{margin-top:36px;width:160px;animation:spUp .6s 1s ease-out both}
+.sp-track{height:3px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden}
+.sp-fill{height:100%;width:0;background:linear-gradient(90deg,#6366f1,#a78bfa);border-radius:10px;animation:spLoad 2s 1.1s cubic-bezier(.4,0,.2,1) forwards}
+.sp-ltxt{font-size:.7rem;color:rgba(255,255,255,.2);text-align:center;margin-top:7px;font-weight:600;letter-spacing:.03em}
+@keyframes spFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes spRing{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+@keyframes spIconIn{from{opacity:0;transform:scale(.5) rotate(-15deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes spUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spLoad{0%{width:0}60%{width:72%}80%{width:88%}100%{width:100%}}
+
+/* ===== CURRENCY SCREEN ===== */
+#currScreen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+#currScreen.on{display:flex}
+.curr-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r4);box-shadow:0 8px 40px rgba(0,0,0,.15);padding:32px 28px;width:100%;max-width:420px;animation:spUp .4s ease-out}
+.curr-top{text-align:center;margin-bottom:24px}
+.curr-top-icon{font-size:2.5rem;margin-bottom:10px}
+.curr-top-title{font-size:1.3rem;font-weight:800;letter-spacing:-.02em;color:var(--t1)}
+.curr-top-sub{font-size:.83rem;color:var(--t2);margin-top:5px}
+.curr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.curr-item{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r2);padding:12px;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:10px}
+.curr-item:hover{border-color:var(--accent);background:rgba(99,102,241,.05)}
+.curr-item.sel{border-color:var(--accent);background:rgba(99,102,241,.08);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.curr-flag{font-size:20px;flex-shrink:0}
+.curr-code{font-size:.82rem;font-weight:800;color:var(--t1)}
+.curr-name{font-size:.7rem;color:var(--t2);margin-top:1px}
+.curr-sym{font-size:.9rem;font-weight:800;color:var(--accent);margin-left:auto;flex-shrink:0}
+.curr-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#4f46e5);color:#fff;border:none;border-radius:var(--r1);font-size:.95rem;font-weight:700;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(99,102,241,.3)}
+.curr-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.4)}
+
+/* ===== FORGOT PASSWORD ===== */
+#af-forgot{display:none}
+#af-forgot.on{display:block}
+.fpw-link{font-size:.78rem;color:var(--accent);font-weight:600;cursor:pointer;text-align:right;margin-top:-8px;margin-bottom:14px;display:block;transition:.15s}
+.fpw-link:hover{opacity:.8}
+.fpw-back{font-size:.8rem;color:var(--accent);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;margin-bottom:16px;transition:.15s}
+.fpw-back:hover{opacity:.8}
+.fpw-icon{width:56px;height:56px;background:rgba(99,102,241,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px}
+.fpw-title{font-size:1.1rem;font-weight:800;color:var(--t1);text-align:center;margin-bottom:5px}
+.fpw-sub{font-size:.82rem;color:var(--t2);text-align:center;margin-bottom:18px;line-height:1.6}
+.fpw-success{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:var(--r1);padding:16px;text-align:center;margin-top:12px;display:none;animation:spUp .4s ease-out}
+.fpw-success.on{display:block}
+.fpw-stxt{font-size:.83rem;color:#10b981;font-weight:600;line-height:1.6;margin-top:6px}
+.fpw-serr{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:var(--r1);padding:10px 14px;font-size:.82rem;color:var(--red);font-weight:600;margin-bottom:12px;display:none}
+.fpw-serr.on{display:block}
 </style>
 </head>
 <body>
 
 <!-- AUTH -->
+<!-- ===== SPLASH SCREEN ===== -->
+<div id="splash">
+  <div class="sp-orb sp-orb1"></div>
+  <div class="sp-orb sp-orb2"></div>
+  <div class="sp-orb sp-orb3"></div>
+  <div class="sp-grid"></div>
+  <div class="sp-content">
+    <div class="sp-logo-wrap">
+      <div class="sp-ring sp-ring1"></div>
+      <div class="sp-ring sp-ring2"></div>
+      <div class="sp-icon">💰</div>
+    </div>
+    <div class="sp-brand">HisabOS</div>
+    <div class="sp-tag">Your money, your control</div>
+    <div class="sp-pills">
+      <div class="sp-pill">🔒 Secure</div>
+      <div class="sp-pill">☁️ Cloud Sync</div>
+      <div class="sp-pill">📊 Analytics</div>
+    </div>
+    <div class="sp-loader">
+      <div class="sp-track"><div class="sp-fill"></div></div>
+      <div class="sp-ltxt">Loading your finances...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CURRENCY SELECTOR ===== -->
+<div id="currScreen">
+  <div class="curr-card">
+    <div class="curr-top">
+      <div class="curr-top-icon">💱</div>
+      <div class="curr-top-title">Choose Your Currency</div>
+      <div class="curr-top-sub">You can change this anytime in Settings</div>
+    </div>
+    <div class="curr-grid">
+      <div class="curr-item sel" data-sym="৳" data-code="BDT" onclick="selCurr(this)">
+        <span class="curr-flag">🇧🇩</span><div><div class="curr-code">BDT</div><div class="curr-name">Bangladeshi Taka</div></div><span class="curr-sym">৳</span>
+      </div>
+      <div class="curr-item" data-sym="$" data-code="USD" onclick="selCurr(this)">
+        <span class="curr-flag">🇺🇸</span><div><div class="curr-code">USD</div><div class="curr-name">US Dollar</div></div><span class="curr-sym">$</span>
+      </div>
+      <div class="curr-item" data-sym="₹" data-code="INR" onclick="selCurr(this)">
+        <span class="curr-flag">🇮🇳</span><div><div class="curr-code">INR</div><div class="curr-name">Indian Rupee</div></div><span class="curr-sym">₹</span>
+      </div>
+      <div class="curr-item" data-sym="£" data-code="GBP" onclick="selCurr(this)">
+        <span class="curr-flag">🇬🇧</span><div><div class="curr-code">GBP</div><div class="curr-name">British Pound</div></div><span class="curr-sym">£</span>
+      </div>
+      <div class="curr-item" data-sym="﷼" data-code="SAR" onclick="selCurr(this)">
+        <span class="curr-flag">🇸🇦</span><div><div class="curr-code">SAR</div><div class="curr-name">Saudi Riyal</div></div><span class="curr-sym">﷼</span>
+      </div>
+      <div class="curr-item" data-sym="د.إ" data-code="AED" onclick="selCurr(this)">
+        <span class="curr-flag">🇦🇪</span><div><div class="curr-code">AED</div><div class="curr-name">UAE Dirham</div></div><span class="curr-sym">د.إ</span>
+      </div>
+      <div class="curr-item" data-sym="€" data-code="EUR" onclick="selCurr(this)">
+        <span class="curr-flag">🇪🇺</span><div><div class="curr-code">EUR</div><div class="curr-name">Euro</div></div><span class="curr-sym">€</span>
+      </div>
+      <div class="curr-item" data-sym="RM" data-code="MYR" onclick="selCurr(this)">
+        <span class="curr-flag">🇲🇾</span><div><div class="curr-code">MYR</div><div class="curr-name">Malaysian Ringgit</div></div><span class="curr-sym">RM</span>
+      </div>
+      <div class="curr-item" data-sym="S$" data-code="SGD" onclick="selCurr(this)">
+        <span class="curr-flag">🇸🇬</span><div><div class="curr-code">SGD</div><div class="curr-name">Singapore Dollar</div></div><span class="curr-sym">S$</span>
+      </div>
+      <div class="curr-item" data-sym="¥" data-code="JPY" onclick="selCurr(this)">
+        <span class="curr-flag">🇯🇵</span><div><div class="curr-code">JPY</div><div class="curr-name">Japanese Yen</div></div><span class="curr-sym">¥</span>
+      </div>
+    </div>
+    <button class="curr-btn" onclick="saveCurr()">Continue →</button>
+  </div>
+</div>
+
 <div id="auth">
   <div class="acard">
     <div class="alogo">
       <div class="alogo-icon">💰</div>
       <h1>HisabOS</h1>
-      <p>Your personal finance command center</p>
+      <p>Your money, your control</p>
     </div>
     <div id="aload" class="aload"><div class="spin"></div><p style="font-size:.83rem;color:var(--t2)">Connecting...</p></div>
     <div id="aforms" style="display:none">
@@ -287,8 +420,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
       <div id="aerr" class="aerr"></div>
       <div id="af-login" class="af on">
         <label class="fl">Email</label><input class="fi" type="email" id="lemail" placeholder="you@example.com">
-        <label class="fl">Password</label><input class="fi" type="password" id="lpw" placeholder="••••••••" style="margin-bottom:16px">
+        <label class="fl">Password</label><input class="fi" type="password" id="lpw" placeholder="••••••••">
+        <span class="fpw-link" onclick="showForgot()">Forgot password?</span>
         <button class="abtn" id="lbtn" onclick="doLogin()">Sign In →</button>
+      </div>
+
+      <div id="af-forgot">
+        <span class="fpw-back" onclick="hideForgot()">← Back to Sign In</span>
+        <div class="fpw-icon">🔑</div>
+        <div class="fpw-title">Forgot Password?</div>
+        <div class="fpw-sub">Enter your email and we will send you a reset link. The link expires in 1 hour.</div>
+        <div class="fpw-serr" id="fpw-err"></div>
+        <label class="fl">Email Address</label>
+        <input class="fi" type="email" id="fpwemail" placeholder="you@example.com" style="margin-bottom:14px">
+        <button class="abtn" id="fpwbtn" onclick="doForgotPw()">Send Reset Link 📧</button>
+        <div class="fpw-success" id="fpwsuccess">
+          <div style="font-size:2rem">✅</div>
+          <div class="fpw-stxt">Reset email sent!<br>Check your inbox and click the link to set your new password.</div>
+        </div>
       </div>
       <div id="af-reg" class="af">
         <label class="fl">Your Name</label><input class="fi" type="text" id="rname" placeholder="e.g. Rahim">
@@ -506,9 +655,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
             <div><div style="font-size:.88rem;font-weight:600">Dark Mode</div><div style="font-size:.78rem;color:var(--t2)">Switch between light and dark theme</div></div>
             <button class="btn acc" onclick="toggleTheme()" id="thbtn2">Enable Dark Mode</button>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
-            <div><div style="font-size:.88rem;font-weight:600">Currency</div><div style="font-size:.78rem;color:var(--t2)">Using Bangladeshi Taka</div></div>
-            <span style="font-size:1.2rem;font-weight:800;color:var(--accent)">৳</span>
+          <div style="padding:10px 0">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div><div style="font-size:.88rem;font-weight:600">Currency</div><div style="font-size:.78rem;color:var(--t2)">Choose your preferred currency</div></div>
+              <span style="font-size:1.1rem;font-weight:800;color:var(--accent)" id="currSymDisplay">৳</span>
+            </div>
+            <div id="currSettingsWrap"></div>
           </div>
         </div></div>
         <div class="card gap"><div class="cp">
@@ -615,12 +767,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
 <!-- Firebase -->
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{initializeAuth,browserLocalPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{initializeAuth,browserLocalPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyBKVlVKz9JwxFm8vAOoQKEDzIUk8x33_IM",authDomain:"personal-finance-4c423.firebaseapp.com",projectId:"personal-finance-4c423",storageBucket:"personal-finance-4c423.firebasestorage.app",messagingSenderId:"554157324802",appId:"1:554157324802:web:d27cbe9e77bbfd3c29451b"};
 const a=initializeApp(cfg),au=initializeAuth(a,{persistence:browserLocalPersistence}),db=getFirestore(a);
 window._au=au;window._db=db;
-window._fb={createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,doc,setDoc,getDoc};
+window._fb={createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,sendPasswordResetEmail,doc,setDoc,getDoc};
 document.dispatchEvent(new Event("fbready"));
 </script>
 
@@ -719,6 +871,99 @@ let W=[],C=[],SC=[],TX=[],LN=[],PP=[],GL=[];
 let pChart=null,bChart=null,curLT="lent",curLHT="all",curCatSub=null,lhFilter="all";
 
 // ===== APP INIT =====
+// ===== CURRENCY =====
+let CURR=localStorage.getItem("hisabCurr")||"৳";
+let CURR_CODE=localStorage.getItem("hisabCurrCode")||"BDT";
+function selCurr(el){
+  document.querySelectorAll(".curr-item").forEach(i=>i.classList.remove("sel"));
+  el.classList.add("sel");
+}
+function saveCurr(){
+  const sel=document.querySelector(".curr-item.sel");
+  if(!sel)return;
+  CURR=sel.getAttribute("data-sym");
+  CURR_CODE=sel.getAttribute("data-code");
+  localStorage.setItem("hisabCurr",CURR);
+  localStorage.setItem("hisabCurrCode",CURR_CODE);
+  document.getElementById("currScreen").classList.remove("on");
+  document.getElementById("auth").style.display="flex";
+}
+function getCurrSym(){return localStorage.getItem("hisabCurr")||"৳";}
+
+// Override fmt to use selected currency
+// (fmt is already defined below, this sets the currency)
+
+// ===== SPLASH =====
+function hideSplash(cb){
+  const sp=document.getElementById("splash");
+  setTimeout(()=>{
+    sp.classList.add("hide");
+    setTimeout(()=>{sp.style.display="none";if(cb)cb();},600);
+  },2200);
+}
+
+// ===== FORGOT PASSWORD =====
+function showForgot(){
+  document.getElementById("af-login").classList.remove("on");
+  document.getElementById("af-forgot").classList.add("on");
+  document.getElementById("aerr").classList.remove("on");
+  document.getElementById("fpwsuccess").classList.remove("on");
+  document.getElementById("fpw-err").classList.remove("on");
+  document.getElementById("fpwemail").value="";
+}
+function hideForgot(){
+  document.getElementById("af-forgot").classList.remove("on");
+  document.getElementById("af-login").classList.add("on");
+}
+async function doForgotPw(){
+  const email=document.getElementById("fpwemail").value.trim();
+  const errEl=document.getElementById("fpw-err");
+  errEl.classList.remove("on");
+  if(!email){errEl.textContent="Please enter your email address.";errEl.classList.add("on");return;}
+  const btn=document.getElementById("fpwbtn");
+  btn.disabled=true;btn.textContent="Sending...";
+  try{
+    await window._fb.sendPasswordResetEmail(window._au,email);
+    document.getElementById("fpwsuccess").classList.add("on");
+    btn.style.display="none";
+  }catch(e){
+    let m="Failed to send reset email. Please try again.";
+    if(e.code==="auth/user-not-found")m="No account found with this email.";
+    else if(e.code==="auth/invalid-email")m="Please enter a valid email address.";
+    errEl.textContent=m;errEl.classList.add("on");
+  }
+  btn.disabled=false;if(btn.style.display!=="none")btn.textContent="Send Reset Link 📧";
+}
+
+// ===== CURRENCY IN SETTINGS =====
+function renderCurrencySettings(){
+  const el=document.getElementById("currSettingsWrap");
+  if(!el)return;
+  const currencies=[
+    {sym:"৳",code:"BDT",flag:"🇧🇩",name:"BDT — Taka"},
+    {sym:"$",code:"USD",flag:"🇺🇸",name:"USD — Dollar"},
+    {sym:"₹",code:"INR",flag:"🇮🇳",name:"INR — Rupee"},
+    {sym:"£",code:"GBP",flag:"🇬🇧",name:"GBP — Pound"},
+    {sym:"﷼",code:"SAR",flag:"🇸🇦",name:"SAR — Riyal"},
+    {sym:"د.إ",code:"AED",flag:"🇦🇪",name:"AED — Dirham"},
+    {sym:"€",code:"EUR",flag:"🇪🇺",name:"EUR — Euro"},
+    {sym:"RM",code:"MYR",flag:"🇲🇾",name:"MYR — Ringgit"},
+    {sym:"S$",code:"SGD",flag:"🇸🇬",name:"SGD — Dollar"},
+    {sym:"¥",code:"JPY",flag:"🇯🇵",name:"JPY — Yen"},
+  ];
+  el.innerHTML=`<select class="fi" id="currSelect" style="margin:0" onchange="changeCurr(this.value)">
+    ${currencies.map(c=>`<option value="${c.sym}|${c.code}" ${CURR===c.sym?"selected":""}>${c.flag} ${c.name}</option>`).join("")}
+  </select>`;
+}
+function changeCurr(val){
+  const [sym,code]=val.split("|");
+  CURR=sym;CURR_CODE=code;
+  localStorage.setItem("hisabCurr",sym);
+  localStorage.setItem("hisabCurrCode",code);
+  toast("Currency updated to "+code+" ("+sym+")","suc");
+  renderDash();
+}
+
 document.addEventListener("fbready",()=>{
   document.getElementById("aload").style.display="none";
   document.getElementById("aforms").style.display="block";
@@ -754,10 +999,21 @@ document.addEventListener("fbready",()=>{
       go("dashboard");
       setSS("ok");
       const tb=document.getElementById("thbtn2");if(tb)tb.textContent=ST==="dark"?"Disable Dark Mode":"Enable Dark Mode";
+      renderCurrencySettings();
+      // Hide splash after app loads
+      hideSplash(null);
     }else{
       uid=null;
       document.getElementById("app").classList.remove("on");
-      document.getElementById("auth").style.display="flex";
+      // Hide splash then show currency or auth
+      hideSplash(()=>{
+        const hasCurr=localStorage.getItem("hisabCurr");
+        if(!hasCurr){
+          document.getElementById("currScreen").classList.add("on");
+        }else{
+          document.getElementById("auth").style.display="flex";
+        }
+      });
     }
   });
 });
@@ -783,8 +1039,8 @@ document.getElementById("cokbtn").onclick=()=>{if(confirmCB)confirmCB();cm("mcon
 
 // ===== HELPERS =====
 const td=()=>new Date().toISOString().split("T")[0];
-const fmt=n=>"৳"+Math.abs(n).toLocaleString("en",{minimumFractionDigits:0,maximumFractionDigits:0});
-const fmtF=n=>"৳"+n.toFixed(2);
+const fmt=n=>(localStorage.getItem("hisabCurr")||"৳")+Math.abs(n).toLocaleString("en",{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtF=n=>(localStorage.getItem("hisabCurr")||"৳")+n.toFixed(2);
 const catB=id=>C.find(c=>c.id==id);
 const subB=id=>SC.find(s=>s.id==id);
 const walB=id=>W.find(w=>w.id==id);
