@@ -685,6 +685,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-s
     <div style="width:36px;height:4px;background:var(--border);border-radius:10px;margin:0 auto 16px"></div>
     <div style="font-size:.72rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding:0 4px">More Pages</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="nitem" data-p="history" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">📜</span> History</button>
       <button class="nitem" data-p="goals" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">🎯</span> Budget Goals</button>
       <button class="nitem" data-p="loanhistory" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">📋</span> Lend/Borrow</button>
       <button class="nitem" data-p="settings" onclick="closeMoreDrawer()" style="padding:12px;justify-content:flex-start;border:1px solid var(--border);border-radius:var(--r2)"><span class="nico">⚙️</span> Settings</button>
@@ -1042,7 +1043,7 @@ function go(id){
   if(document.getElementById("moreDrawer"))document.getElementById("moreDrawer").style.bottom="-400px";
   if(document.getElementById("moreOverlay"))document.getElementById("moreOverlay").style.display="none";
   // Highlight more btn if page is in drawer
-  const drawerPages=["goals","loanhistory","settings","categories"];
+  const drawerPages=["goals","loanhistory","settings","categories","history"];
   const mb=document.getElementById("moreNavBtn");
   if(mb)mb.classList.toggle("on",drawerPages.includes(id)&&!["dashboard","wallets","add","loans"].includes(id));
   const R={dashboard:renderDash,history:renderHistory,goals:renderGoals,loans:renderLoans,loanhistory:renderLH,wallets:renderWallets,categories:renderCats,add:()=>{popCatDrops();renderWallets();document.getElementById('tt').value=td();}};
